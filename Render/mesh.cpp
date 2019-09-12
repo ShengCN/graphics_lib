@@ -2,8 +2,8 @@
 #include <iostream>
 
 #include "mesh.h"
-#include "Utils.h"
-#include "Logger.h"
+#include "Utilities/Utils.h"
+#include "Utilities/Logger.h"
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 int mesh::id = 0;

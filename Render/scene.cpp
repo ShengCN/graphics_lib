@@ -2,9 +2,9 @@
 #include <QFileInfo>
 
 #include "scene.h"
-#include "Logger.h"
+#include "Utilities/Logger.h"
 #include "global_variable.h"
-#include <model_loader.h>
+#include "Utilities/model_loader.h"
 
 scene::scene() {
 }
