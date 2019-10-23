@@ -102,6 +102,8 @@ public:
 	mat4 get_world_mat() { return m_world; }
 	void set_world_mat(const mat4 m) { m_world = m; }
 	int get_id() { return cur_id; }
+	bool get_is_selected() { return m_is_selected; }
+	void set_is_selected(bool is_selected) { m_is_selected = is_selected; }
 
 	//------- interface --------//
 public:
@@ -126,6 +128,5 @@ public:
 	static int id;
 	bool m_is_ogl_context_initialized = false;
 	bool m_is_initialized = false;
-	bool m_is_axis = false;
-	bool m_is_container = false;
+	bool m_is_selected = false;
 };
