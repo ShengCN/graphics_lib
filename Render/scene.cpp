@@ -6,10 +6,7 @@
 #include "graphics_lib/Utilities/Logger.h"
 #include "graphics_lib/Utilities/Utils.h"
 
-scene::scene() : 
-	m_is_visualize_points(false), 
-	m_is_visualize_lines(false), 
-	m_is_visualize_aabb(false) {
+scene::scene() {
 }
 
 
@@ -41,8 +38,6 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 	for (auto m : m_meshes) {
 		m->draw(cur_camera, iter);
 	}
-
-	draw_visualization(cur_camera, iter);
 }
 
 void scene::clean_up() {
@@ -54,9 +49,6 @@ vec3 scene::scene_center() {
 	for (auto&m : m_meshes) {
 		center += m->compute_world_center() * weight;
 	}
-
-	if(m_vis_lines)
-		center += 0.5f * center + 0.5f * m_vis_lines->compute_world_center();
 
 	return center;
 }
@@ -110,22 +102,6 @@ void scene::add_mesh(std::shared_ptr<mesh> m) {
 	m_meshes.push_back(m);
 }
 
-void scene::add_vis_point(vec3 p, vec3 color) {
-	if(!m_vis_points) {
-		m_vis_points = std::make_shared<pc>(GGV.template_vs, GGV.template_fs);
-	}
-	m_vis_points->add_point(p, color);
-}
-
-void scene::add_vis_line_seg(vec3 t, vec3 h) {
-	if(!m_vis_lines) {
-		m_vis_lines = std::make_shared<line_segments>(GGV.template_vs, GGV.template_fs);
-	}
-
-	vec3 red = vec3(1.0f, 0.0f, 0.0f);
-	m_vis_lines->add_line(t, red, h, red);
-}
-
 // compute default ppc position
 void scene::reset_camera(vec3 &look, vec3 &at) {
 	vec3 meshes_center = scene_center();
@@ -146,33 +122,4 @@ void scene::reset_camera(std::shared_ptr<ppc> camera) {
 	reset_camera(new_pos, new_at);
 	camera->_position = new_pos;
 	camera->_front = glm::normalize(new_at - new_pos);
-}
-
-void scene::draw_visualization(std::shared_ptr<ppc> cur_camera, int iter) {
-	// visualize points
-	if (m_is_visualize_points) {
-		if (m_vis_points) m_vis_points->draw(cur_camera, iter);
-	}
-
-	// visualize lines
-	if (m_is_visualize_lines) {
-		if (m_vis_lines) m_vis_lines->draw(cur_camera, iter);
-	}
-
-	if (m_is_visualize_aabb) {
-		auto all_meshes = get_meshes();
-		for (auto m : all_meshes) {
-			m->draw_aabb(cur_camera);
-		}
-	}
-}
-
-void scene::set_vis_line_fract(float fract) {
-	if(m_vis_lines)
-		m_vis_lines->set_drawing_fract(fract);
-}
-
-void scene::set_vis_line_animated(bool trigger) {
-	if (m_vis_lines)
-		m_vis_lines->set_animated(trigger);
 }

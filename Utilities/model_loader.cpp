@@ -314,13 +314,13 @@ bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
 		char nTri[4];
 		unsigned int nTriLong;
 		if (mfile) {
-			qDebug() << "Successfully open file: " << file;
+			INFO("Successfully open file: " + file.toStdString());
 
 			// read 80 byte header
-			if (mfile.read(header_info, 80))
-				qDebug() << "header: " << header_info;
-			else
-				qDebug() << "Cannot read header info\n";
+			if (!mfile.read(header_info, 80)) {
+				INFO("Cannot read header info\n");
+			}
+				
 
 			// read number of triangles
 			if (mfile.read(nTri, 4)) {
@@ -328,7 +328,7 @@ bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
 				std::cout << "Triangle numbers: " << static_cast<int>(nTriLong) << std::endl;
 			}
 			else
-				qDebug() << "Cannot read number of triangles\n";
+				INFO("Cannot read number of triangles");
 
 			// Read all triangles
 			for (int trii = 0; trii < static_cast<int>(nTriLong); ++trii) {
@@ -360,21 +360,19 @@ bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
 				}
 				else {
 					success = false;
-					qDebug() << "Read triangle error\n";
+					INFO("Read triangle error");
 				}
 			}
 		}
 		else {
 			success = false;
-			qDebug() << "Cannot open file: " << file;
+			INFO("Cannot open file: "+file.toStdString());
 		}
 	}
 	else {
 		success = false;
-		qDebug() << "It's not a stl file!";
+		INFO("It's not a stl file!");
 	}
-
-	qDebug() << "There are " << m->m_verts.size() << " points \n";
 
 	return success;
 }
@@ -407,15 +405,15 @@ bool stl_loader::save_model(QString file, std::shared_ptr<mesh>& m) {
 			}
 
 			success = true;
-			qDebug() << "File " << file << " saved. \n";
+			INFO("File " + file.toStdString()+ " saved.");
 		}
 		else {
-			qDebug() << "File " << file << " cannot be saved! \n";
+			INFO("File " + file.toStdString()+ " cannot be saved!");
 		}
 	}
 	else {
 		success = false;
-		qDebug() << "It's not a stl file!";
+		INFO("It's not a stl file!");
 	}
 
 	return success;

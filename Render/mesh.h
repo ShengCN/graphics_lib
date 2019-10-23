@@ -1,19 +1,13 @@
 #pragma once
 
 #include <vector>
-#include <QOpenGLFunctions>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
 #include <algorithm>
 #include <memory>
-#include <QOpenGLFunctions_4_2_Core>
-
 #include <Eigen/Core>
 using namespace Eigen;
 
 #include "graphics_lib/Utilities/Utils.h"
 #include "ppc.h"
-#include "graphics_lib/Utilities/Utils.h"
 
 /*!
  * \class Axis aligned bounding box
@@ -95,7 +89,6 @@ public:
 	
 	void get_demose_matrix(vec3& scale, quat& rot, vec3& translate);
 	void set_matrix(const vec3 scale, const quat rot, const vec3 translate);
-	void draw_aabb(std::shared_ptr<ppc> camera);
 	void clear_vertices() { m_world = glm::identity<mat4>(); m_verts.clear(); m_norms.clear(); m_colors.clear(); m_uvs.clear(); }
 	void recompute_normal();
 	void remove_duplicate_vertices();
@@ -117,9 +110,7 @@ public:
 	virtual void reset_ogl_state() = 0;
 	virtual void draw(std::shared_ptr<ppc> ppc, int iter) = 0;
 	virtual void clean_up()=0;	
-	virtual bool test_all_vertex_attrb(std::vector<GLuint>& vert_attrs)=0;
-	virtual void enable_vertex_attrib(std::vector<GLuint>& vert_attrs)=0;
-	virtual void reset_vertex_attrib(std::vector<GLuint>& vert_attrs)=0;
+	virtual void draw_aabb(std::shared_ptr<ppc> camera) = 0;
 
 	//------- member variables --------//
 public:
@@ -137,144 +128,4 @@ public:
 	bool m_is_initialized = false;
 	bool m_is_axis = false;
 	bool m_is_container = false;
-
-	//------- Private variables --------//
-private:
-	std::shared_ptr<line_segments> m_aabb_draw;
-};
-
-class qt_mesh:public mesh, public QOpenGLFunctions_4_2_Core {
-public:
-	qt_mesh(const std::string vs, const std::string fs) :
-		mesh(vs, fs), m_shader_program(nullptr), m_is_selected(false), m_is_draw_normal(false) {};
-	void init_ogl_shader();
-
-public:
-	//------- Virtual Functions --------//
-	virtual bool init_shaders() override;
-	virtual void clean_up() override;
-	virtual bool test_all_vertex_attrb(std::vector<GLuint>& vert_attrs) override;
-	virtual void enable_vertex_attrib(std::vector<GLuint>& vert_attrs) override;
-	virtual void reset_vertex_attrib(std::vector<GLuint>& vert_attrs) override;
-
-protected:
-	QOpenGLShaderProgram* m_shader_program;
-	bool m_is_selected;
-	bool m_is_draw_normal;
-};
-
-/*!
- * \class point cloud mesh
- *
- * \brief Concrete class for point clouds
- *
- * \author YichenSheng
- * \date August 2019
- */
-class pc :public qt_mesh {
-public:
-	pc(const std::string vs, const std::string fs) :
-		qt_mesh(vs, fs),
-		m_vao(-1),
-		m_vbo(-1),
-		m_vert_attr(-1),
-		m_col_attr(-1) {};
-
-	//------- Public functions --------//
-public:
-	void add_point(vec3 p, vec3 c) {
-		m_verts.push_back(p);
-		m_colors.push_back(c);
-	}
-
-	void clear_points() {
-		m_verts.clear();
-		m_colors.clear();
-	}
-
-	//------- interface --------//
-public:
-	virtual void create_ogl_buffers() override;
-	virtual void update_ogl_buffers() override;
-	virtual void draw(std::shared_ptr<ppc> ppc, int iter) override;
-	virtual void clean_up() override;
-	virtual void reset_ogl_state() override;
-
-private:
-	GLuint m_vao, m_vbo;
-	GLuint m_vert_attr, m_col_attr;
-};
-
-/*!
- * \class triangle mesh
- *
- * \brief Concrete class for triangle mesh
- *
- * \author YichenSheng
- * \date August 2019
- */
-class triangle_mesh :public qt_mesh {
-public:
-	triangle_mesh(const std::string vs, const std::string fs) :
-		qt_mesh(vs, fs),
-		m_vao(-1),
-		m_vbo(-1),
-		m_vert_attr(-1),
-		m_norm_attr(-1), 
-		m_col_attr(-1), 
-		m_uvs_attr(-1) {
-	};
-
-public:
-	//#todo_remove_eigen_from_this_file
-	bool to_eigen(MatrixXd& V, MatrixXi& F);
-	void from_eigen(MatrixXd& V, MatrixXi& F);
-
-	//------- interface --------//
-public:
-	virtual void create_ogl_buffers() override;
-	virtual void update_ogl_buffers() override;
-	virtual void reset_ogl_state() override;
-	virtual void draw(std::shared_ptr<ppc> ppc, int iter) override;
-	virtual void clean_up() override; 
-
-	//------- variables --------//
-protected:
-	GLuint m_vao, m_vbo;
-	GLuint m_vert_attr, m_norm_attr, m_col_attr, m_uvs_attr;
-};
-
-/*!
- * \class line segments
- *
- * \brief 
- *
- * \author YichenSheng
- * \date August 2019
- */
-class line_segments :public qt_mesh {
-public:
-	line_segments(const std::string vs, const std::string fs) :qt_mesh(vs, fs), m_drawn_fract(1.0f) {};
-
-	void init_as_aabb(AABB aabb);
-	void add_line(vec3 p0, vec3 c0, vec3 p1, vec3 c1);
-	void set_drawing_fract(float fract) {
-		m_drawn_fract = fract;
-		m_drawn_fract = glm::clamp(m_drawn_fract, 0.0f, 1.0f);
-	}
-
-	void set_animated(bool trigger) { m_animated = trigger; }
-	//------- interface --------//
-public:
-	virtual void create_ogl_buffers() override;
-	virtual void update_ogl_buffers() override;
-	virtual void reset_ogl_state() override;
-	virtual void draw(std::shared_ptr<ppc> ppc, int iter) override;
-	virtual void clean_up() override;
-
-private:
-	GLuint m_vao, m_vbo;
-	GLuint m_vert_attr, m_col_attr;
-	float m_drawn_fract;
-	bool m_animated = false;
 };
