@@ -32,9 +32,10 @@ using pd::operator *;
 class shared_variables {
 //------- variables --------//
 public:
-	const std::string shader_folder = "../Shaders/";
+	const std::string shader_folder = "Shaders/";
 	const std::string template_vs = shader_folder + "template_vs.glsl";
 	const std::string template_fs = shader_folder + "template_fs.glsl";
+	vec3 default_stl_color = glm::vec3(0.3f);
 
 public:
 	static shared_variables& instance() {

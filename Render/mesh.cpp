@@ -11,48 +11,7 @@
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 int mesh::id = 0;
 
-// base class clean up shaders, children class clean up buffer
-void mesh::clean_up() {
-	m_shader_program->removeAllShaders();
-}
-
-bool mesh::save_stl(const QString file) {
-	bool success = true;
-
-	// loading 
-	if (check_file_extension(file, "stl") || check_file_extension(file, "STL")) {
-		std::ofstream mfile(file.toStdString(), std::ios::out | std::ios::binary);
-		if(mfile.is_open()){
-			char header_info[80];
-			mfile.write(header_info, 80);
-			auto world_verts = compute_world_space_coords();
-			unsigned int triangle_num = (unsigned int)world_verts.size() / 3;
-			mfile.write((char*)&triangle_num, 4);
-
-			for(unsigned int ti = 0; ti < triangle_num; ++ti){
-				mfile.write((char*)&m_norms[3 * ti + 1], 12);
-				mfile.write((char*)&world_verts[3 * ti + 0], 12);
-				mfile.write((char*)&world_verts[3 * ti + 1], 12);
-				mfile.write((char*)&world_verts[3 * ti + 2], 12);
-
-				unsigned short attrib_byte_count = 0;
-				mfile.write((char*)&attrib_byte_count, 2);
-			}
-
-			qDebug() << "File " << file << " saved. \n";
-		} else {
-			qDebug() << "File " << file << " cannot be saved! \n";
-		}
-	}
-	else {
-		success = false;
-		qDebug() << "It's not a stl file!";
-	}
-
-	return success;
-}
-
-mesh::mesh(QString vs, QString fs): m_vs(vs), m_fs(fs), m_shader_program(nullptr){
+mesh::mesh(const std::string vs, const std::string fs): m_vs(vs), m_fs(fs){
 	cur_id = ++id;
 }
 
@@ -118,9 +77,9 @@ void mesh::add_face(vec3 va, vec3 vb, vec3 vc) {
 	m_norms.push_back(normal);
 	m_norms.push_back(normal);
 
-	m_colors.push_back(global_variable::instance()->default_stl_color);
-	m_colors.push_back(global_variable::instance()->default_stl_color);
-	m_colors.push_back(global_variable::instance()->default_stl_color);
+	m_colors.push_back(GGV.default_stl_color);
+	m_colors.push_back(GGV.default_stl_color);
+	m_colors.push_back(GGV.default_stl_color);
 }
 
 void mesh::add_vertex(vec3 v, vec3 n, vec3 c) {
@@ -173,54 +132,11 @@ void mesh::set_color(vec3 col)
 
 }
 
-bool mesh::init_shaders(const QString vs, const QString fs) {
-	bool success = true;
-	m_shader_program = new QOpenGLShaderProgram(nullptr);
-
-	if (m_shader_program && file_exists(vs) && file_exists(fs)) {
-		success &= m_shader_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs);
-		success &= m_shader_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs);
-		success &= m_shader_program->link();
-	}
-	else {
-		success = false;
-		LOG_FAIL("find shaders");
-	}
-	return success;
-}
-
 bool mesh::reload_shaders() {
 	clean_up();
 
 	//this may change later, cautious
-	return init_shaders(m_vs, m_fs);	
-}
-
-bool mesh::test_all_vertex_attrb(std::vector<GLuint>& vert_attrs) {
-	bool success = true;
-	for (auto& va : vert_attrs) {
-		success &= (va != -1);
-	}
-	if (!success) {
-		std::string desc = std::to_string(get_id()) + " some attr";
-		LOG_FAIL(desc);
-	}
-
-	return success;
-}
-
-void mesh::enable_vertex_attrib(std::vector<GLuint>& vert_attrs) {
-	for(auto& va:vert_attrs){
-		if (va != -1) {
-			m_shader_program->enableAttributeArray(va);
-		}
-	}
-}
-
-void mesh::reset_vertex_attrib(std::vector<GLuint>& vert_attrs) {
-	for (auto& va : vert_attrs) {
-		va = -1;
-	}
+	return init_shaders();	
 }
 
 void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat rot_quant /*= glm::quat(0.0f,0.0f,0.0f,1.0f)*/) {
@@ -250,9 +166,8 @@ void mesh::set_matrix(const vec3 scale, const quat rot, const vec3 translate) {
 }
 
 void mesh::draw_aabb(std::shared_ptr<ppc> camera) {
-	auto gv = global_variable::instance();
 	if(!m_aabb_draw)
-		m_aabb_draw = std::make_shared<line_segments>(gv->template_vs, gv->template_fs);
+		m_aabb_draw = std::make_shared<line_segments>(GGV.template_vs, GGV.template_fs);
 	
 	m_aabb_draw->init_as_aabb(compute_world_aabb());
 	m_aabb_draw->update_ogl_buffers();
@@ -307,7 +222,7 @@ void mesh::merge_mesh(std::shared_ptr<mesh> b) {
 void qt_mesh::init_ogl_shader() {
 	if (!m_is_ogl_context_initialized) {
 		initializeOpenGLFunctions();
-		if (!init_shaders(m_vs, m_fs)) {
+		if (!init_shaders()) {
 			std::string desc = std::to_string(id) + " init shader";
 			LOG_FAIL(desc);
 		}
@@ -316,12 +231,58 @@ void qt_mesh::init_ogl_shader() {
 }
 
 
-void pc::reset_ogl_state() {
-	throw std::logic_error("The method or operation is not implemented.");
+bool qt_mesh::init_shaders() {
+	bool success = true;
+	m_shader_program = new QOpenGLShaderProgram(nullptr);
+	QString vs = QString::fromStdString(m_vs);
+	QString fs = QString::fromStdString(m_fs);
+
+	if (m_shader_program && file_exists(vs) && file_exists(fs)) {
+		success &= m_shader_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vs);
+		success &= m_shader_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fs);
+		success &= m_shader_program->link();
+	}
+	else {
+		success = false;
+		LOG_FAIL("find shaders");
+	}
+	return success;
 }
 
-bool pc::load(const QString file) {
-	return false;
+void qt_mesh::clean_up() {
+	if(m_shader_program)
+		m_shader_program->removeAllShaders();
+}
+
+bool qt_mesh::test_all_vertex_attrb(std::vector<GLuint>& vert_attrs) {
+	bool success = true;
+	for (auto& va : vert_attrs) {
+		success &= (va != -1);
+	}
+	if (!success) {
+		std::string desc = std::to_string(get_id()) + " some attr";
+		LOG_FAIL(desc);
+	}
+
+	return success;
+}
+
+void qt_mesh::enable_vertex_attrib(std::vector<GLuint>& vert_attrs) {
+	for (auto& va : vert_attrs) {
+		if (va != -1) {
+			m_shader_program->enableAttributeArray(va);
+		}
+	}
+}
+
+void qt_mesh::reset_vertex_attrib(std::vector<GLuint>& vert_attrs) {
+	for (auto& va : vert_attrs) {
+		va = -1;
+	}
+}
+
+void pc::reset_ogl_state() {
+	throw std::logic_error("The method or operation is not implemented.");
 }
 
 void pc::create_ogl_buffers() {
@@ -446,92 +407,6 @@ void triangle_mesh::from_eigen(MatrixXd& V, MatrixXi& F) {
 	}
 }
 
-// load stl file
-bool triangle_mesh::load(const QString file) {
-	bool success = true;
-
-	m_verts.clear();
-	m_norms.clear();
-
-	// loading 
-	if (check_file_extension(file, "stl") || check_file_extension(file, "STL"))
-	{
-		std::ifstream mfile(file.toStdString(), std::ios::in | std::ios::binary);
-
-		char header_info[81] = "";
-		char nTri[4];
-		unsigned int nTriLong;
-		if (mfile) {
-			qDebug() << "Successfully open file: " << file;
-
-			// read 80 byte header
-			if (mfile.read(header_info, 80))
-				qDebug() << "header: " << header_info;
-			else
-				qDebug() << "Cannot read header info\n";
-
-			// read number of triangles
-			if (mfile.read(nTri, 4))
-			{
-				nTriLong = *((unsigned int*)nTri);
-				std::cout << "Triangle numbers: " << static_cast<int>(nTriLong) << std::endl;
-			}
-			else
-				qDebug() << "Cannot read number of triangles\n";
-
-			// Read all triangles
-			for (int trii = 0; trii < static_cast<int>(nTriLong); ++trii)
-			{
-				char facet[50];
-				if (mfile.read(facet, 50))
-				{
-					auto readv3 = [&](char *sr, char *ds, int startIndex)
-					{
-						for (int si = 0; si < 12; ++si)
-						{
-							ds[si] = sr[startIndex + si];
-						}
-					};
-
-					vec3 normal;
-					vec3 p0, p1, p2;
-
-					readv3(facet, (char*)&normal[0], 0);
-					readv3(facet, (char*)&p0[0], 0 + 12);
-					readv3(facet, (char*)&p1[0], 0 + 24);
-					readv3(facet, (char*)&p2[0], 0 + 36);
-
-					m_verts.push_back(p0);
-					m_verts.push_back(p1);
-					m_verts.push_back(p2);
-					
-					//// compute normals by ourself
-					normal = glm::normalize(glm::cross(p1 - p0, p2 - p1));
-					m_norms.push_back(normal);
-					m_norms.push_back(normal);
-					m_norms.push_back(normal);
-				}
-				else {
-					success = false;
-					qDebug() << "Read triangle error\n";
-				}
-			}
-		}
-		else {
-			success = false;
-			qDebug() << "Cannot open file: " << file;
-		}
-	}
-	else {
-		success = false;
-		qDebug() << "It's not a stl file!";
-	}
-
-	qDebug() << "There are " << m_verts.size() << " points \n";
-
-	return success;
-}
-
 void triangle_mesh::create_ogl_buffers() {
 	if (m_verts.size() == 0) {
 		qDebug() << "Forgot to load mesh?";
@@ -623,16 +498,17 @@ void triangle_mesh::draw(std::shared_ptr<ppc> ppc, int iter) {
 		uniform_loc = glGetUniformLocation(program, "slider");
 		glUniform1f(uniform_loc, (GLfloat)global_variable::instance()->fract_slider);
 
-		uniform_loc = glGetUniformLocation(program, "cur_selected_id");
-		if (get_id() == global_variable::instance()->cur_selected_id) {
+		if (m_is_selected) {
 			glUniform1i(uniform_loc, 1);
 
 		} else {
 			glUniform1i(uniform_loc, 0);
 		}
 
-		uniform_loc = glGetUniformLocation(program, "is_draw_normal");
-		glUniform1i(uniform_loc, global_variable::instance()->is_draw_normal);
+		if(m_is_draw_normal){
+			uniform_loc = glGetUniformLocation(program, "is_draw_normal");
+			glUniform1i(uniform_loc, m_is_draw_normal);
+		}
 
 		glBindVertexArray(m_vao);
 		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m_verts.size());
@@ -644,7 +520,7 @@ void triangle_mesh::draw(std::shared_ptr<ppc> ppc, int iter) {
 }
 
 void triangle_mesh::clean_up() {
-	mesh::clean_up();
+	qt_mesh::clean_up();
 
 	// clean up buffer
 	reset_ogl_state();
@@ -696,10 +572,6 @@ void line_segments::add_line(vec3 p0, vec3 c0, vec3 p1, vec3 c1) {
 
 	m_colors.push_back(c0);
 	m_colors.push_back(c1);
-}
-
-bool line_segments::load(const QString file) {
-	return false;
 }
 
 void line_segments::create_ogl_buffers()

@@ -20,7 +20,9 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m_) = 0;
+	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) = 0;
+	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) = 0;
+
 };
 
 class obj_loader : public model_loader {
@@ -31,6 +33,7 @@ public:
 	//------- Interface --------//
 public:
 	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
 
 private:
 	void print_info(const tinyobj::attrib_t& attrib,
@@ -46,8 +49,7 @@ public:
 	//------- Interface --------//
 public:
 	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-
-
+	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
 };
 
 class stl_loader:public model_loader {
@@ -58,5 +60,5 @@ public:
 	//------- Interface --------//
 public:
 	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-
+	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
 };

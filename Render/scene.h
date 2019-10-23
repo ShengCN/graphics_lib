@@ -10,53 +10,47 @@ public:
 	scene();
 	~scene();
 
-	void load_scene(QString scene_file);
-	bool reload_shaders();
-	void draw_scene(std::shared_ptr<ppc> cur_camera,int iter);
-	void clean_up();
-	vec3 scene_center();
-	
-	std::vector<std::shared_ptr<mesh>> get_inside_objects() { return m_meshes; }
-	std::vector<std::shared_ptr<mesh>> get_meshes();
-	std::shared_ptr<mesh> get_mesh(int mesh_id);
+	virtual void load_scene(QString scene_file);
+	virtual bool reload_shaders();
+	virtual void draw_scene(std::shared_ptr<ppc> cur_camera,int iter);
+	virtual void clean_up();
+	virtual vec3 scene_center();
+	virtual std::vector<std::shared_ptr<mesh>> get_meshes();
+	virtual std::shared_ptr<mesh> get_mesh(int mesh_id);
+	virtual AABB scene_aabb();
+	virtual bool save_scene(const QString filename);
+	virtual void add_mesh(std::shared_ptr<mesh> m);
+	virtual void reset_camera(vec3 &look, vec3 &at);
+	virtual void reset_camera(std::shared_ptr<ppc> camera);
 
 	//------- Public functions --------//
 public:
-	std::shared_ptr<triangle_mesh> load_stl(QString file_path, 
-											vec3 color, 
-											bool is_container = false, 
-											bool is_normalize=true);
-	AABB scene_aabb();
-	bool save_scene(const QString filename);
-	void add_mesh(std::shared_ptr<mesh> m);
 	void add_vis_point(vec3 p, vec3 color);
 	void add_vis_line_seg(vec3 t, vec3 h);
-	std::shared_ptr<triangle_mesh> add_plane(vec3 p, vec3 n, vec3 c= vec3(0.9f),float size=1.0f);
 	void clear_visualization() { m_vis_lines->clear_vertices(); m_vis_points->clear_vertices(); }
-	void reset_camera(vec3 &look, vec3 &at);
-	void reset_camera(std::shared_ptr<ppc> camera);
+	void draw_visualization(std::shared_ptr<ppc> cur_camera, int iter);
 
-	/* Only Display Fract of total number segments */
+	/* Only Display Fraction of total number segments */
 	void set_vis_line_fract(float fract);
 	void set_vis_line_animated(bool trigger);
 
-	//------- Setter & Getter --------//
-	void set_container(std::shared_ptr<mesh> m) { m_container = m; }
-	void set_container_upper(std::shared_ptr<mesh> m);
-	void set_container_bottm(std::shared_ptr<mesh> m);
+	//------- Getter & Setter --------//
+public:
+	void set_visualize_points(bool is_vis) { m_is_visualize_points = is_vis; }
+	void set_visualize_lines(bool is_vis) { m_is_visualize_lines = is_vis; }
+	void set_visualize_aabb(bool is_vis) { m_is_visualize_aabb = is_vis; }
 
-	std::shared_ptr<mesh> get_container() { return m_container; }
-	std::shared_ptr<mesh> get_upper() { return m_container_upper; }
-	std::shared_ptr<mesh> get_bottom() { return m_container_bottm; }
+	bool get_visualize_points() { return m_is_visualize_points; }
+	bool get_visualize_lines() { return m_is_visualize_lines; }
+	bool get_visualize_aabb() { return m_is_visualize_aabb; }
 
-	//------- Private Variables --------//
-private:
+	//------- Protected Variables --------//
+protected:
 	std::vector<std::shared_ptr<mesh>> m_meshes;
 	std::shared_ptr<pc> m_vis_points;
 	std::shared_ptr<line_segments> m_vis_lines;
-
-	std::shared_ptr<mesh> m_container;
-	std::shared_ptr<mesh> m_container_upper;
-	std::shared_ptr<mesh> m_container_bottm;
+	bool m_is_visualize_points;
+	bool m_is_visualize_lines;
+	bool m_is_visualize_aabb;
 };
 

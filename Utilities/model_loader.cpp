@@ -109,6 +109,10 @@ bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 	return true;
 }
 
+bool obj_loader::save_model(QString file_path, std::shared_ptr<mesh>& m_) {
+	return false;
+}
+
 void obj_loader::print_info(const tinyobj::attrib_t& attrib, 
 							const std::vector<tinyobj::shape_t>& shapes, 
 							const std::vector<tinyobj::material_t>& materials) {
@@ -288,6 +292,131 @@ bool fbx_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 	return false;
 }
 
-bool stl_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
+bool fbx_loader::save_model(QString file_path, std::shared_ptr<mesh>& m) {
 	return false;
+}
+
+bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
+	bool success = false;
+	if(!m) {
+		LOG_FAIL("input nullptr");
+		return success;
+	}
+
+	m->m_verts.clear();
+	m->m_norms.clear();
+
+	// loading 
+	if (check_file_extension(file, "stl") || check_file_extension(file, "STL")) {
+		std::ifstream mfile(file.toStdString(), std::ios::in | std::ios::binary);
+
+		char header_info[81] = "";
+		char nTri[4];
+		unsigned int nTriLong;
+		if (mfile) {
+			qDebug() << "Successfully open file: " << file;
+
+			// read 80 byte header
+			if (mfile.read(header_info, 80))
+				qDebug() << "header: " << header_info;
+			else
+				qDebug() << "Cannot read header info\n";
+
+			// read number of triangles
+			if (mfile.read(nTri, 4)) {
+				nTriLong = *((unsigned int*)nTri);
+				std::cout << "Triangle numbers: " << static_cast<int>(nTriLong) << std::endl;
+			}
+			else
+				qDebug() << "Cannot read number of triangles\n";
+
+			// Read all triangles
+			for (int trii = 0; trii < static_cast<int>(nTriLong); ++trii) {
+				char facet[50];
+				if (mfile.read(facet, 50)) {
+					auto readv3 = [&](char *sr, char *ds, int startIndex) {
+						for (int si = 0; si < 12; ++si) {
+							ds[si] = sr[startIndex + si];
+						}
+					};
+
+					vec3 normal;
+					vec3 p0, p1, p2;
+
+					readv3(facet, (char*)&normal[0], 0);
+					readv3(facet, (char*)&p0[0], 0 + 12);
+					readv3(facet, (char*)&p1[0], 0 + 24);
+					readv3(facet, (char*)&p2[0], 0 + 36);
+
+					m->m_verts.push_back(p0);
+					m->m_verts.push_back(p1);
+					m->m_verts.push_back(p2);
+
+					//// compute normals by ourself
+					normal = glm::normalize(glm::cross(p1 - p0, p2 - p1));
+					m->m_norms.push_back(normal);
+					m->m_norms.push_back(normal);
+					m->m_norms.push_back(normal);
+				}
+				else {
+					success = false;
+					qDebug() << "Read triangle error\n";
+				}
+			}
+		}
+		else {
+			success = false;
+			qDebug() << "Cannot open file: " << file;
+		}
+	}
+	else {
+		success = false;
+		qDebug() << "It's not a stl file!";
+	}
+
+	qDebug() << "There are " << m->m_verts.size() << " points \n";
+
+	return success;
+}
+
+bool stl_loader::save_model(QString file, std::shared_ptr<mesh>& m) {
+	bool success = false;
+	if(!m) {
+		LOG_FAIL("input nullptr");
+		return success;
+	}
+
+	// loading 
+	if (check_file_extension(file, "stl") || check_file_extension(file, "STL")) {
+		std::ofstream mfile(file.toStdString(), std::ios::out | std::ios::binary);
+		if (mfile.is_open()) {
+			char header_info[80];
+			mfile.write(header_info, 80);
+			auto world_verts = m->compute_world_space_coords();
+			unsigned int triangle_num = (unsigned int)world_verts.size() / 3;
+			mfile.write((char*)&triangle_num, 4);
+
+			for (unsigned int ti = 0; ti < triangle_num; ++ti) {
+				mfile.write((char*)&m->m_norms[3 * ti + 1], 12);
+				mfile.write((char*)&world_verts[3 * ti + 0], 12);
+				mfile.write((char*)&world_verts[3 * ti + 1], 12);
+				mfile.write((char*)&world_verts[3 * ti + 2], 12);
+
+				unsigned short attrib_byte_count = 0;
+				mfile.write((char*)&attrib_byte_count, 2);
+			}
+
+			success = true;
+			qDebug() << "File " << file << " saved. \n";
+		}
+		else {
+			qDebug() << "File " << file << " cannot be saved! \n";
+		}
+	}
+	else {
+		success = false;
+		qDebug() << "It's not a stl file!";
+	}
+
+	return success;
 }

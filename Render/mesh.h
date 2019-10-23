@@ -67,7 +67,7 @@ class line_segments;
 class mesh
 {
 public:
-	mesh(QString vs, QString fs);
+	mesh(const std::string vs, const std::string fs);
 	~mesh();
 
 	//------- shared functions --------//
@@ -87,11 +87,9 @@ public:
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
 	void set_color(vec3 col);
-	bool init_shaders(const QString vs, const QString fs);
+	virtual bool init_shaders()=0;
 	bool reload_shaders();
-	bool test_all_vertex_attrb(std::vector<GLuint>& vert_attrs);
-	void enable_vertex_attrib(std::vector<GLuint>& vert_attrs);
-	void reset_vertex_attrib(std::vector<GLuint>& vert_attrs);
+
 	void normalize_position_orientation(vec3 scale=vec3(1.0f), 
 										glm::quat rot_quant = glm::quat(0.0f,0.0f,0.0f,0.0f));
 	
@@ -114,13 +112,14 @@ public:
 
 	//------- interface --------//
 public:
-	virtual bool load(const QString file) = 0;
 	virtual void create_ogl_buffers() = 0;
 	virtual void update_ogl_buffers() = 0;
 	virtual void reset_ogl_state() = 0;
 	virtual void draw(std::shared_ptr<ppc> ppc, int iter) = 0;
-	virtual void clean_up();	
-	virtual bool save_stl(const QString name);
+	virtual void clean_up()=0;	
+	virtual bool test_all_vertex_attrb(std::vector<GLuint>& vert_attrs)=0;
+	virtual void enable_vertex_attrib(std::vector<GLuint>& vert_attrs)=0;
+	virtual void reset_vertex_attrib(std::vector<GLuint>& vert_attrs)=0;
 
 	//------- member variables --------//
 public:
@@ -131,8 +130,7 @@ public:
 	std::vector<vec2> m_uvs;
 	std::string file_path;
 	
-	QOpenGLShaderProgram* m_shader_program;
-	QString m_vs, m_fs;
+	std::string m_vs, m_fs;
 	int cur_id = -1;
 	static int id;
 	bool m_is_ogl_context_initialized = false;
@@ -147,8 +145,22 @@ private:
 
 class qt_mesh:public mesh, public QOpenGLFunctions_4_2_Core {
 public:
-	qt_mesh(QString vs, QString fs) :mesh(vs, fs) {};
+	qt_mesh(const std::string vs, const std::string fs) :
+		mesh(vs, fs), m_shader_program(nullptr), m_is_selected(false), m_is_draw_normal(false) {};
 	void init_ogl_shader();
+
+public:
+	//------- Virtual Functions --------//
+	virtual bool init_shaders() override;
+	virtual void clean_up() override;
+	virtual bool test_all_vertex_attrb(std::vector<GLuint>& vert_attrs) override;
+	virtual void enable_vertex_attrib(std::vector<GLuint>& vert_attrs) override;
+	virtual void reset_vertex_attrib(std::vector<GLuint>& vert_attrs) override;
+
+protected:
+	QOpenGLShaderProgram* m_shader_program;
+	bool m_is_selected;
+	bool m_is_draw_normal;
 };
 
 /*!
@@ -161,7 +173,7 @@ public:
  */
 class pc :public qt_mesh {
 public:
-	pc(QString vs, QString fs) :
+	pc(const std::string vs, const std::string fs) :
 		qt_mesh(vs, fs),
 		m_vao(-1),
 		m_vbo(-1),
@@ -182,8 +194,6 @@ public:
 
 	//------- interface --------//
 public:
-	virtual bool load(const QString file) override;
-
 	virtual void create_ogl_buffers() override;
 	virtual void update_ogl_buffers() override;
 	virtual void draw(std::shared_ptr<ppc> ppc, int iter) override;
@@ -205,7 +215,7 @@ private:
  */
 class triangle_mesh :public qt_mesh {
 public:
-	triangle_mesh(QString vs, QString fs) :
+	triangle_mesh(const std::string vs, const std::string fs) :
 		qt_mesh(vs, fs),
 		m_vao(-1),
 		m_vbo(-1),
@@ -222,8 +232,6 @@ public:
 
 	//------- interface --------//
 public:
-	virtual bool load(const QString file) override;
-
 	virtual void create_ogl_buffers() override;
 	virtual void update_ogl_buffers() override;
 	virtual void reset_ogl_state() override;
@@ -246,7 +254,7 @@ protected:
  */
 class line_segments :public qt_mesh {
 public:
-	line_segments(QString vs, QString fs) :qt_mesh(vs, fs), m_drawn_fract(1.0f) {};
+	line_segments(const std::string vs, const std::string fs) :qt_mesh(vs, fs), m_drawn_fract(1.0f) {};
 
 	void init_as_aabb(AABB aabb);
 	void add_line(vec3 p0, vec3 c0, vec3 p1, vec3 c1);
@@ -258,8 +266,6 @@ public:
 	void set_animated(bool trigger) { m_animated = trigger; }
 	//------- interface --------//
 public:
-	virtual bool load(const QString file) override;
-
 	virtual void create_ogl_buffers() override;
 	virtual void update_ogl_buffers() override;
 	virtual void reset_ogl_state() override;
