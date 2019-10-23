@@ -3,8 +3,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
-#include <glm/gtc/type_ptr.hpp>
-#include "mitsuba_xml.h"
+#include "graphics_lib/common.h"
 
 /*
  *
@@ -12,8 +11,6 @@
  *	Provide basic controls.
  *
  */
-using glm::vec3;
-
 enum class CameraMovement
 {
 	forward,
@@ -24,16 +21,16 @@ enum class CameraMovement
 	down
 };
 
-class ppc : public mitsuba_xml_interface
+class ppc
 {
 public:
 	glm::vec3 _position;
 	glm::vec3 _front;
 	glm::vec3 _worldUp;	// default is (0.0f,1.0f,0.0f)
-	float _fov, _aspect;
-	float _near, _far;
+	float _fov, _near, _far;
+	int _width, _height;
 
-	ppc(float fov, float aspect, float p_near=0.1f, float p_far=3000.0f);
+	ppc(int w, int h, float fov, float p_near=0.1f, float p_far=3000.0f);
 	~ppc();
 
 	bool save(const std::string file) {
@@ -43,7 +40,10 @@ public:
 			output.write((char*)&_front[0], sizeof(glm::vec3));
 			output.write((char*)&_worldUp[0], sizeof(glm::vec3));
 			output.write((char*)&_fov, sizeof(float));
-			output.write((char*)&_aspect, sizeof(float));
+			output.write((char*)&_near, sizeof(float));
+			output.write((char*)&_far, sizeof(float));
+			output.write((char*)&_width, sizeof(int));
+			output.write((char*)&_height, sizeof(int));
 			output.close();
 			return true;
 		}
@@ -60,7 +60,10 @@ public:
 			input.read((char*)&_front[0], sizeof(glm::vec3));
 			input.read((char*)&_worldUp[0], sizeof(glm::vec3));
 			input.read((char*)&_fov, sizeof(float));
-			input.read((char*)&_aspect, sizeof(float));
+			input.read((char*)&_near, sizeof(float));
+			input.read((char*)&_far, sizeof(float));
+			input.read((char*)&_width, sizeof(int));
+			input.read((char*)&_height, sizeof(int));
 			input.close();
 			return true;
 		}
@@ -78,7 +81,7 @@ public:
 	glm::mat4 GetV();
 	void Rotate_Axis(glm::vec3 O, glm::vec3 axis, float angled);	// only rotate ppc position
 	void Zoom(float delta);
-	void Keyboard(CameraMovement cm, float deltaTime); // keyboard reactions
+	void Keyboard(CameraMovement cm, float speed); // keyboard reactions
 	void scroll(double delta) {
 		_fov += float(delta);
 	}
@@ -86,9 +89,6 @@ public:
 	void pan(double deg);
 	void tilt(double deg);
 	void pitch(double deg);
-
-	//------- Interface --------//
-	virtual void write_xml_element(QXmlStreamWriter& xml) override;
 
 private:
 	float GetFocal();

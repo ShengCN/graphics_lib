@@ -1,8 +1,10 @@
 #include <string>
 #include <QFileInfo>
-
 #include "model_loader.h"
-#include "Utils.h"
+
+#include "graphics_lib/common.h"
+#include "graphics_lib/Utilities/Utils.h"
+#include "graphics_lib/Utilities/Logger.h"
 
 model_loader::~model_loader() {
 }
@@ -25,6 +27,11 @@ std::shared_ptr<model_loader> model_loader::create(model_type mt) {
 }
 
 bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
+	if(!m) {
+		LOG_FAIL("Input of obj loader");
+		return false;
+	}
+
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -46,7 +53,7 @@ bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 								file_name.c_str(),
 								base_path.c_str(),
 								triangulate);
-	t.tok();
+	t.toc();
 	t.print_elapsed();
 
 	if (!warn.empty()) {
@@ -63,9 +70,8 @@ bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 	}
 
 	std::cerr << "Success fully loaded file: \n" << file_path.toStdString() << std::endl;
-	auto gv = global_variable::instance();
-	m = std::make_shared<triangle_mesh>(gv->template_vs, gv->template_fs);
-	m->file_path = file_path;
+	
+	m->file_path = file_path.toStdString();
 
 	// For each shape
 	for (size_t i = 0; i < shapes.size(); i++) {

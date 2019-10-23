@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "Render/mesh.h"
+#include "graphics_lib/Render/mesh.h"
 #include "tinyobjloader/tiny_obj_loader.h"
 
 enum model_type {

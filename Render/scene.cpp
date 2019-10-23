@@ -1,10 +1,10 @@
 #include <memory>
-#include <QFileInfo>
+#include <glm/gtx/quaternion.hpp>
 
 #include "scene.h"
-#include "Utilities/Logger.h"
-#include "global_variable.h"
-#include "Utilities/model_loader.h"
+#include "graphics_lib/common.h"
+#include "graphics_lib/Utilities/Logger.h"
+#include "graphics_lib/Utilities/Utils.h"
 
 scene::scene() {
 }
@@ -14,24 +14,8 @@ scene::~scene() {
 }
 
 void scene::load_scene(QString scene_file) {
-	auto gv = global_variable::instance();
-
+	//#todo_parse_scene
 	//#todo_parse_ppc
-	vec3 camera_pos;
-	vec3 meshes_center = scene_center();
-	if(m_meshes.empty()){
-		camera_pos = vec3(0.0f, 5.0f, 10.0f);
-	} else {
-		float mesh_length = scene_aabb().diag_length();
-		camera_pos = meshes_center + vec3(0.0f, 0.3f * mesh_length, mesh_length);
-	}
-
-	float aspect = (float)gv->width / gv->height;
-	m_camera = std::make_shared<ppc>(80.0f, aspect);
-	m_camera->PositionAndOrient(camera_pos, meshes_center, vec3(0.0f, 1.0f, 0.0f));
-
-	m_last_ppc = m_camera;
-	m_new_ppc = m_camera;
 }
 
 bool scene::reload_shaders() {
@@ -40,11 +24,20 @@ bool scene::reload_shaders() {
 		success &= m->reload_shaders();
 	}
 
+	if(m_container)
+		success &= m_container->reload_shaders();
+
+	if (m_container_upper)
+		success &= m_container_upper->reload_shaders();
+
+	if (m_container_bottm)
+		success &= m_container_bottm->reload_shaders();
+
 	return success;
 }
 
-void scene::draw_scene(int iter) {
-	if (m_camera == nullptr) {
+void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
+	if (cur_camera == nullptr) {
 		LOG_FAIL("Camera initialized");
 		// assert(false);
 		return;
@@ -54,10 +47,39 @@ void scene::draw_scene(int iter) {
 	auto scale_compute = [](float x) {
 		return (40.0f * x) + 1.0f;
 	};
+	
+	if (gv->is_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if(gv->is_transparent)	glDepthMask(GL_FALSE);
+	
+	if(m_container)
+		m_container->draw(cur_camera, iter);
 
-	for(auto m:m_meshes){
-		m->draw(m_camera, iter);
+	if (m_container_upper)
+		m_container_upper->draw(cur_camera, iter);
+
+	if (m_container_bottm)
+		m_container_bottm->draw(cur_camera, iter);
+
+	// scene meshes
+	for (auto m : m_meshes) {
+		m->draw(cur_camera, iter);
 	}
+
+	// visualization points
+	if(gv->is_visualize){
+		if(m_vis_lines) m_vis_lines->draw(cur_camera, iter);
+		if(m_vis_points) m_vis_points->draw(cur_camera, iter);
+
+		auto all_meshes = get_meshes();
+		if(gv->is_draw_aabb) {
+			for (auto m : all_meshes) {
+				m->draw_aabb(cur_camera);
+			}
+		}
+	}
+
+	if (gv->is_transparent) glDepthMask(GL_TRUE);
+	if (gv->is_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void scene::clean_up() {
@@ -69,152 +91,178 @@ vec3 scene::scene_center() {
 	for (auto&m : m_meshes) {
 		center += m->compute_world_center() * weight;
 	}
+
+	if(m_vis_lines)
+		center += 0.5f * center + 0.5f * m_vis_lines->compute_world_center();
+
 	return center;
 }
 
-//void scene::load_stl(QString file_path, vec3 color, bool is_container/*=false*/) {
-//	auto gv = global_variable::instance();
-//
-//	std::shared_ptr<mesh> mesh = std::make_shared<triangle_mesh>(gv->template_vs, gv->template_fs);
-//	mesh->load(file_path);
-//	mesh->set_color(color);
-//	mesh->create_ogl_buffers();
-//
-//	m_meshes.push_back(mesh);
-//}
+std::vector<std::shared_ptr<mesh>> scene::get_meshes() {
+	std::vector<std::shared_ptr<mesh>> ret;
+	
+	if(m_container)
+		ret.push_back(m_container);
+	
+	if (m_container_upper)
+		ret.push_back(m_container_upper);
 
-void scene::load_mesh(QString file_path) {
-	QFileInfo fi(file_path);
-	qDebug() << "File name: " << fi.fileName();
-	qDebug() << "Base name: " << fi.baseName();
-	qDebug() << "Extension name: " << fi.completeSuffix();
-	qDebug() << "File path name: " << fi.path();
+	if (m_container_bottm)
+		ret.push_back(m_container_bottm);
 
-	std::shared_ptr<model_loader> loader_func;
-	if(fi.completeSuffix() == "obj"){
-		loader_func = model_loader::create(model_type::obj);
-	} else {
-		loader_func = model_loader::create(model_type::fbx);
+	auto inside_objs = get_inside_objects();
+	for(auto i:inside_objs){
+		ret.push_back(i);
 	}
 
-	std::shared_ptr<mesh> mesh;
-	if(loader_func->load_model(file_path, mesh)){
-		assert(mesh->triangle_num() > 0);
-		mesh->normalize_to_origin();
+	return ret;
+}
+
+std::shared_ptr<mesh> scene::get_mesh(int mesh_id) {
+	auto meshes = get_meshes();
+	for(auto m:meshes){
+		if(m->get_id() == mesh_id) {
+			return m;
+		}
+	}
+
+	std::cerr << "Cannot find the mesh \n";
+	return nullptr;
+}
+
+std::shared_ptr<triangle_mesh> scene::load_stl(QString file_path, vec3 color, bool is_container, bool is_normalize) {
+	auto gv = global_variable::instance();
+
+	std::shared_ptr<triangle_mesh> mesh = std::make_shared<triangle_mesh>(gv->template_vs, gv->template_fs);
+	mesh->load(file_path);
+	mesh->set_color(color);
+	
+	if (is_normalize)
+		mesh->normalize_position_orientation();
+
+	if (is_container) {
+		m_container = mesh;
+		m_container->m_is_container = true;
+	} else 
 		m_meshes.push_back(mesh);
-	}
+
+	return mesh;
 }
 
 AABB scene::scene_aabb() {
 	AABB scene_aabb(vec3(0.0f));
 
-	if(!m_meshes.empty()){
-		scene_aabb = m_meshes[0]->compute_world_aabb();
+	if(m_container){
+		scene_aabb = m_container->compute_world_aabb();
+	}
+	else {
+		if (!m_meshes.empty()) {
+			scene_aabb = m_meshes[0]->compute_world_aabb();
+		}
+
+		for (auto m : m_meshes) {
+			AABB cur_aabb = m->compute_world_aabb();
+			scene_aabb.add_point(cur_aabb.p0);
+			scene_aabb.add_point(cur_aabb.p1);
+		}
 	}
 
-	for(auto m:m_meshes){
-		AABB aabb = m->compute_world_aabb();
-		scene_aabb.add_point(aabb.p0);
-		scene_aabb.add_point(aabb.p1);
-	}
 	return scene_aabb;
 }
 
 bool scene::save_scene(const QString filename) {
-	// todo 
-	return false;
+	//#TODO_Save_Scene
+	// merge 
+
+	// save
+	return m_container->save_stl(filename);
 }
 
-void scene::mesh_selected(int id) {
-	for(auto m:m_meshes){
-		if(m->get_id() == id){
-			m->set_select(true);
-		} else {
-			m->set_select(false);
-		}
-	}
+void scene::add_mesh(std::shared_ptr<mesh> m) {
+	if (!m)
+		LOG_FAIL("Add mesh");
+
+	m_meshes.push_back(m);
 }
 
-void scene::set_mesh_transform(int mesh_id, glm::mat4 new_transform) {
-	for(auto m:m_meshes){
-		if(m->get_id() == mesh_id){
-			m->set_world_mat(new_transform);
-		}
-	}
-}
-
-void scene::mouse_pressed(int x, int y) {
-	m_is_pressed = true;
-	m_last_x = x; m_last_y = y;
-	m_new_ppc = std::make_shared<ppc>(0.0f,0.0f);
-	
-	// deep copy
-	*m_new_ppc = *m_last_ppc;
-}
-
-void scene::mouse_released(int x, int y) {
-	m_is_pressed = false;
-
-	// update m_last_ppc
-	m_camera = m_last_ppc = m_new_ppc;
-}
-
-void scene::mouse_movement(int x, int y) {
-	if (!m_is_pressed)
-		return;
-
+void scene::add_vis_point(vec3 p, vec3 color) {
 	auto gv = global_variable::instance();
-	int offset_x = x - m_last_x, offset_y = y - m_last_y;
-	float x_fract = (float)offset_x / gv->width, y_fract = (float)offset_y / gv->height;
-
-	float sensitiy = 2.0f;
-	m_new_ppc->_front = m_last_ppc->_front +
-		m_last_ppc->GetRight() * sensitiy * x_fract -
-		m_last_ppc->GetUp() * sensitiy * y_fract;
-
-	m_new_ppc->_front = glm::normalize(m_new_ppc->_front);
-	qDebug() << x_fract << " " << y_fract;
-
-	m_camera = m_new_ppc;
+	if(!m_vis_points) {
+		m_vis_points = std::make_shared<pc>(gv->template_vs, gv->template_fs);
+	}
+	m_vis_points->add_point(p, color);
 }
 
-void scene::key_pressed(int k, bool is_shift) {
-	float delta = is_shift? 2.0f: 1.0f;
-	/*qDebug() << "Pressed key: " << k;*/
-
-	switch (k) {
-	case Qt::Key_W:{
-			qDebug() << "Pressed key: w";
-			m_camera->Keyboard(CameraMovement::forward, delta);
-			break;
-		}
-	case Qt::Key_S: {
-			qDebug() << "Pressed key: s";
-			m_camera->Keyboard(CameraMovement::backward, delta);
-			break;
-		}
-	case Qt::Key_A: {
-			qDebug() << "Pressed key: a";
-			m_camera->Keyboard(CameraMovement::left, delta);
-			break;
-		}
-	case Qt::Key_D: {
-			qDebug() << "Pressed key: d";
-			m_camera->Keyboard(CameraMovement::right, delta);
-			break;
-		}
-	case Qt::Key_Q:{
-			qDebug() << "Pressed key: q";
-			m_camera->Keyboard(CameraMovement::up, delta);
-			break;
-		}
-	case Qt::Key_E:
-		{
-			qDebug() << "Pressed key: e";
-			m_camera->Keyboard(CameraMovement::down, delta);
-			break;
-		}
-	default:
-		break;
+void scene::add_vis_line_seg(vec3 t, vec3 h) {
+	auto gv = global_variable::instance();
+	if(!m_vis_lines) {
+		m_vis_lines = std::make_shared<line_segments>(gv->template_vs, gv->template_fs);
 	}
+
+	vec3 red = vec3(1.0f, 0.0f, 0.0f);
+	m_vis_lines->add_line(t, red, h, red);
+}
+
+std::shared_ptr<triangle_mesh> scene::add_plane(vec3 p, vec3 n, vec3 c, float size) {
+	auto gv = global_variable::instance();
+	std::shared_ptr<triangle_mesh> plane = std::make_shared<triangle_mesh>(gv->template_vs, gv->template_fs);
+	plane->m_verts.push_back(vec3(-1.0f, 0.0f, -1.0f));
+	plane->m_verts.push_back(vec3(-1.0f, 0.0f, 1.0f));
+	plane->m_verts.push_back(vec3(1.0f, 0.0f, -1.0f));
+
+	plane->m_verts.push_back(vec3(1.0f, 0.0f, -1.0f));
+	plane->m_verts.push_back(vec3(-1.0f, 0.0f, 1.0f));
+	plane->m_verts.push_back(vec3(1.0f, 0.0f, 1.0f));
+
+	plane->m_colors.push_back(c);
+	plane->m_colors.push_back(c);
+	plane->m_colors.push_back(c);
+	plane->m_colors.push_back(c);
+	plane->m_colors.push_back(c);
+	plane->m_colors.push_back(c);
+
+	plane->add_scale(vec3(size));
+	m_meshes.push_back(plane);
+
+	return plane;
+}
+
+// compute default ppc position
+void scene::reset_camera(vec3 &look, vec3 &at) {
+	vec3 meshes_center = scene_center();
+	float mesh_length = scene_aabb().diag_length();
+	if (mesh_length < 0.1f)
+		mesh_length = 5.0f;
+	look = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length * 1.0f);
+	at = meshes_center;
+}
+
+void scene::reset_camera(std::shared_ptr<ppc> camera) {
+	if(!camera) {
+		LOG_FAIL("input pointer");
+		return;
+	}
+
+	vec3 new_pos, new_at;
+	reset_camera(new_pos, new_at);
+	camera->_position = new_pos;
+	camera->_front = glm::normalize(new_at - new_pos);
+}
+
+void scene::set_vis_line_fract(float fract) {
+	if(m_vis_lines)
+		m_vis_lines->set_drawing_fract(fract);
+}
+
+void scene::set_vis_line_animated(bool trigger) {
+	if (m_vis_lines)
+		m_vis_lines->set_animated(trigger);
+}
+
+void scene::set_container_upper(std::shared_ptr<mesh> m) {
+	m_container_upper = m;
+}
+
+void scene::set_container_bottm(std::shared_ptr<mesh> m) {
+	m_container_bottm = m;;
 }
