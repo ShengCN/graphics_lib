@@ -41,6 +41,7 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 }
 
 void scene::clean_up() {
+	m_meshes.clear();
 }
 
 vec3 scene::scene_center() {
