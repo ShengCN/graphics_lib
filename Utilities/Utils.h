@@ -10,7 +10,6 @@
 
 #include "graphics_lib/common.h"
 #include "Logger.h"
-
 typedef std::chrono::high_resolution_clock Clock;
 namespace fs = boost::filesystem;
 
@@ -43,6 +42,7 @@ inline std::string get_file_dir(const std::string file) {
 	return p.parent_path().string();
 }
 
+bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
 
 /*!
  * 
@@ -71,11 +71,11 @@ inline float random_float(float fmin=0.0f, float fmax=1.0f){
 	return u(engine);
 }
 
-inline int random_int(int min = 0, int max = 10) {
+inline int random_int(int mi = 0, int ma = 10) {
 	// engine
 	std::random_device rd;
 	std::mt19937 engine(rd());
-	std::uniform_int_distribution<> dis(min, max);
+	std::uniform_int_distribution<> dis(mi, ma);
 
 	return dis(engine);
 }

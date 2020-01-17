@@ -100,6 +100,8 @@ public:
 	int get_id() { return cur_id; }
 	bool get_is_selected() { return m_is_selected; }
 	void set_is_selected(bool is_selected) { m_is_selected = is_selected; }
+	void set_light(bool trigger = true) { m_is_emitter = true; }
+	bool is_light() { return m_is_emitter; }
 
 	//------- member variables --------//
 public:
@@ -114,4 +116,5 @@ public:
 	int cur_id = -1;
 	static int id;
 	bool m_is_selected = false;
+	bool m_is_emitter = false;
 };

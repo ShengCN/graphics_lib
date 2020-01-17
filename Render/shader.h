@@ -22,7 +22,7 @@ private:
 	GLuint init_template_shader();
 	GLuint init_geometry_shader();
 
-private:
+protected:
 	GLuint m_program;
 	std::string m_vs, m_fs, m_gs, m_cs;
 	shader_type m_type;
