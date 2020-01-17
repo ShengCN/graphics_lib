@@ -1,5 +1,4 @@
 #include <string>
-#include <QFileInfo>
 #include "model_loader.h"
 
 #include "graphics_lib/common.h"
@@ -21,14 +20,31 @@ std::shared_ptr<model_loader> model_loader::create(model_type mt) {
 	case stl:
 		ret = std::make_shared<stl_loader>();
 		break;
+	default:
+		WARN("Do not know this type");
+		ret = std::make_shared<obj_loader>();
+		break;
 	}
 
 	return ret;
 }
 
-bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
+std::shared_ptr<model_loader> model_loader::create(const std::string file_path) {
+	std::string ext = get_file_ext(file_path);
+	if(ext == "obj") {
+		return create(model_type::obj);
+	} else if(ext == "stl") {
+		return create(model_type::stl);
+	} else if(ext == "off") {
+		return create(model_type::off);
+	}
+	return create(model_type::unknown);
+}
+
+bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
+	m->file_path = file_path;
 	if(!m) {
-		LOG_FAIL("Input of obj loader");
+		WARN("Input of obj loader");
 		return false;
 	}
 
@@ -38,9 +54,7 @@ bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 
 	std::string warn;
 	std::string err;
-	QFileInfo fi(file_path);
-	std::string file_name = file_path.toStdString();
-	std::string base_path = fi.path().toStdString();
+	std::string base_path = get_file_dir(file_path);
 	bool triangulate = true;
 	
 	timer t;
@@ -50,7 +64,7 @@ bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 								&materials,
 								&warn,
 								&err,
-								file_name.c_str(),
+								file_path.c_str(),
 								base_path.c_str(),
 								triangulate);
 	t.toc();
@@ -69,9 +83,7 @@ bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 		return false;
 	}
 
-	std::cerr << "Success fully loaded file: \n" << file_path.toStdString() << std::endl;
-	
-	m->file_path = file_path.toStdString();
+	std::cerr << "Success fully loaded file: \n" << file_path << std::endl;
 
 	// For each shape
 	for (size_t i = 0; i < shapes.size(); i++) {
@@ -109,7 +121,7 @@ bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
 	return true;
 }
 
-bool obj_loader::save_model(QString file_path, std::shared_ptr<mesh>& m_) {
+bool obj_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m_) {
 	return false;
 }
 
@@ -288,18 +300,20 @@ void obj_loader::print_info(const tinyobj::attrib_t& attrib,
 	}
 }
 
-bool fbx_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
+bool fbx_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 	return false;
 }
 
-bool fbx_loader::save_model(QString file_path, std::shared_ptr<mesh>& m) {
+bool fbx_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m) {
 	return false;
 }
 
-bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
+bool stl_loader::load_model(std::string file, std::shared_ptr<mesh>& m) {
+	m->file_path = file;
+
 	bool success = false;
 	if(!m) {
-		LOG_FAIL("input nullptr");
+		WARN("input nullptr");
 		return success;
 	}
 
@@ -307,14 +321,14 @@ bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
 	m->m_norms.clear();
 
 	// loading 
-	if (check_file_extension(file, "stl") || check_file_extension(file, "STL")) {
-		std::ifstream mfile(file.toStdString(), std::ios::in | std::ios::binary);
+	if (check_file_extension(file, ".stl") || check_file_extension(file, ".STL")) {
+		std::ifstream mfile(file, std::ios::in | std::ios::binary);
 
 		char header_info[81] = "";
 		char nTri[4];
 		unsigned int nTriLong;
 		if (mfile) {
-			INFO("Successfully open file: " + file.toStdString());
+			INFO("Successfully open file: " + file);
 
 			// read 80 byte header
 			if (!mfile.read(header_info, 80)) {
@@ -366,7 +380,7 @@ bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
 		}
 		else {
 			success = false;
-			INFO("Cannot open file: "+file.toStdString());
+			INFO("Cannot open file: "+file);
 		}
 	}
 	else {
@@ -377,16 +391,16 @@ bool stl_loader::load_model(QString file, std::shared_ptr<mesh>& m) {
 	return success;
 }
 
-bool stl_loader::save_model(QString file, std::shared_ptr<mesh>& m) {
+bool stl_loader::save_model(std::string file, std::shared_ptr<mesh>& m) {
 	bool success = false;
 	if(!m) {
-		LOG_FAIL("input nullptr");
+		WARN("input nullptr");
 		return success;
 	}
 
 	// loading 
-	if (check_file_extension(file, "stl") || check_file_extension(file, "STL")) {
-		std::ofstream mfile(file.toStdString(), std::ios::out | std::ios::binary);
+	if (check_file_extension(file, ".stl") || check_file_extension(file, ".STL")) {
+		std::ofstream mfile(file, std::ios::out | std::ios::binary);
 		if (mfile.is_open()) {
 			char header_info[80];
 			mfile.write(header_info, 80);
@@ -405,10 +419,10 @@ bool stl_loader::save_model(QString file, std::shared_ptr<mesh>& m) {
 			}
 
 			success = true;
-			INFO("File " + file.toStdString()+ " saved.");
+			INFO("File " + file+ " saved.");
 		}
 		else {
-			INFO("File " + file.toStdString()+ " cannot be saved!");
+			INFO("File " + file+ " cannot be saved!");
 		}
 	}
 	else {

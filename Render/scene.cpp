@@ -5,6 +5,8 @@
 #include "graphics_lib/common.h"
 #include "graphics_lib/Utilities/Logger.h"
 #include "graphics_lib/Utilities/Utils.h"
+#include "graphics_lib/Utilities/model_loader.h"
+#include "graphics_lib/asset_manager.h"
 
 scene::scene() {
 }
@@ -13,30 +15,23 @@ scene::scene() {
 scene::~scene() {
 }
 
-void scene::load_scene(QString scene_file) {
+
+void scene::load_scene(std::string scene_file) {
 	//#todo_parse_scene
 	//#todo_parse_ppc
 }
 
-bool scene::reload_shaders() {
-	bool success = true;
-	for (auto& m : m_meshes) {
-		success &= m->reload_shaders();
-	}
-
-	return success;
-}
-
 void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 	if (cur_camera == nullptr) {
-		LOG_FAIL("Camera initialized");
+		WARN("Camera initialized failed");
 		// assert(false);
 		return;
 	}
 
 	// scene meshes
 	for (auto m : m_meshes) {
-		m->draw(cur_camera, iter);
+		// m->draw(cur_camera, iter);
+		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(m);
 	}
 }
 
@@ -88,7 +83,7 @@ AABB scene::scene_aabb() {
 	return scene_aabb;
 }
 
-bool scene::save_scene(const QString filename) {
+bool scene::save_scene(const std::string filename) {
 	//#TODO_Save_Scene
 	// merge 
 
@@ -96,9 +91,24 @@ bool scene::save_scene(const QString filename) {
 	return false;
 }
 
+std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader) {
+	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
+	auto loader = model_loader::create(mesh_file);
+	if(loader->load_model(mesh_file, new_mesh)) {
+		INFO("Loading file " + mesh_file + " success");
+	} else {
+		WARN("Loading file " + mesh_file + " failed");
+	}
+
+	m_meshes.push_back(new_mesh);
+	asset_manager::instance().m_rendering_mappings[new_mesh->get_id()] = render_shader;
+
+	return new_mesh;
+}
+
 void scene::add_mesh(std::shared_ptr<mesh> m) {
 	if (!m)
-		LOG_FAIL("Add mesh");
+		WARN("Add mesh failed");
 
 	m_meshes.push_back(m);
 }
@@ -109,18 +119,37 @@ void scene::reset_camera(vec3 &look, vec3 &at) {
 	float mesh_length = scene_aabb().diag_length();
 	if (mesh_length < 0.1f)
 		mesh_length = 5.0f;
-	look = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length * 1.0f);
+	look = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length);
 	at = meshes_center;
 }
 
 void scene::reset_camera(std::shared_ptr<ppc> camera) {
 	if(!camera) {
-		LOG_FAIL("input pointer");
+		WARN("input pointer nullptr");
 		return;
 	}
 
 	vec3 new_pos, new_at;
 	reset_camera(new_pos, new_at);
+	camera->_position = new_pos;
+	camera->_front = glm::normalize(new_at - new_pos);
+}
+
+void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
+	if (!camera || !m) {
+		WARN("input pointer nullptr");
+		return;
+	}
+
+	vec3 new_pos, new_at;
+	
+	vec3 meshes_center = m->compute_world_center();
+	float mesh_length = m->compute_world_aabb().diag_length();
+	if (mesh_length < 0.1f)
+		mesh_length = 5.0f;
+	new_pos = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length);
+	new_at = meshes_center;
+
 	camera->_position = new_pos;
 	camera->_front = glm::normalize(new_at - new_pos);
 }

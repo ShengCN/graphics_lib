@@ -1,34 +1,48 @@
 #pragma once
-#include <QFileInfo>
 #include <random>
 #include <chrono>
 #include <sstream>
 #include <iostream>
+
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+
 #include "graphics_lib/common.h"
 #include "Logger.h"
 
 typedef std::chrono::high_resolution_clock Clock;
+namespace fs = boost::filesystem;
 
-inline bool file_exists(QString file) {
-	QFileInfo check_file(file);
-	// check if file exists and if yes: Is it really a file and no directory?
-	if(!check_file.exists()) {
-		LOG_FAIL("Cannot find file: " + check_file.absoluteFilePath().toStdString());
-		return false;
-	}
-
-	if(!check_file.isFile()) {
-		LOG_FAIL("The required path" + file.toStdString() + "is not a file");
-		return false;
-	}
-
-	return true;
+inline bool file_exists(const std::string file) {
+	return fs::exists(file);
 }
 
-inline bool check_file_extension(QString file, QString ext) {
-	QFileInfo qfile(file);
-	return qfile.suffix() == ext;
+inline std::string get_file_ext(const std::string file) {
+	return fs::extension(file).substr(1);
 }
+
+inline bool check_file_extension(const std::string file, const std::string ext) {
+	return ext == get_file_ext(file);
+}
+
+inline std::string get_file_basename(const std::string file) {
+	fs::path p(file);
+	return p.filename().string();
+}
+
+inline std::string get_file_abs_path(const std::string file) {
+	fs::path p(file);
+	if (p.is_absolute()) return p.string();
+
+	return fs::canonical(file).string();
+}
+
+inline std::string get_file_dir(const std::string file) {
+	fs::path p(file);
+	return p.parent_path().string();
+}
+
 
 /*!
  * 

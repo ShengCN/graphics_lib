@@ -6,7 +6,9 @@
 enum model_type {
 	obj,
 	fbx,
-	stl
+	stl,
+	off,
+	unknown
 };
 
 class model_loader
@@ -17,11 +19,12 @@ public:
 
 public:
 	static std::shared_ptr<model_loader> create(model_type mt);
+	static std::shared_ptr<model_loader> create(const std::string file_path);
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) = 0;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) = 0;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) = 0;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) = 0;
 
 };
 
@@ -32,8 +35,8 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 
 private:
 	void print_info(const tinyobj::attrib_t& attrib,
@@ -48,8 +51,8 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 };
 
 class stl_loader:public model_loader {
@@ -59,6 +62,6 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 };

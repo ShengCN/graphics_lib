@@ -3,8 +3,6 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
-#include <Eigen/Core>
-using namespace Eigen;
 
 #include "graphics_lib/Utilities/Utils.h"
 #include "ppc.h"
@@ -38,7 +36,9 @@ struct AABB
 		add_point(new_aabb.p1);
 	}
 
-	float diag_length();
+	float diag_length() {
+		return glm::distance(p0, p1);
+	}
 	
 	vec3 diagonal() {
 		return p1 - p0;
@@ -49,7 +49,6 @@ struct AABB
 	}
 };
 
-class line_segments;
 /*!
  * \class Base class for mesh
  *
@@ -61,7 +60,7 @@ class line_segments;
 class mesh
 {
 public:
-	mesh(const std::string vs, const std::string fs);
+	mesh();
 	~mesh();
 
 	//------- shared functions --------//
@@ -81,8 +80,6 @@ public:
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
 	void set_color(vec3 col);
-	virtual bool init_shaders()=0;
-	bool reload_shaders();
 
 	void normalize_position_orientation(vec3 scale=vec3(1.0f), 
 										glm::quat rot_quant = glm::quat(0.0f,0.0f,0.0f,0.0f));
@@ -92,7 +89,6 @@ public:
 	void clear_vertices() { m_world = glm::identity<mat4>(); m_verts.clear(); m_norms.clear(); m_colors.clear(); m_uvs.clear(); }
 	void recompute_normal();
 	void remove_duplicate_vertices();
-	void merge_mesh(std::shared_ptr<mesh> b);
 	std::string to_string() {
 		return std::to_string(get_id());
 	}
@@ -104,15 +100,6 @@ public:
 	int get_id() { return cur_id; }
 	bool get_is_selected() { return m_is_selected; }
 	void set_is_selected(bool is_selected) { m_is_selected = is_selected; }
-
-	//------- interface --------//
-public:
-	virtual void create_ogl_buffers() = 0;
-	virtual void update_ogl_buffers() = 0;
-	virtual void reset_ogl_state() = 0;
-	virtual void draw(std::shared_ptr<ppc> ppc, int iter) = 0;
-	virtual void clean_up()=0;	
-	virtual void draw_aabb(std::shared_ptr<ppc> camera) = 0;
 
 	//------- member variables --------//
 public:
@@ -126,7 +113,5 @@ public:
 	std::string m_vs, m_fs;
 	int cur_id = -1;
 	static int id;
-	bool m_is_ogl_context_initialized = false;
-	bool m_is_initialized = false;
 	bool m_is_selected = false;
 };
