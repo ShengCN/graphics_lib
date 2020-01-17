@@ -26,6 +26,7 @@ public:
 	virtual bool save_scene(const std::string filename);
 	virtual void reset_camera(vec3 &look, vec3 &at);
 	virtual void reset_camera(std::shared_ptr<ppc> camera);
+	void focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m);
 
 	//------- Protected Variables --------//
 protected:

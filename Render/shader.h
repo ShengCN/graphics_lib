@@ -27,5 +27,3 @@ private:
 	std::string m_vs, m_fs, m_gs, m_cs;
 	shader_type m_type;
 };
-
-
