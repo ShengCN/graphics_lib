@@ -2,9 +2,11 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "scene.h"
-#include "../common.h"
-#include "../Utilities/Logger.h"
-#include "../Utilities/Utils.h"
+#include "graphics_lib/common.h"
+#include "graphics_lib/Utilities/Logger.h"
+#include "graphics_lib/Utilities/Utils.h"
+#include "graphics_lib/Utilities/model_loader.h"
+#include "graphics_lib/asset_manager.h"
 
 scene::scene() {
 }
@@ -13,18 +15,10 @@ scene::scene() {
 scene::~scene() {
 }
 
+
 void scene::load_scene(std::string scene_file) {
 	//#todo_parse_scene
 	//#todo_parse_ppc
-}
-
-bool scene::reload_shaders() {
-	bool success = true;
-	for (auto& m : m_meshes) {
-		success &= m->reload_shaders();
-	}
-
-	return success;
 }
 
 void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
@@ -36,7 +30,8 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 
 	// scene meshes
 	for (auto m : m_meshes) {
-		m->draw(cur_camera, iter);
+		// m->draw(cur_camera, iter);
+		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(m);
 	}
 }
 
@@ -96,6 +91,21 @@ bool scene::save_scene(const std::string filename) {
 	return false;
 }
 
+std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader) {
+	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
+	auto loader = model_loader::create(mesh_file);
+	if(loader->load_model(mesh_file, new_mesh)) {
+		INFO("Loading file " + mesh_file + " success");
+	} else {
+		WARN("Loading file " + mesh_file + " failed");
+	}
+
+	m_meshes.push_back(new_mesh);
+	asset_manager::instance().m_rendering_mappings[new_mesh->get_id()] = render_shader;
+
+	return new_mesh;
+}
+
 void scene::add_mesh(std::shared_ptr<mesh> m) {
 	if (!m)
 		WARN("Add mesh failed");
@@ -109,7 +119,7 @@ void scene::reset_camera(vec3 &look, vec3 &at) {
 	float mesh_length = scene_aabb().diag_length();
 	if (mesh_length < 0.1f)
 		mesh_length = 5.0f;
-	look = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length * 1.0f);
+	look = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length);
 	at = meshes_center;
 }
 

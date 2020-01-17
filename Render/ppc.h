@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-#include "../common.h"
+#include "graphics_lib/common.h"
 
 /*
  *

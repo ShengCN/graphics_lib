@@ -1,12 +1,14 @@
 #pragma once
 #include <memory>
-#include "../Render/mesh.h"
+#include "graphics_lib/Render/mesh.h"
 #include "tinyobjloader/tiny_obj_loader.h"
 
 enum model_type {
 	obj,
 	fbx,
-	stl
+	stl,
+	off,
+	unknown
 };
 
 class model_loader
@@ -17,6 +19,7 @@ public:
 
 public:
 	static std::shared_ptr<model_loader> create(model_type mt);
+	static std::shared_ptr<model_loader> create(const std::string file_path);
 
 	//------- Interface --------//
 public:

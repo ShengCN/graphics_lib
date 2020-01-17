@@ -6,12 +6,12 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "mesh.h"
-#include "../Utilities/Utils.h" 
-#include "../Utilities/Logger.h"
+#include "graphics_lib/Utilities/Utils.h" 
+#include "graphics_lib/Utilities/Logger.h"
 
 int mesh::id = 0;
 
-mesh::mesh(const std::string vs, const std::string fs): m_vs(vs), m_fs(fs){
+mesh::mesh(){
 	cur_id = ++id;
 }
 
@@ -116,34 +116,26 @@ AABB mesh::compute_world_aabb() {
 	return aabb;
 }
 
-void mesh::set_color(vec3 col)
-{
+void mesh::set_color(vec3 col) {
 	if (m_verts.empty())
 		return;
 
-	if(m_colors.empty()) {
+	if (m_colors.empty()) {
 		m_colors.clear();
 		m_colors.resize(m_verts.size(), col);
-	} else {
-		for(auto &c:m_colors) {
+	}
+	else {
+		for (auto &c : m_colors) {
 			c = col;
 		}
 	}
 
 }
 
-bool mesh::reload_shaders() {
-	clean_up();
-
-	//this may change later, cautious
-	return init_shaders();	
-}
-
 void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat rot_quant /*= glm::quat(0.0f,0.0f,0.0f,1.0f)*/) {
 	// normalize, move to center and align
 	vec3 center = compute_center();
 	mat4 norm_transform = glm::toMat4(rot_quant) * 
-		glm::rotate(deg2rad(90.0f), vec3(1.0f, 0.0f, 0.0f)) *
 		glm::scale(scale) *
 		glm::translate(-center);
 	m_world = norm_transform;

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "../Utilities/Utils.h"
+#include "graphics_lib/Utilities/Utils.h"
 #include "ppc.h"
 
 /*!
@@ -37,7 +37,7 @@ struct AABB
 	}
 
 	float diag_length() {
-		return (float)diagonal().length();
+		return glm::distance(p0, p1);
 	}
 	
 	vec3 diagonal() {
@@ -60,7 +60,7 @@ struct AABB
 class mesh
 {
 public:
-	mesh(const std::string vs, const std::string fs);
+	mesh();
 	~mesh();
 
 	//------- shared functions --------//
@@ -80,8 +80,6 @@ public:
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
 	void set_color(vec3 col);
-	virtual bool init_shaders()=0;
-	bool reload_shaders();
 
 	void normalize_position_orientation(vec3 scale=vec3(1.0f), 
 										glm::quat rot_quant = glm::quat(0.0f,0.0f,0.0f,0.0f));
@@ -102,15 +100,6 @@ public:
 	int get_id() { return cur_id; }
 	bool get_is_selected() { return m_is_selected; }
 	void set_is_selected(bool is_selected) { m_is_selected = is_selected; }
-
-	//------- interface --------//
-public:
-	virtual void create_ogl_buffers() = 0;
-	virtual void update_ogl_buffers() = 0;
-	virtual void reset_ogl_state() = 0;
-	virtual void draw(std::shared_ptr<ppc> ppc, int iter) = 0;
-	virtual void clean_up()=0;	
-	virtual void draw_aabb(std::shared_ptr<ppc> camera) = 0;
 
 	//------- member variables --------//
 public:
