@@ -49,7 +49,6 @@ struct AABB
 	}
 };
 
-class line_segments;
 /*!
  * \class Base class for mesh
  *
@@ -92,7 +91,6 @@ public:
 	void clear_vertices() { m_world = glm::identity<mat4>(); m_verts.clear(); m_norms.clear(); m_colors.clear(); m_uvs.clear(); }
 	void recompute_normal();
 	void remove_duplicate_vertices();
-	void merge_mesh(std::shared_ptr<mesh> b);
 	std::string to_string() {
 		return std::to_string(get_id());
 	}
@@ -126,7 +124,5 @@ public:
 	std::string m_vs, m_fs;
 	int cur_id = -1;
 	static int id;
-	bool m_is_ogl_context_initialized = false;
-	bool m_is_initialized = false;
 	bool m_is_selected = false;
 };

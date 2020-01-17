@@ -193,19 +193,3 @@ void mesh::remove_duplicate_vertices() {
 		}
 	}
 }
-
-// merge with world space coordinates
-void mesh::merge_mesh(std::shared_ptr<mesh> b) {
-	if(!b) {
-		WARN("Merge mesh nullptr");
-		assert(false);
-	}
-
-	auto b_world_coord = b->compute_world_space_coords();
-	auto b_world_normal = b->compute_world_space_normals();
-
-	std::copy(b_world_coord.begin(), b_world_coord.end(), std::back_inserter(m_verts));
-	std::copy(b->m_colors.begin(), b->m_colors.end(), std::back_inserter(m_colors));
-	std::copy(b_world_normal.begin(), b_world_normal.end(), std::back_inserter(m_norms));
-	std::copy(b->m_uvs.begin(), b->m_uvs.end(), std::back_inserter(m_uvs));
-}
