@@ -3,10 +3,8 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
-#include <Eigen/Core>
-using namespace Eigen;
 
-#include "graphics_lib/Utilities/Utils.h"
+#include "../Utilities/Utils.h"
 #include "ppc.h"
 
 /*!
@@ -38,7 +36,9 @@ struct AABB
 		add_point(new_aabb.p1);
 	}
 
-	float diag_length();
+	float diag_length() {
+		return (float)diagonal().length();
+	}
 	
 	vec3 diagonal() {
 		return p1 - p0;

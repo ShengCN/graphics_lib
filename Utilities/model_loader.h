@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "graphics_lib/Render/mesh.h"
+#include "../Render/mesh.h"
 #include "tinyobjloader/tiny_obj_loader.h"
 
 enum model_type {
@@ -20,8 +20,8 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) = 0;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) = 0;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) = 0;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) = 0;
 
 };
 
@@ -32,8 +32,8 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 
 private:
 	void print_info(const tinyobj::attrib_t& attrib,
@@ -48,8 +48,8 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 };
 
 class stl_loader:public model_loader {
@@ -59,6 +59,6 @@ public:
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(QString file_path, std::shared_ptr<mesh>& m) override;
-	virtual bool save_model(QString file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 };

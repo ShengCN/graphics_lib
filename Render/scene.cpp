@@ -2,9 +2,9 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "scene.h"
-#include "graphics_lib/common.h"
-#include "graphics_lib/Utilities/Logger.h"
-#include "graphics_lib/Utilities/Utils.h"
+#include "../common.h"
+#include "../Utilities/Logger.h"
+#include "../Utilities/Utils.h"
 
 scene::scene() {
 }
@@ -13,7 +13,7 @@ scene::scene() {
 scene::~scene() {
 }
 
-void scene::load_scene(QString scene_file) {
+void scene::load_scene(std::string scene_file) {
 	//#todo_parse_scene
 	//#todo_parse_ppc
 }
@@ -29,7 +29,7 @@ bool scene::reload_shaders() {
 
 void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 	if (cur_camera == nullptr) {
-		LOG_FAIL("Camera initialized");
+		WARN("Camera initialized failed");
 		// assert(false);
 		return;
 	}
@@ -88,7 +88,7 @@ AABB scene::scene_aabb() {
 	return scene_aabb;
 }
 
-bool scene::save_scene(const QString filename) {
+bool scene::save_scene(const std::string filename) {
 	//#TODO_Save_Scene
 	// merge 
 
@@ -98,7 +98,7 @@ bool scene::save_scene(const QString filename) {
 
 void scene::add_mesh(std::shared_ptr<mesh> m) {
 	if (!m)
-		LOG_FAIL("Add mesh");
+		WARN("Add mesh failed");
 
 	m_meshes.push_back(m);
 }
@@ -115,7 +115,7 @@ void scene::reset_camera(vec3 &look, vec3 &at) {
 
 void scene::reset_camera(std::shared_ptr<ppc> camera) {
 	if(!camera) {
-		LOG_FAIL("input pointer");
+		WARN("input pointer nullptr");
 		return;
 	}
 

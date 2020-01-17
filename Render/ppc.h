@@ -3,7 +3,8 @@
 #include <fstream>
 #include <string>
 #include <memory>
-#include "graphics_lib/common.h"
+
+#include "../common.h"
 
 /*
  *

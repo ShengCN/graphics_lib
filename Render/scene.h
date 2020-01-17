@@ -10,7 +10,7 @@ public:
 	scene();
 	~scene();
 
-	virtual void load_scene(QString scene_file);
+	virtual void load_scene(std::string scene_file);
 	virtual bool reload_shaders();
 	virtual void draw_scene(std::shared_ptr<ppc> cur_camera,int iter);
 	virtual void clean_up();
@@ -18,7 +18,7 @@ public:
 	virtual std::vector<std::shared_ptr<mesh>> get_meshes();
 	virtual std::shared_ptr<mesh> get_mesh(int mesh_id);
 	virtual AABB scene_aabb();
-	virtual bool save_scene(const QString filename);
+	virtual bool save_scene(const std::string filename);
 	virtual void add_mesh(std::shared_ptr<mesh> m);
 	virtual void reset_camera(vec3 &look, vec3 &at);
 	virtual void reset_camera(std::shared_ptr<ppc> camera);

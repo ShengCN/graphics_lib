@@ -1,11 +1,13 @@
 #include <fstream>
 #include <iostream>
-#include <glm/matrix.hpp>
+
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "mesh.h"
-#include "graphics_lib/Utilities/Utils.h" 
-#include "graphics_lib/Utilities/Logger.h"
+#include "../Utilities/Utils.h" 
+#include "../Utilities/Logger.h"
 
 int mesh::id = 0;
 
@@ -165,7 +167,7 @@ void mesh::set_matrix(const vec3 scale, const quat rot, const vec3 translate) {
 
 void mesh::recompute_normal() {
 	m_norms.clear();
-	int triangle_num = m_verts.size() / 3;
+	size_t triangle_num = m_verts.size() / 3;
 	for(int ti = 0; ti < triangle_num; ++ti) {
 		vec3 a = m_verts[3 * ti + 0];
 		vec3 b = m_verts[3 * ti + 1];
@@ -195,7 +197,7 @@ void mesh::remove_duplicate_vertices() {
 // merge with world space coordinates
 void mesh::merge_mesh(std::shared_ptr<mesh> b) {
 	if(!b) {
-		LOG_FAIL("Merge mesh");
+		WARN("Merge mesh nullptr");
 		assert(false);
 	}
 

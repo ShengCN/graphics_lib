@@ -1,34 +1,33 @@
 #pragma once
-#include <QFileInfo>
 #include <random>
 #include <chrono>
 #include <sstream>
 #include <iostream>
-#include "graphics_lib/common.h"
+#include "../common.h"
 #include "Logger.h"
 
 typedef std::chrono::high_resolution_clock Clock;
 
-inline bool file_exists(QString file) {
-	QFileInfo check_file(file);
-	// check if file exists and if yes: Is it really a file and no directory?
-	if(!check_file.exists()) {
-		LOG_FAIL("Cannot find file: " + check_file.absoluteFilePath().toStdString());
-		return false;
-	}
-
-	if(!check_file.isFile()) {
-		LOG_FAIL("The required path" + file.toStdString() + "is not a file");
-		return false;
-	}
-
-	return true;
-}
-
-inline bool check_file_extension(QString file, QString ext) {
-	QFileInfo qfile(file);
-	return qfile.suffix() == ext;
-}
+//inline bool file_exists(std::string file) {
+//	QFileInfo check_file(file);
+//	// check if file exists and if yes: Is it really a file and no directory?
+//	if(!check_file.exists()) {
+//		LOG_FAIL("Cannot find file: " + check_file.absoluteFilePath().toStdString());
+//		return false;
+//	}
+//
+//	if(!check_file.isFile()) {
+//		LOG_FAIL("The required path" + file.toStdString() + "is not a file");
+//		return false;
+//	}
+//
+//	return true;
+//}
+//
+//inline bool check_file_extension(std::string file, std::string ext) {
+//	QFileInfo qfile(file);
+//	return qfile.suffix() == ext;
+//}
 
 /*!
  * 

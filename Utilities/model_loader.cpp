@@ -1,10 +1,9 @@
 #include <string>
-#include <QFileInfo>
 #include "model_loader.h"
 
-#include "graphics_lib/common.h"
-#include "graphics_lib/Utilities/Utils.h"
-#include "graphics_lib/Utilities/Logger.h"
+#include "../common.h"
+#include "../Utilities/Utils.h"
+#include "../Utilities/Logger.h"
 
 model_loader::~model_loader() {
 }
@@ -26,7 +25,7 @@ std::shared_ptr<model_loader> model_loader::create(model_type mt) {
 	return ret;
 }
 
-bool obj_loader::load_model(QString file_path, std::shared_ptr<mesh>& m) {
+bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 	if(!m) {
 		LOG_FAIL("Input of obj loader");
 		return false;
