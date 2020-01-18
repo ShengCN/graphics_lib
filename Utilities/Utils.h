@@ -25,10 +25,18 @@ inline bool check_file_extension(const std::string file, const std::string ext) 
 	return ext == get_file_ext(file);
 }
 
+// with ext
 inline std::string get_file_basename(const std::string file) {
 	fs::path p(file);
 	return p.filename().string();
 }
+
+// without ext
+inline std::string get_file_name(const std::string file) {
+	fs::path p(file);
+	return p.stem().string();
+}
+
 
 inline std::string get_file_abs_path(const std::string file) {
 	fs::path p(file);

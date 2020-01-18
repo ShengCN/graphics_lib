@@ -1,4 +1,6 @@
 #include <string>
+#include <glm/gtx/transform.hpp>
+
 #include "model_loader.h"
 
 #include "graphics_lib/common.h"
@@ -42,11 +44,13 @@ std::shared_ptr<model_loader> model_loader::create(const std::string file_path) 
 }
 
 bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
-	m->file_path = file_path;
+	
 	if(!m) {
 		WARN("Input of obj loader");
 		return false;
 	}
+	m->file_path = file_path;
+	m->clear_vertices();
 
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -309,16 +313,14 @@ bool fbx_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m) {
 }
 
 bool stl_loader::load_model(std::string file, std::shared_ptr<mesh>& m) {
-	m->file_path = file;
 
 	bool success = false;
 	if(!m) {
 		WARN("input nullptr");
 		return success;
 	}
-
-	m->m_verts.clear();
-	m->m_norms.clear();
+	m->file_path = file;
+	m->clear_vertices();
 
 	// loading 
 	if (check_file_extension(file, ".stl") || check_file_extension(file, ".STL")) {
@@ -431,4 +433,83 @@ bool stl_loader::save_model(std::string file, std::shared_ptr<mesh>& m) {
 	}
 
 	return success;
+}
+
+bool off_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
+	if (!m) {
+		WARN("input mesh is nullptr");
+		return false;
+	}
+
+	m->file_path = file_path;
+	std::ifstream input(file_path, std::ifstream::in);
+	int vert_num, tri_num;
+	std::string tmp;
+	input >> tmp;
+	if (tmp.size() == 3) {
+		input >> tmp; vert_num = std::stoi(tmp);
+		input >> tmp; tri_num = std::stoi(tmp);
+	}
+	else {
+		vert_num = std::stoi(tmp.substr(3));
+		input >> tmp; tri_num = std::stoi(tmp);
+	}
+	input >> tmp;
+
+	auto split_str = [](const std::string &s) {
+		std::vector<std::string> ret;
+
+		std::string cur_str;
+		for (auto c : s) {
+			if (c == ' ') {
+				ret.push_back(cur_str);
+				cur_str.clear();
+			}
+			else
+				cur_str.push_back(c);
+		}
+		ret.push_back(cur_str);
+		return ret;
+	};
+
+	std::vector<glm::vec3> vertices(vert_num);
+	std::vector<int> faces(tri_num * 3);
+
+	for (int i = 0; i < vert_num; ++i) {
+		glm::vec3 p;
+		input >> tmp; p.x = std::stof(tmp);
+		input >> tmp; p.y = std::stof(tmp);
+		input >> tmp; p.z = std::stof(tmp);
+		vertices[i] = p;
+	}
+
+	for (int i = 0; i < tri_num; ++i) {
+		input >> tmp;
+		input >> tmp; faces[3 * i + 0] = std::stoi(tmp);
+		input >> tmp; faces[3 * i + 1] = std::stoi(tmp);
+		input >> tmp; faces[3 * i + 2] = std::stoi(tmp);
+	}
+
+	m->clear_vertices();
+	// translate data to our data structure
+	for (auto &f : faces) {
+		m->m_verts.push_back(vertices[f]);
+	}
+
+	// rotate w.r.t. x axis
+	vec3 center = m->compute_center();
+	glm::mat4 rot_mat = glm::rotate(deg2rad(90.0), vec3(-1.0, 0.0, 0.0));
+	for (auto &v : m->m_verts) {
+		vec3 offset_v = v - center;
+		offset_v = vec3(rot_mat * offset_v);
+		v = center + offset_v;
+	}
+
+	/*m->compute_normal();*/
+	INFO(file_path + " loading success");
+	return true;
+}
+
+bool off_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m) {
+	return false;
 }

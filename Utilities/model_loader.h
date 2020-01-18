@@ -65,3 +65,14 @@ public:
 	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
 };
+
+class off_loader :public model_loader {
+public:
+	off_loader() = default;
+	~off_loader() {};
+
+	//------- Interface --------//
+public:
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) override;
+};
