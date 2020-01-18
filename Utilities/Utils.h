@@ -42,6 +42,12 @@ inline std::string get_file_dir(const std::string file) {
 	return p.parent_path().string();
 }
 
+inline void safe_create_folder(const std::string folder) {
+	fs::path p(folder);
+	if(!fs::exists(folder))
+		fs::create_directory(folder);
+}
+
 bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
 
 /*!

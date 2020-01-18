@@ -148,7 +148,7 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
 	float mesh_length = m->compute_world_aabb().diag_length();
 	if (mesh_length < 0.1f)
 		mesh_length = 5.0f;
-	new_pos = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length);
+	new_pos = meshes_center + 2.0f * vec3(0.0f, mesh_length * 0.3f, mesh_length);
 	new_at = meshes_center;
 
 	camera->_position = new_pos;
