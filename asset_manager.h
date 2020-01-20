@@ -12,7 +12,7 @@ public:
 	std::vector<std::shared_ptr<shader>> shaders;
 	std::unordered_map<int, std::shared_ptr<shader>> m_rendering_mappings; // mesh_id -> shader
 	std::shared_ptr<ppc> cur_camera=nullptr;
-	int w = 720, h = 480;
+	int w = 512, h = 512;
 	int threads=1, id=1;
 
 	float a=0.0, b=0.0;

@@ -168,11 +168,9 @@ void scene::stand_on_plane(std::shared_ptr<mesh> m) {
 		return;
 	}
 
-	vec3 m_center = m->compute_world_center();
-	vec3 m_aabb_diag = m->compute_world_aabb().diagonal();
-	float half_obj_height = m_aabb_diag.y * 0.5f;
+	vec3 lowest_point = m->compute_world_aabb().p0;
 
 	vec3 ground_height = m_meshes[0]->compute_world_center();
-	float offset = ground_height.y + half_obj_height - m_center.y;
+	float offset = ground_height.y - lowest_point.y;
 	m->m_world = glm::translate(vec3(0.0, offset, 0.0)) * m->m_world;
 }
