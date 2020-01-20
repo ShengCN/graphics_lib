@@ -499,7 +499,7 @@ bool off_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		m->m_verts.push_back(vertices[f]);
 	}
 
-	/*m->compute_normal();*/
+	m->recompute_normal();
 	INFO(file_path + " loading success");
 	return true;
 }
