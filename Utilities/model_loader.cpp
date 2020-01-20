@@ -22,6 +22,9 @@ std::shared_ptr<model_loader> model_loader::create(model_type mt) {
 	case stl:
 		ret = std::make_shared<stl_loader>();
 		break;
+	case off:
+		ret = std::make_shared<off_loader>();
+		break;
 	default:
 		WARN("Do not know this type");
 		ret = std::make_shared<obj_loader>();
@@ -496,20 +499,39 @@ bool off_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		m->m_verts.push_back(vertices[f]);
 	}
 
-	// rotate w.r.t. x axis
-	vec3 center = m->compute_center();
-	glm::mat4 rot_mat = glm::rotate(deg2rad(90.0), vec3(-1.0, 0.0, 0.0));
-	for (auto &v : m->m_verts) {
-		vec3 offset_v = v - center;
-		offset_v = vec3(rot_mat * offset_v);
-		v = center + offset_v;
-	}
-
 	/*m->compute_normal();*/
 	INFO(file_path + " loading success");
 	return true;
 }
 
 bool off_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m) {
-	return false;
+	if (!m) {
+		WARN("input mesh is nullptr");
+		return false;
+	}
+
+	std::ofstream output(file_path);
+	if(output.is_open()) {
+		output << "OFF" << std::endl;
+
+		auto &verts = m->m_verts;
+		int v_num = verts.size();
+		int f_num = v_num / 3;
+
+		output << v_num << " " << f_num << " " << 0 << std::endl;
+		for(auto &v:verts) {
+			output << v.x << " " << v.y << " " << v.z << std::endl;
+		}
+		for(int i = 0; i < f_num; ++i) {
+			output << 3 << " " << 3 * i + 0 << " " << 3 * i + 1 << " " << 3 * i + 2 << std::endl;
+		}
+
+	} else {
+		WARN("Cannot save to " + file_path);
+		return false;
+	}
+
+
+	output.close();
+	return true;
 }

@@ -135,9 +135,10 @@ void mesh::set_color(vec3 col) {
 void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat rot_quant /*= glm::quat(0.0f,0.0f,0.0f,1.0f)*/) {
 	// normalize, move to center and align
 	vec3 center = compute_center();
+	float diag_lenght = compute_aabb().diag_length();
 	mat4 norm_transform = glm::toMat4(rot_quant) * 
-		glm::scale(scale) *
-		glm::translate(-center);
+		glm::scale(scale/diag_lenght) *
+		glm::translate(-center) * m_world;
 	m_world = norm_transform;
 }
 

@@ -154,9 +154,9 @@ inline std::ostream& operator<<(std::ostream& out, vec3 v) {
 	return out;
 }
 
-inline std::string vec3_2_string(vec3 v) {
+inline std::string to_string(vec3 v) {
 	std::stringstream out;
-	out << "(" << v.x << "," << v.y << "," << v.z << ")";
+	out << v.x << " " << v.y << " " << v.z;
 	return out.str();
 }
 
