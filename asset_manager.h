@@ -23,7 +23,7 @@ public:
 		return ins;
 	}
 
-	static void add_point_light(vec3 p);
+	static std::shared_ptr<mesh> add_point_light(vec3 p);
 private:
 	asset_manager();
 
