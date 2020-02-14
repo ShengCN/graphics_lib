@@ -18,6 +18,7 @@ shader::shader(const std::string vs_shader, const std::string fs_shader):m_vs(vs
 
 bool shader::reload_shader() {
 	// m_program.link();
+	m_program.removeAllShaders();
 	m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, QString::fromStdString(m_vs));
 	m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, QString::fromStdString(m_fs));
 	
@@ -90,6 +91,10 @@ void shader::draw_mesh(std::shared_ptr<ppc> cur_camera, std::shared_ptr<mesh> m,
 	uniform_loc = glGetUniformLocation(m_program.programId(), "M");
 	if (uniform_loc != -1)
 		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(m->m_world));
+
+	uniform_loc = glGetUniformLocation(m_program.programId(), "iter");
+	if (uniform_loc != -1)
+		glUniform1i(uniform_loc, params->iter);
 
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m->m_verts.size());

@@ -22,6 +22,7 @@ public:
 		return ins;
 	}
 
+	void reload_shaders();
 	static std::shared_ptr<mesh> add_point_light(vec3 p);
 private:
 	asset_manager();

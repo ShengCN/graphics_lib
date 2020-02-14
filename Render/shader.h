@@ -10,6 +10,7 @@ enum class shader_type {
 
 struct scene_shared_parameters{
 	vec3 light_pos;
+	int iter;
 };
 
 class shader: public QOpenGLFunctions_4_4_Core {

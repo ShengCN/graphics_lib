@@ -32,6 +32,7 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 		return;
 	}
 
+	m_scene_rendering_shared->iter = iter;
 	// scene meshes
 	for (auto m : m_meshes) {
 		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(cur_camera, m, m_scene_rendering_shared);

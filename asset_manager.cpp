@@ -6,6 +6,12 @@ asset_manager::asset_manager() {
 	}
 }
 
+void asset_manager::reload_shaders() {
+	for(auto s:shaders) {
+		s.second->reload_shader();
+	}
+}
+
 std::shared_ptr<mesh> asset_manager::add_point_light(vec3 p) {
 	auto &manager = instance();
 	
