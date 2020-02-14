@@ -53,13 +53,11 @@ glm::mat4 ppc::GetV()
 	// return glm::lookAt(_position, target, _worldUp);
 }
 
-void ppc::Rotate_Axis(glm::vec3 O, glm::vec3 axis, float angled)
-{
+void ppc::Rotate_Axis(glm::vec3 O, glm::vec3 axis, float angled) {
 	glm::vec3 CO = _position - O;
 	auto rot_mat = glm::rotate(deg2rad(angled), normalize(axis));
-	CO = vec3(rot_mat * vec4(CO, 0.0f));
+	CO = rot_mat * CO;
 	_position = CO + O;
-
 }
 
 void ppc::Zoom(float delta)

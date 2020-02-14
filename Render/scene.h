@@ -28,6 +28,7 @@ public:
 	virtual void reset_camera(vec3 &look, vec3 &at);
 	virtual void reset_camera(std::shared_ptr<ppc> camera);
 	void focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m);
+	std::shared_ptr<mesh> get_target_mesh() { return m_target_mesh; }
 	void stand_on_plane(std::shared_ptr<mesh> m);
 	void add_light(std::shared_ptr<mesh> l) {
 		m_lights.push_back(l);
@@ -40,5 +41,7 @@ protected:
 	std::vector<std::shared_ptr<mesh>> m_meshes;
 	std::vector<std::shared_ptr<mesh>> m_lights;
 	std::shared_ptr<scene_shared_parameters> m_scene_rendering_shared;
+
+	std::shared_ptr<mesh> m_target_mesh = nullptr;
 };
 

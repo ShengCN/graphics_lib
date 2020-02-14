@@ -1,8 +1,7 @@
 #pragma once
 #include "mesh.h"
 #include <QOpenGLShaderProgram>
-#include <QOpenGLFunctions_4_2_Core>
-
+#include <QOpenGLFunctions_4_4_Core>
 enum class shader_type {
 	template_shader,
 	compute_shader,
@@ -13,7 +12,7 @@ struct scene_shared_parameters{
 	vec3 light_pos;
 };
 
-class shader:QOpenGLFunctions_4_2_Core {
+class shader: public QOpenGLFunctions_4_4_Core {
 public:
 	shader(const std::string vs_shader, const std::string fs_shader);
 	
@@ -21,6 +20,7 @@ public:
 	virtual void draw_mesh(std::shared_ptr<ppc> cur_camera, 
 						   std::shared_ptr<mesh> m, 
 						   std::shared_ptr<scene_shared_parameters> params);
+	~shader() {};
 
 private:
 	//GLuint init_compute_shader();

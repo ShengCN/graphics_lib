@@ -156,6 +156,19 @@ inline std::string to_string(vec3 v) {
 	return out.str();
 }
 
+
+inline std::string to_string(vec4 v) {
+	std::stringstream out;
+	out << v.x << " " << v.y << " " << v.z << " " << v.w; 
+	return out.str();
+}
+
+inline std::string to_string(mat4 m) {
+	std::stringstream out;
+	out << m[0] << "\n" << m[1] << "\n" << m[2] << "\n" << m[3];
+	return out.str();
+}
+
 inline bool same_point(const vec3 &a, const vec3 &b) {
 	return glm::distance(a, b) < 1e-3;
 }

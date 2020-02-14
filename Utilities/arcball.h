@@ -5,7 +5,7 @@ class arcball {
 public:
 	void clicked(int x, int y);
 	void released(int x, int y);
-	void mouse_move(int x, int y, std::shared_ptr<ppc> camera);
+	bool mouse_move(int x, int y, int w, int h,vec3 &rotate_axis, pd::rad &angle);
 
 private:
 	bool m_has_clicked=false;
