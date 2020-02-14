@@ -3,22 +3,21 @@
 #include <chrono>
 #include <sstream>
 #include <iostream>
-
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
+#include <QFileInfo>
+#include <QDir>
 
 #include "graphics_lib/common.h"
 #include "Logger.h"
 typedef std::chrono::high_resolution_clock Clock;
-namespace fs = boost::filesystem;
 
 inline bool file_exists(const std::string file) {
-	return fs::exists(file);
+	QFileInfo file_info(QString::fromStdString(file));
+	return file_info.exists();
 }
 
 inline std::string get_file_ext(const std::string file) {
-	return fs::extension(file).substr(1);
+	QFileInfo file_info(QString::fromStdString(file));
+	return file_info.completeSuffix().toStdString();
 }
 
 inline bool check_file_extension(const std::string file, const std::string ext) {
@@ -27,33 +26,30 @@ inline bool check_file_extension(const std::string file, const std::string ext) 
 
 // with ext
 inline std::string get_file_basename(const std::string file) {
-	fs::path p(file);
-	return p.filename().string();
+	QFileInfo file_info(QString::fromStdString(file));
+	return file_info.completeBaseName().toStdString();
 }
 
 // without ext
 inline std::string get_file_name(const std::string file) {
-	fs::path p(file);
-	return p.stem().string();
+	QFileInfo file_info(QString::fromStdString(file));
+	return file_info.baseName().toStdString();
 }
 
-
 inline std::string get_file_abs_path(const std::string file) {
-	fs::path p(file);
-	if (p.is_absolute()) return p.string();
-
-	return fs::canonical(file).string();
+	QFileInfo file_info(QString::fromStdString(file));
+	return file_info.absoluteFilePath().toStdString();
 }
 
 inline std::string get_file_dir(const std::string file) {
-	fs::path p(file);
-	return p.parent_path().string();
+	QFileInfo file_info(QString::fromStdString(file));
+	return file_info.filePath().toStdString();
 }
 
 inline void safe_create_folder(const std::string folder) {
-	fs::path p(folder);
-	if(!fs::exists(folder))
-		fs::create_directory(folder);
+	if(!QDir(QString::fromStdString(folder)).exists()) {
+		QDir().mkdir(QString::fromStdString(folder));
+	}
 }
 
 bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);

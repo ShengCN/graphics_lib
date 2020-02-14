@@ -77,9 +77,9 @@ void mesh::add_face(vec3 va, vec3 vb, vec3 vc) {
 	m_norms.push_back(normal);
 	m_norms.push_back(normal);
 
-	m_colors.push_back(GGV.default_stl_color);
-	m_colors.push_back(GGV.default_stl_color);
-	m_colors.push_back(GGV.default_stl_color);
+	m_colors.push_back(vec3(0.8f));
+	m_colors.push_back(vec3(0.8f));
+	m_colors.push_back(vec3(0.8f));
 }
 
 void mesh::add_vertex(vec3 v, vec3 n, vec3 c) {

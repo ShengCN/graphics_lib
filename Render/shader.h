@@ -1,29 +1,29 @@
 #pragma once
-#include <glad/glad.h>
 #include "mesh.h"
+#include <QOpenGLShaderProgram>
+#include <QOpenGLFunctions_4_2_Core>
 
 enum class shader_type {
 	template_shader,
 	compute_shader,
 	geometry_shader
 };
-class shader {
+
+class shader:QOpenGLFunctions_4_2_Core {
 public:
-	shader(const char* computeShaderFile);
 	shader(const char* vertexShaderFile, const char* fragmentShaderFile);
-	shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile);
 	
 	bool reload_shader();
 	virtual void draw_mesh(std::shared_ptr<mesh> m);
-	GLuint get_program() { return m_program; }
 
 private:
-	GLuint init_compute_shader();
-	GLuint init_template_shader();
-	GLuint init_geometry_shader();
+	//GLuint init_compute_shader();
+	//GLuint init_template_shader();
+	//GLuint init_geometry_shader();
 
 protected:
-	GLuint m_program;
+	//GLuint m_program;
+	QOpenGLShaderProgram m_program;
 	std::string m_vs, m_fs, m_gs, m_cs;
 	shader_type m_type;
 };
