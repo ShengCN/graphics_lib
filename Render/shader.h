@@ -9,12 +9,18 @@ enum class shader_type {
 	geometry_shader
 };
 
+struct scene_shared_parameters{
+	vec3 light_pos;
+};
+
 class shader:QOpenGLFunctions_4_2_Core {
 public:
-	shader(const char* vertexShaderFile, const char* fragmentShaderFile);
+	shader(const std::string vs_shader, const std::string fs_shader);
 	
 	bool reload_shader();
-	virtual void draw_mesh(std::shared_ptr<mesh> m);
+	virtual void draw_mesh(std::shared_ptr<ppc> cur_camera, 
+						   std::shared_ptr<mesh> m, 
+						   std::shared_ptr<scene_shared_parameters> params);
 
 private:
 	//GLuint init_compute_shader();

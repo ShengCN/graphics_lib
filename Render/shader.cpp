@@ -1,17 +1,17 @@
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "shader.h"
-#include "graphics_lib/asset_manager.h"
 
 using std::ifstream;
 using std::ios;
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 
-shader::shader(const char* vertexShaderFile, const char* fragmentShaderFile):m_vs(vertexShaderFile), m_fs(fragmentShaderFile) {
+shader::shader(const std::string vs_shader, const std::string fs_shader):m_vs(vs_shader), m_fs(fs_shader) {
+	initializeOpenGLFunctions();
 	reload_shader();
 }
 
@@ -28,7 +28,7 @@ bool shader::reload_shader() {
 	}
 }
 
-void shader::draw_mesh(std::shared_ptr<mesh> m) {
+void shader::draw_mesh(std::shared_ptr<ppc> cur_camera, std::shared_ptr<mesh> m, std::shared_ptr<scene_shared_parameters> params) {
 	GLuint vert_attr = m_program.attributeLocation("pos_attr");
 	GLuint norm_attr = m_program.attributeLocation("norm_attr");
 	GLuint col_attr = m_program.attributeLocation("col_attr");
@@ -72,9 +72,8 @@ void shader::draw_mesh(std::shared_ptr<mesh> m) {
 
 	m_program.bind();
 
-	auto &manager = asset_manager::instance();
-	mat4 p = manager.cur_camera->GetP();
-	mat4 v = manager.cur_camera->GetV();
+	mat4 p = cur_camera->GetP();
+	mat4 v = cur_camera->GetV();
 	mat4 pvm = p * v * m->m_world;
 	auto uniform_loc = glGetUniformLocation(m_program.programId(), "PVM");
 	glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(pvm));
@@ -90,10 +89,6 @@ void shader::draw_mesh(std::shared_ptr<mesh> m) {
 	uniform_loc = glGetUniformLocation(m_program.programId(), "M");
 	if (uniform_loc != -1)
 		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(m->m_world));
-
-	uniform_loc = glGetUniformLocation(m_program.programId(), "light_pos");
-	if (uniform_loc != -1)
-		glUniform3f(uniform_loc, manager.m_lights[0]->m_verts[0].x, manager.m_lights[0]->m_verts[0].y, manager.m_lights[0]->m_verts[0].z);
 
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m->m_verts.size());

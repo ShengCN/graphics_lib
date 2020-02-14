@@ -9,8 +9,10 @@
 #include "graphics_lib/Utilities/Utils.h"
 #include "graphics_lib/Utilities/model_loader.h"
 #include "graphics_lib/asset_manager.h"
+#include "graphics_lib/Render/shader.h"
 
 scene::scene() {
+	m_scene_rendering_shared = std::make_shared<scene_shared_parameters>();
 }
 
 
@@ -32,8 +34,7 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 
 	// scene meshes
 	for (auto m : m_meshes) {
-		// m->draw(cur_camera, iter);
-		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(m);
+		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(cur_camera, m, m_scene_rendering_shared);
 	}
 }
 
