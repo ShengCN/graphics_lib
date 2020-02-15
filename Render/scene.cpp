@@ -123,6 +123,15 @@ void scene::add_mesh(std::shared_ptr<mesh> m) {
 	m_meshes.push_back(m);
 }
 
+void scene::erase_mesh(std::shared_ptr<mesh> m) {
+	for(auto mesh_iter = m_meshes.begin(); mesh_iter != m_meshes.end(); ++mesh_iter) {
+		if (*mesh_iter == m) {
+			m_meshes.erase(mesh_iter);
+			break;
+		}
+	}
+}
+
 // compute default ppc position
 void scene::reset_camera(vec3 &look, vec3 &at) {
 	vec3 meshes_center = scene_center();

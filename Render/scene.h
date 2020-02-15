@@ -15,8 +15,8 @@ public:
 
 	//------- Shared Functions --------//
 	std::shared_ptr<mesh> load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader);
-	virtual void add_mesh(std::shared_ptr<mesh> m);
-
+	virtual void add_mesh(std::shared_ptr<mesh> m_);
+	void erase_mesh(std::shared_ptr<mesh> m);
 	virtual void load_scene(std::string scene_file);
 	virtual void draw_scene(std::shared_ptr<ppc> cur_camera, int iter=0);
 	virtual void clean_up();
