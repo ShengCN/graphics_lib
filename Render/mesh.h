@@ -60,7 +60,7 @@ struct AABB
 class mesh
 {
 public:
-	mesh();
+	mesh(bool increase_id= true);
 	~mesh();
 
 	//------- shared functions --------//

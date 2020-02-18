@@ -10,11 +10,10 @@ public:
 	std::shared_ptr<scene> cur_scene;
 	std::vector<std::shared_ptr<mesh>> m_lights;
 	std::unordered_map<std::string, std::shared_ptr<shader>> shaders;
-	std::unordered_map<int, std::shared_ptr<shader>> m_rendering_mappings; // mesh_id -> shader
+	std::unordered_map<std::shared_ptr<mesh>, std::shared_ptr<shader>> m_rendering_mappings; // mesh_id -> shader
 	std::shared_ptr<ppc> cur_camera=nullptr;
 	int w = 512, h = 512;
-
-	float a=0.0, b=0.0;
+	bool m_is_visualize = false;
 
 public:
 	static asset_manager& instance() {
@@ -25,6 +24,8 @@ public:
 	void reload_shaders();
 	static std::shared_ptr<mesh> add_point_light(vec3 p);
 	void set_rendering_shader(std::shared_ptr<mesh> m, const std::string shader_name);
+	void visualize(bool trigger) { m_is_visualize = trigger; }
+
 private:
 	asset_manager();
 

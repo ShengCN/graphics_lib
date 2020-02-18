@@ -2,7 +2,7 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <QSurface>
 
 #include "shader.h"
 
@@ -11,13 +11,15 @@ using std::ios;
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 
-shader::shader(const std::string vs_shader, const std::string fs_shader):m_vs(vs_shader), m_fs(fs_shader) {
+shader::shader(const std::string vs_shader, const std::string fs_shader) :
+	m_vs(vs_shader), m_fs(fs_shader) {
 	initializeOpenGLFunctions();
 	reload_shader();
 }
 
 bool shader::reload_shader() {
 	// m_program.link();
+
 	m_program.removeAllShaders();
 	m_program.addShaderFromSourceFile(QOpenGLShader::Vertex, QString::fromStdString(m_vs));
 	m_program.addShaderFromSourceFile(QOpenGLShader::Fragment, QString::fromStdString(m_fs));

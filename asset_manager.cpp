@@ -23,5 +23,5 @@ std::shared_ptr<mesh> asset_manager::add_point_light(vec3 p) {
 }
 
 void asset_manager::set_rendering_shader(std::shared_ptr<mesh> m, const std::string shader_name) {
-	m_rendering_mappings[m->get_id()] = shaders.at(shader_name);
+	m_rendering_mappings[m] = shaders.at(shader_name);
 }

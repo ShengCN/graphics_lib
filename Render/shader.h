@@ -2,6 +2,8 @@
 #include "mesh.h"
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions_4_4_Core>
+#include <QOpenGLContext>
+
 enum class shader_type {
 	template_shader,
 	compute_shader,
@@ -15,7 +17,8 @@ struct scene_shared_parameters{
 
 class shader: public QOpenGLFunctions_4_4_Core {
 public:
-	shader(const std::string vs_shader, const std::string fs_shader);
+	shader(const std::string vs_shader, 
+		   const std::string fs_shader);
 	
 	bool reload_shader();
 	virtual void draw_mesh(std::shared_ptr<ppc> cur_camera, 

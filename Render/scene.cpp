@@ -35,7 +35,14 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 	m_scene_rendering_shared->iter = iter;
 	// scene meshes
 	for (auto m : m_meshes) {
-		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(cur_camera, m, m_scene_rendering_shared);
+		asset_manager::instance().m_rendering_mappings.at(m)->draw_mesh(cur_camera, m, m_scene_rendering_shared);
+	}
+
+	// visualization meshes
+	if(asset_manager::instance().m_is_visualize) {
+		for (auto m : m_visualize_objs) {
+			asset_manager::instance().m_rendering_mappings.at(m)->draw_mesh(cur_camera, m, m_scene_rendering_shared);
+		}
 	}
 }
 
@@ -111,7 +118,7 @@ std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_
 	}
 
 	m_meshes.push_back(new_mesh);
-	asset_manager::instance().m_rendering_mappings[new_mesh->get_id()] = render_shader;
+	asset_manager::instance().m_rendering_mappings[new_mesh] = render_shader;
 
 	return new_mesh;
 }
@@ -185,4 +192,44 @@ void scene::stand_on_plane(std::shared_ptr<mesh> m) {
 	vec3 ground_height = m_meshes[0]->compute_world_center();
 	float offset = ground_height.y - lowest_point.y;
 	m->m_world = glm::translate(vec3(0.0, offset, 0.0)) * m->m_world;
+}
+
+void scene::add_visualize_sphere(vec3 p, float radius, vec3 col) {
+	std::shared_ptr<mesh> sphere = std::make_shared<mesh>(false);
+	// tessellation of a unit sphere
+	vec3 a(0.0f, 1.0f, 0.0f), b(1.0f, 0.0f, 0.0f), c(0.0f, 0.0f, 1.0f);
+	sphere->add_face(a, c, b);
+	sphere->add_face(a, -b, c);
+	sphere->add_face(a, b, -c);
+
+	sphere->add_face(-a, b, c);
+	sphere->add_face(-a, c, -b);
+	sphere->add_face(-a, -c, b);
+
+	const int tessellation_times = 6;
+	for(int i = 0; i < tessellation_times; ++i) {
+		std::vector<vec3> triangles = sphere->m_verts;
+		sphere->m_verts.clear();
+		for(int ti = 0; ti < triangles.size() / 3 ; ++ti) {
+			vec3 &a = triangles[3 * ti + 0];
+			vec3 &b = triangles[3 * ti + 1];
+			vec3 &c = triangles[3 * ti + 2];
+
+			vec3 center = (a + b + c) / 3.0f;
+			center = center / glm::length(center);
+			sphere->add_face(center, a, b);
+			sphere->add_face(center, b, c);
+			sphere->add_face(center, c, a);
+		}
+	}
+
+	// translation and scale
+	sphere->add_scale(vec3(radius));
+	sphere->add_world_transate(p);
+
+	sphere->set_color(col);
+
+	auto &manager = asset_manager::instance();
+	manager.set_rendering_shader(sphere, "template");
+	m_visualize_objs.push_back(sphere);
 }

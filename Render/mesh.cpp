@@ -11,8 +11,10 @@
 
 int mesh::id = 0;
 
-mesh::mesh(){
-	cur_id = ++id;
+
+mesh::mesh(bool increase_id/*= true*/) {
+	if (increase_id)
+		cur_id = ++id;
 }
 
 mesh::~mesh() {

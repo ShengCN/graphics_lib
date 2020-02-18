@@ -36,10 +36,14 @@ public:
 
 	std::vector<std::shared_ptr<mesh>> get_lights() { return m_lights; }
 
+	void add_visualize_sphere(vec3 p, float radius=1, vec3 col=vec3(1.0f,0.0f,0.0f));
+	void clear_visualize_point() { m_visualize_objs.clear(); }
+
 	//------- Protected Variables --------//
 protected:
 	std::vector<std::shared_ptr<mesh>> m_meshes;
 	std::vector<std::shared_ptr<mesh>> m_lights;
+	std::vector<std::shared_ptr<mesh>> m_visualize_objs;
 	std::shared_ptr<scene_shared_parameters> m_scene_rendering_shared;
 
 	std::shared_ptr<mesh> m_target_mesh = nullptr;
