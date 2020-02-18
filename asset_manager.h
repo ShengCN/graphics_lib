@@ -24,6 +24,7 @@ public:
 
 	void reload_shaders();
 	static std::shared_ptr<mesh> add_point_light(vec3 p);
+	void set_rendering_shader(std::shared_ptr<mesh> m, const std::string shader_name);
 private:
 	asset_manager();
 
