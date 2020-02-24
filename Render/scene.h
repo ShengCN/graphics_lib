@@ -36,7 +36,7 @@ public:
 
 	std::vector<std::shared_ptr<mesh>> get_lights() { return m_lights; }
 
-	void add_visualize_sphere(vec3 p, float radius=1, vec3 col=vec3(1.0f,0.0f,0.0f));
+	std::shared_ptr<mesh> add_visualize_sphere(vec3 p, float radius=1, vec3 col=vec3(1.0f,0.0f,0.0f));
 	void clear_visualize_point() { m_visualize_objs.clear(); }
 	std::vector<std::shared_ptr<mesh>> get_visualize_meshes() { return m_visualize_objs; }
 	//------- Protected Variables --------//

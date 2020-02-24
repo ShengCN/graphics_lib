@@ -194,7 +194,7 @@ void scene::stand_on_plane(std::shared_ptr<mesh> m) {
 	m->m_world = glm::translate(vec3(0.0, offset, 0.0)) * m->m_world;
 }
 
-void scene::add_visualize_sphere(vec3 p, float radius, vec3 col) {
+std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col) {
 	std::shared_ptr<mesh> sphere = std::make_shared<mesh>(false);
 	// tessellation of a unit sphere
 	vec3 a(0.0f, 1.0f, 0.0f), b(1.0f, 0.0f, 0.0f), c(0.0f, 0.0f, 1.0f);
@@ -206,20 +206,27 @@ void scene::add_visualize_sphere(vec3 p, float radius, vec3 col) {
 	sphere->add_face(-a, c, -b);
 	sphere->add_face(-a, -c, b);
 
-	const int tessellation_times = 6;
+	const int tessellation_times = 4;
 	for(int i = 0; i < tessellation_times; ++i) {
 		std::vector<vec3> triangles = sphere->m_verts;
 		sphere->m_verts.clear();
 		for(int ti = 0; ti < triangles.size() / 3 ; ++ti) {
+			//     A
+			//    / \
+			//   D---F
+			//  / \ / \
+			// B --E-- C
 			vec3 &a = triangles[3 * ti + 0];
 			vec3 &b = triangles[3 * ti + 1];
 			vec3 &c = triangles[3 * ti + 2];
+			vec3 d = glm::normalize(a + b);
+			vec3 e = glm::normalize(b + c);
+			vec3 f = glm::normalize(a + c);
 
-			vec3 center = (a + b + c) / 3.0f;
-			center = center / glm::length(center);
-			sphere->add_face(center, a, b);
-			sphere->add_face(center, b, c);
-			sphere->add_face(center, c, a);
+			sphere->add_face(a, d, f);
+			sphere->add_face(d, b, e);
+			sphere->add_face(d, e, f);
+			sphere->add_face(f, e, c);
 		}
 	}
 
@@ -232,4 +239,6 @@ void scene::add_visualize_sphere(vec3 p, float radius, vec3 col) {
 	auto &manager = asset_manager::instance();
 	manager.set_rendering_shader(sphere, "template");
 	m_visualize_objs.push_back(sphere);
+
+	return sphere;
 }
