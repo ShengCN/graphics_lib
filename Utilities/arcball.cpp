@@ -1,17 +1,17 @@
 #include "arcball.h"
 #include "graphics_lib/Utilities/Utils.h"
 
-void arcball::clicked(int x, int y) {
-	m_has_clicked = true;
+void arcball::left_clicked(int x, int y) {
+	m_left_has_clicked = true;
 	m_last_x = x; m_last_y = y;
 }
 
-void arcball::released(int x, int y) {
-	m_has_clicked = false;
+void arcball::left_released(int x, int y) {
+	m_left_has_clicked = false;
 }
 
-bool arcball::mouse_move(int x, int y, int w, int h, vec3 &rotate_axis, pd::rad &angle){
-	if (!m_has_clicked)
+bool arcball::left_mouse_move(int x, int y, int w, int h, vec3 &rotate_axis, pd::rad &angle){
+	if (!m_left_has_clicked)
 		return false;
 
 	auto normalize_coord = [&](int x, int y, vec3 &out_coord) {
@@ -28,5 +28,23 @@ bool arcball::mouse_move(int x, int y, int w, int h, vec3 &rotate_axis, pd::rad 
 	rotate_axis = glm::normalize(rotate_axis);
 	angle = std::clamp(std::acos(glm::dot(start_pos, end_pos)), deg2rad(-30.0f), deg2rad(30.0f));
 
+	return true;
+}
+
+void arcball::right_clicked(int x, int y) {
+	m_right_has_clicked = true;
+	m_last_x = x; m_last_y = y;
+}
+
+void arcball::right_released(int x, int y) {
+	m_right_has_clicked = false;
+}
+
+bool arcball::right_mouse_move(int x, int y, int w, int h, float &camera_fov_diff) {
+	if (!m_right_has_clicked)
+		return false;
+
+	float x_diff = x - m_last_x;
+	camera_fov_diff = x_diff / w;
 	return true;
 }
