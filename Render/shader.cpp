@@ -78,7 +78,7 @@ void shader::draw_mesh(std::shared_ptr<ppc> cur_camera, std::shared_ptr<mesh> m,
 
 	mat4 p = cur_camera->GetP();
 	mat4 v = cur_camera->GetV();
-	mat4 pvm = p * v * m->m_world;
+	mat4 pvm = p * v * m->get_world_mat();
 	auto uniform_loc = glGetUniformLocation(m_program.programId(), "PVM");
 	glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(pvm));
 
@@ -92,7 +92,7 @@ void shader::draw_mesh(std::shared_ptr<ppc> cur_camera, std::shared_ptr<mesh> m,
 
 	uniform_loc = glGetUniformLocation(m_program.programId(), "M");
 	if (uniform_loc != -1)
-		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(m->m_world));
+		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(m->get_world_mat()));
 
 	uniform_loc = glGetUniformLocation(m_program.programId(), "iter");
 	if (uniform_loc != -1)

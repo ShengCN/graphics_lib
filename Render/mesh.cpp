@@ -15,6 +15,8 @@ int mesh::id = 0;
 mesh::mesh(bool increase_id/*= true*/) {
 	if (increase_id)
 		cur_id = ++id;
+
+	m_translation = m_scale = m_rotation = m_to_center = glm::identity<mat4>();
 }
 
 mesh::~mesh() {
@@ -24,14 +26,14 @@ std::vector<vec3> mesh::compute_world_space_coords()
 {
 	std::vector<vec3> world_coords = m_verts;
 	for (auto& v : world_coords) {
-		v = m_world * v;
+		v = get_world_mat() * v;
 	}
 	return world_coords;
 }
 
 std::vector<vec3> mesh::compute_world_space_normals() {
 	std::vector<vec3> world_normals = m_norms;
-	auto normal_transform = glm::inverse(glm::transpose(m_world));
+	auto normal_transform = glm::inverse(glm::transpose(get_world_mat()));
 
 	for (auto& n : world_normals) {
 		n = glm::vec3(normal_transform * vec4(n,0.0f));
@@ -50,38 +52,41 @@ vec3 mesh::compute_center() {
 
 vec3 mesh::compute_world_center() {
 	vec3 center = compute_center();
-	return m_world * center;
+	return get_world_mat() * center;
 }
 
 void mesh::add_world_transate(vec3 v) {
-	m_world = glm::translate(v) * m_world;
+	m_translation = glm::translate(v) * m_translation;
 }
 
 void mesh::add_scale(vec3 s) {
-	vec3 center = compute_center();
 	mat4 scale_mat = glm::scale(s);
-	m_world = m_world * scale_mat;
+	m_scale = scale_mat * m_scale;
 }
 
 void mesh::add_rotate(pd::deg angle, vec3 axis) {
 	mat4 rot_mat = glm::rotate(deg2rad(angle), axis);
-	m_world = rot_mat * m_world;
+	m_rotation = rot_mat * m_rotation;
 }
 
-void mesh::add_face(vec3 va, vec3 vb, vec3 vc) {
+void mesh::add_face(vec3 va, vec3 vb, vec3 vc, vec3 na, vec3 nb, vec3 nc) {
 	m_verts.push_back(va);
 	m_verts.push_back(vb);
 	m_verts.push_back(vc);
 
-	vec3 ba = vb - va, cb = vc - vb;
-	vec3 normal = glm::normalize(glm::cross(ba, cb));
-	m_norms.push_back(normal);
-	m_norms.push_back(normal);
-	m_norms.push_back(normal);
+	m_norms.push_back(na);
+	m_norms.push_back(nb);
+	m_norms.push_back(nc);
 
 	m_colors.push_back(vec3(0.8f));
 	m_colors.push_back(vec3(0.8f));
 	m_colors.push_back(vec3(0.8f));
+}
+
+void mesh::add_face(vec3 va, vec3 vb, vec3 vc) {
+	vec3 ba = vb - va, cb = vc - vb;
+	vec3 normal = glm::normalize(glm::cross(ba, cb));
+	add_face(va, vb, vc, normal, normal, normal);
 }
 
 void mesh::add_vertex(vec3 v, vec3 n, vec3 c) {
@@ -135,29 +140,30 @@ void mesh::set_color(vec3 col) {
 }
 
 void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat rot_quant /*= glm::quat(0.0f,0.0f,0.0f,1.0f)*/) {
+	if (m_verts.empty()) {
+		WARN("vertices empty!");
+		return;
+	}
+
 	// normalize, move to center and align
 	vec3 center = compute_center();
 	float diag_lenght = compute_aabb().diag_length();
-	mat4 norm_transform = glm::toMat4(rot_quant) * 
-		glm::scale(scale/diag_lenght) *
-		glm::translate(-center) * m_world;
-	m_world = norm_transform;
-}
-
-void mesh::get_demose_matrix(vec3& scale, quat& rot, vec3& translate) {
-	glm::vec3 skew;
-	glm::vec4 perspective;
-	glm::decompose(m_world, // input
-				   scale,
-				   rot,
-				   translate,
-				   skew,
-				   perspective);
+	
+	// add_world_transate(-center);
+	set_to_center();
+	add_scale(scale / diag_lenght);
+	m_rotation = glm::toMat4(rot_quant) * m_rotation;
 }
 
 void mesh::set_matrix(const vec3 scale, const quat rot, const vec3 translate) {
-	m_world = glm::translate(translate) *
-		glm::scale(scale) * glm::toMat4(rot);
+	m_scale = glm::scale(scale);
+	m_rotation = glm::toMat4(rot);
+	m_translation = glm::translate(translate);
+}
+
+void mesh::clear_vertices() { 
+	m_translation = m_scale = m_rotation = m_to_center = glm::identity<mat4>();
+	m_verts.clear(); m_norms.clear(); m_colors.clear(); m_uvs.clear(); 
 }
 
 void mesh::recompute_normal() {
@@ -187,4 +193,8 @@ void mesh::remove_duplicate_vertices() {
 			}
 		}
 	}
+}
+
+void mesh::set_to_center() {
+	m_to_center = glm::translate(compute_center());
 }

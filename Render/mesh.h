@@ -74,19 +74,22 @@ public:
 	void add_scale(vec3 s);	// scale in model space
 	void add_rotate(pd::deg angle, vec3 axis);
 
-	void add_face(vec3 va, vec3 vb, vec3 vc);	// estimate normal
+	void add_face(vec3 va, vec3 vb, vec3 vc, vec3 na, vec3 nb, vec3 nc);
+	void add_face(vec3 va, vec3 vb, vec3 vc);	// estimate face normal by cross product
+
 	void add_vertex(vec3 v, vec3 n, vec3 c);
 	void add_vertex(vec3 v, vec3 n, vec3 c, vec2 uv);
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
+
+	// compute diagnoal size in world space
 	void set_color(vec3 col);
 
 	void normalize_position_orientation(vec3 scale=vec3(1.0f), 
 										glm::quat rot_quant = glm::quat(0.0f,0.0f,0.0f,0.0f));
 	
-	void get_demose_matrix(vec3& scale, quat& rot, vec3& translate);
 	void set_matrix(const vec3 scale, const quat rot, const vec3 translate);
-	void clear_vertices() { m_world = glm::identity<mat4>(); m_verts.clear(); m_norms.clear(); m_colors.clear(); m_uvs.clear(); }
+	void clear_vertices();
 	void recompute_normal();
 	void remove_duplicate_vertices();
 	std::string to_string() {
@@ -95,8 +98,13 @@ public:
 
 	//------- getter & setter --------//
 public:
-	mat4 get_world_mat() { return m_world; }
-	void set_world_mat(const mat4 m) { m_world = m; }
+	mat4 get_world_mat() { return m_translation * m_scale * m_rotation * m_to_center; }
+	mat4 get_translation() { return m_translation; }
+	mat4 get_rotation() { return m_rotation; }
+	mat4 get_scale() { return m_scale; }
+	
+	void set_to_center();
+
 	int get_id() { return cur_id; }
 	bool get_is_selected() { return m_is_selected; }
 	void set_is_selected(bool is_selected) { m_is_selected = is_selected; }
@@ -105,7 +113,13 @@ public:
 
 	//------- member variables --------//
 public:
-	mat4 m_world = glm::mat4(1.0f); // model space -> world space
+	/* 
+		Rules for m_to_world matrix:
+			1. apply to center, which will reset vertices to local center
+			2. apply rotation and scale
+			3. apply m_translatoin
+	*/
+	mat4 m_to_center, m_translation, m_scale, m_rotation;
 	std::vector<vec3> m_verts;
 	std::vector<vec3> m_norms;
 	std::vector<vec3> m_colors;

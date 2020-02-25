@@ -29,7 +29,7 @@ public:
 	virtual void reset_camera(std::shared_ptr<ppc> camera);
 	void focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m);
 	std::shared_ptr<mesh> get_target_mesh() { return m_target_mesh; }
-	void stand_on_plane(std::shared_ptr<mesh> m);
+	void stand_on_plane(std::shared_ptr<mesh> ground_mesh, std::shared_ptr<mesh> m);
 	void add_light(std::shared_ptr<mesh> l) {
 		m_lights.push_back(l);
 	}

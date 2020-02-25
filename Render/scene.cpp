@@ -111,12 +111,14 @@ std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_
 		}
 		else {
 			WARN("Loading file " + mesh_file + " failed");
+			return nullptr;
 		}
 	}
 	catch (std::exception& e) {
 		WARN(e.what());
 	}
 
+	new_mesh->set_to_center();
 	m_meshes.push_back(new_mesh);
 	asset_manager::instance().m_rendering_mappings[new_mesh] = render_shader;
 
@@ -172,7 +174,7 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
 	vec3 meshes_center = m->compute_world_center();
 	float mesh_length = m->compute_world_aabb().diag_length();
 	if (mesh_length < 0.1f)
-		mesh_length = 5.0f;
+		mesh_length = 0.5f;
 	new_pos = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length);
 	new_at = meshes_center;
 
@@ -181,7 +183,7 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
 	m_target_mesh = m;
 }
 
-void scene::stand_on_plane(std::shared_ptr<mesh> m) {
+void scene::stand_on_plane(std::shared_ptr<mesh> ground_mesh, std::shared_ptr<mesh> m) {
 	if(m_meshes.size() < 1) {
 		WARN("There is no ground yet");
 		return;
@@ -189,9 +191,9 @@ void scene::stand_on_plane(std::shared_ptr<mesh> m) {
 
 	vec3 lowest_point = m->compute_world_aabb().p0;
 
-	vec3 ground_height = m_meshes[0]->compute_world_center();
+	vec3 ground_height = ground_mesh->compute_world_center();
 	float offset = ground_height.y - lowest_point.y;
-	m->m_world = glm::translate(vec3(0.0, offset, 0.0)) * m->m_world;
+	m->add_world_transate(vec3(0.0, offset, 0.0));
 }
 
 std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col) {
@@ -223,10 +225,10 @@ std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col
 			vec3 e = glm::normalize(b + c);
 			vec3 f = glm::normalize(a + c);
 
-			sphere->add_face(a, d, f);
-			sphere->add_face(d, b, e);
-			sphere->add_face(d, e, f);
-			sphere->add_face(f, e, c);
+			sphere->add_face(a, d, f, glm::normalize(a), glm::normalize(d), glm::normalize(f));
+			sphere->add_face(d, b, e, glm::normalize(d), glm::normalize(b), glm::normalize(e));
+			sphere->add_face(d, e, f, glm::normalize(d), glm::normalize(e), glm::normalize(f));
+			sphere->add_face(f, e, c, glm::normalize(f), glm::normalize(e), glm::normalize(c));
 		}
 	}
 
