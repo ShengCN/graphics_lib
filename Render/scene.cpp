@@ -43,6 +43,10 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 		for (auto m : m_visualize_objs) {
 			asset_manager::instance().m_rendering_mappings.at(m)->draw_mesh(cur_camera, m, m_scene_rendering_shared);
 		}
+
+		if(m_visualize_direction) {
+			draw_visualize_direction();
+		}
 	}
 }
 
@@ -163,7 +167,7 @@ void scene::reset_camera(std::shared_ptr<ppc> camera) {
 	camera->_front = glm::normalize(new_at - new_pos);
 }
 
-void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
+void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m, float distance_fract) {
 	if (!camera || !m) {
 		WARN("input pointer nullptr");
 		return;
@@ -175,7 +179,7 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
 	float mesh_length = m->compute_world_aabb().diag_length();
 	if (mesh_length < 0.1f)
 		mesh_length = 0.5f;
-	new_pos = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length);
+	new_pos = meshes_center + vec3(0.0f, mesh_length * 0.3f, mesh_length) * distance_fract;
 	new_at = meshes_center;
 
 	camera->_position = new_pos;
@@ -203,12 +207,14 @@ std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col
 	sphere->add_face(a, c, b);
 	sphere->add_face(a, -b, c);
 	sphere->add_face(a, b, -c);
+	sphere->add_face(a, -c, -b);
 
 	sphere->add_face(-a, b, c);
 	sphere->add_face(-a, c, -b);
 	sphere->add_face(-a, -c, b);
+	sphere->add_face(-a, -b, -c);
 
-	const int tessellation_times = 4;
+	const int tessellation_times = 3;
 	for(int i = 0; i < tessellation_times; ++i) {
 		std::vector<vec3> triangles = sphere->m_verts;
 		sphere->m_verts.clear();
@@ -243,4 +249,45 @@ std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col
 	m_visualize_objs.push_back(sphere);
 
 	return sphere;
+}
+
+void scene::initialize_direction_mesh(const std::string mesh_file) {
+	m_visualize_direction = load_mesh(mesh_file, asset_manager::instance().shaders.at("template"));
+	m_visualize_direction->set_color(vec3(0.0f, 0.8f, 0.0f));
+	m_visualize_direction->add_scale(vec3(1.0f / m_visualize_direction->compute_world_aabb().diag_length()));
+}
+
+void scene::add_visualize_direction(visualize_direction &vd) {
+	m_visualize_direction_stacks.push_back(vd);
+}
+
+void scene::draw_visualize_direction() {
+	auto &manager = asset_manager::instance();
+	if (!m_visualize_direction)
+		return;
+	
+	for(auto &dv:m_visualize_direction_stacks) {
+		m_visualize_direction->set_color(dv.color);
+		m_visualize_direction->add_world_transate(dv.position);
+		
+		// default direction is y direction
+		// compute axis and angle
+		vec3 y = vec3(0.0f, 1.0f, 0.0f);
+		vec3 rot_axs = vec3(1.0f, 0.0f, 0.0f);
+		vec3 normalized_target = glm::normalize(dv.direction);
+		bool is_close_parallel = std::abs(1.0f- std::abs(glm::dot(y, normalized_target))) < 1e-3;
+		if(!is_close_parallel) {
+			rot_axs = glm::cross(y, normalized_target);
+		}
+
+		m_visualize_direction->add_rotate(std::acos(glm::dot(y, normalized_target)),rot_axs);
+		m_visualize_direction->add_scale(vec3(1.0f,3.0f,1.0f) * dv.scale);
+
+		manager.m_rendering_mappings.at(m_visualize_direction)->draw_mesh(
+			manager.cur_camera, 
+			m_visualize_direction, 
+			m_scene_rendering_shared);
+		m_visualize_direction->reset_matrix();
+	}
+
 }

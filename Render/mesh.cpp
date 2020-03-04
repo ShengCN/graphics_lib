@@ -161,8 +161,12 @@ void mesh::set_matrix(const vec3 scale, const quat rot, const vec3 translate) {
 	m_translation = glm::translate(translate);
 }
 
-void mesh::clear_vertices() { 
+void mesh::reset_matrix() {
 	m_translation = m_scale = m_rotation = m_to_center = glm::identity<mat4>();
+}
+
+void mesh::clear_vertices() { 
+	reset_matrix();
 	m_verts.clear(); m_norms.clear(); m_colors.clear(); m_uvs.clear(); 
 }
 

@@ -89,6 +89,8 @@ public:
 										glm::quat rot_quant = glm::quat(0.0f,0.0f,0.0f,0.0f));
 	
 	void set_matrix(const vec3 scale, const quat rot, const vec3 translate);
+	void reset_matrix();
+
 	void clear_vertices();
 	void recompute_normal();
 	void remove_duplicate_vertices();
