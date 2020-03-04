@@ -106,7 +106,7 @@ bool scene::save_scene(const std::string filename) {
 	return false;
 }
 
-std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader) {
+std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader, bool is_added_in_scene) {
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
 	auto loader = model_loader::create(mesh_file);
 	try {
@@ -123,7 +123,10 @@ std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_
 	}
 
 	new_mesh->set_to_center();
-	m_meshes.push_back(new_mesh);
+
+	if(is_added_in_scene)
+		m_meshes.push_back(new_mesh);
+
 	asset_manager::instance().m_rendering_mappings[new_mesh] = render_shader;
 
 	return new_mesh;
@@ -252,7 +255,7 @@ std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col
 }
 
 void scene::initialize_direction_mesh(const std::string mesh_file) {
-	m_visualize_direction = load_mesh(mesh_file, asset_manager::instance().shaders.at("template"));
+	m_visualize_direction = load_mesh(mesh_file, asset_manager::instance().shaders.at("template"), false);
 	m_visualize_direction->set_color(vec3(0.0f, 0.8f, 0.0f));
 	m_visualize_direction->add_scale(vec3(1.0f / m_visualize_direction->compute_world_aabb().diag_length()));
 }
@@ -280,8 +283,9 @@ void scene::draw_visualize_direction() {
 			rot_axs = glm::cross(y, normalized_target);
 		}
 
-		m_visualize_direction->add_rotate(std::acos(glm::dot(y, normalized_target)),rot_axs);
-		m_visualize_direction->add_scale(vec3(1.0f,3.0f,1.0f) * dv.scale);
+		pd::rad rot_angle = std::acos(glm::dot(y, normalized_target));
+		m_visualize_direction->add_rotate(rot_angle,rot_axs);
+		m_visualize_direction->add_scale(vec3(1.0f,1.0f,1.0f) * dv.scale);
 
 		manager.m_rendering_mappings.at(m_visualize_direction)->draw_mesh(
 			manager.cur_camera, 
