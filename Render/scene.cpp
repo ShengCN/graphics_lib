@@ -338,10 +338,6 @@ void visualize_direction::arcball_rotate(pd::rad degree, vec3 &rot_axis) {
 
 	vec3 obj_space_rot_axis = glm::normalize(rot_axis);
 	direction = glm::rotate(degree, obj_space_rot_axis) * direction;
-	INFO("rot deg: " + std::to_string(degree));
-	INFO("rot axis: " + to_string(obj_space_rot_axis));
-
-	INFO(to_string(direction));
 }
 
 mat4 visualize_direction::compute_to_world() {

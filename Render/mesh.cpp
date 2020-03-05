@@ -203,7 +203,7 @@ void mesh::remove_duplicate_vertices() {
 }
 
 void mesh::set_to_center() {
-	set_to_center(compute_center());
+	set_to_center(-compute_center());
 }
 
 void mesh::set_to_center(vec3 position) {
