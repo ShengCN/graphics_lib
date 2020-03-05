@@ -10,6 +10,12 @@ enum class shader_type {
 	geometry_shader
 };
 
+enum class mesh_type {
+	triangle_mesh,
+	quadrilateral_mesh,
+	line_mesh
+};
+
 struct scene_shared_parameters{
 	vec3 light_pos;
 	int iter;
@@ -23,7 +29,8 @@ public:
 	bool reload_shader();
 	virtual void draw_mesh(std::shared_ptr<ppc> cur_camera, 
 						   std::shared_ptr<mesh> m, 
-						   std::shared_ptr<scene_shared_parameters> params);
+						   std::shared_ptr<scene_shared_parameters> params,
+						   mesh_type type=mesh_type::triangle_mesh);
 	~shader() {};
 
 private:

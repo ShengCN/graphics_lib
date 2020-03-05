@@ -26,6 +26,7 @@ bool arcball::left_mouse_move(int x, int y, int w, int h, vec3 &rotate_axis, pd:
 	rotate_axis = glm::cross(start_pos, end_pos);
 
 	if (glm::length(rotate_axis) < 1e-3)  {
+		rotate_axis = vec3(0.0f, 1.0f, 0.0f);
 		angle = 0.0f;
 		return false;
 	}
@@ -33,7 +34,7 @@ bool arcball::left_mouse_move(int x, int y, int w, int h, vec3 &rotate_axis, pd:
 	// INFO("rot axis: " + to_string(rotate_axis));
 
 	// angle = std::clamp(std::acos(glm::dot(start_pos, end_pos)), deg2rad(-30.0f), deg2rad(30.0f));
-	angle = std::acos(std::clamp(glm::dot(start_pos, end_pos),0.0f, 1.0f));
+	angle = std::acos(std::clamp(glm::dot(start_pos, end_pos),-1.0f, 1.0f));
 
 	return true;
 }

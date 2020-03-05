@@ -13,6 +13,19 @@
 
 scene::scene() {
 	m_scene_rendering_shared = std::make_shared<scene_shared_parameters>();
+
+	// create axis mesh
+	m_axis = std::make_shared<mesh>(false);
+	float axis_length = 3.0f;
+	m_axis->add_vertex(vec3(0.0f, 0.0f, 0.0f) * axis_length, vec3(0.0f, 1.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f));
+	m_axis->add_vertex(vec3(1.0f, 0.0f, 0.0f) * axis_length, vec3(0.0f,1.0f,0.0f), vec3(1.0f,0.0f,0.0f));
+
+	m_axis->add_vertex(vec3(0.0f, 0.0f, 0.0f) * axis_length, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+	m_axis->add_vertex(vec3(0.0f, 1.0f, 0.0f) * axis_length, vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f));
+
+	m_axis->add_vertex(vec3(0.0f, 0.0f, 0.0f) * axis_length, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f));
+	m_axis->add_vertex(vec3(0.0f, 0.0f, 1.0f) * axis_length, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f));
+	asset_manager::instance().m_rendering_mappings[m_axis] = asset_manager::instance().shaders.at("line_segment");
 }
 
 
@@ -48,6 +61,8 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 			draw_visualize_direction();
 		}
 	}
+
+	draw_axis();
 }
 
 void scene::clean_up() {
@@ -257,7 +272,16 @@ std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col
 void scene::initialize_direction_mesh(const std::string mesh_file) {
 	m_visualize_direction = load_mesh(mesh_file, asset_manager::instance().shaders.at("template"), false);
 	m_visualize_direction->set_color(vec3(0.0f, 0.8f, 0.0f));
-	m_visualize_direction->add_scale(vec3(1.0f / m_visualize_direction->compute_world_aabb().diag_length()));
+	AABB aabb = m_visualize_direction->compute_aabb();
+	vec3 center = aabb.center();
+	for (auto &v:m_visualize_direction->m_verts) {
+		v = v - center;
+	}
+
+	float scale_fact = 1.0f / m_visualize_direction->compute_world_aabb().diag_length();
+	m_visualize_direction->add_scale(vec3(scale_fact));
+	vec3 move_distance = vec3(0.0f, 0.5f * (aabb.p1.y - aabb.p0.y), 0.0f);
+	m_visualize_direction->set_to_center(move_distance);
 }
 
 void scene::add_visualize_direction(visualize_direction &vd) {
@@ -291,9 +315,21 @@ void scene::draw_visualize_direction() {
 			manager.cur_camera, 
 			m_visualize_direction, 
 			m_scene_rendering_shared);
-		m_visualize_direction->reset_matrix();
+		m_visualize_direction->reset_matrix(false);
 	}
 
+}
+
+void scene::draw_axis() {
+	if (m_axis == nullptr)
+		return;
+
+	auto &manager = asset_manager::instance();
+	manager.m_rendering_mappings.at(m_axis)->draw_mesh(
+		manager.cur_camera,
+		m_axis,
+		m_scene_rendering_shared,
+		mesh_type::line_mesh);
 }
 
 void visualize_direction::arcball_rotate(pd::rad degree, vec3 &rot_axis) {

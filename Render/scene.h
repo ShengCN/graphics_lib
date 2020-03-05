@@ -61,6 +61,7 @@ public:
 	void add_visualize_direction(visualize_direction &vd);
 	void draw_visualize_direction();
 	std::vector<visualize_direction>& get_vis_direction_stacks() { return m_visualize_direction_stacks; };
+	void draw_axis();
 
 	//------- Protected Variables --------//
 protected:
@@ -70,9 +71,7 @@ protected:
 	std::vector<visualize_direction> m_visualize_direction_stacks;
 	std::shared_ptr<mesh> m_visualize_direction;
 	std::shared_ptr<scene_shared_parameters> m_scene_rendering_shared;
-
+	std::shared_ptr<mesh> m_axis;
 	std::shared_ptr<mesh> m_target_mesh = nullptr;
-
-	
 };
 

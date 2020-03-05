@@ -32,7 +32,10 @@ bool shader::reload_shader() {
 	}
 }
 
-void shader::draw_mesh(std::shared_ptr<ppc> cur_camera, std::shared_ptr<mesh> m, std::shared_ptr<scene_shared_parameters> params) {
+void shader::draw_mesh(std::shared_ptr<ppc> cur_camera, 
+					   std::shared_ptr<mesh> m, 
+					   std::shared_ptr<scene_shared_parameters> params,
+					   mesh_type type) {
 	GLuint vert_attr = m_program.attributeLocation("pos_attr");
 	GLuint norm_attr = m_program.attributeLocation("norm_attr");
 	GLuint col_attr = m_program.attributeLocation("col_attr");
@@ -99,6 +102,20 @@ void shader::draw_mesh(std::shared_ptr<ppc> cur_camera, std::shared_ptr<mesh> m,
 		glUniform1i(uniform_loc, params->iter);
 
 	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m->m_verts.size());
+	switch (type) {
+	case mesh_type::triangle_mesh:
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m->m_verts.size());
+		break;
+	case mesh_type::quadrilateral_mesh:
+		assert("false");
+		break;
+	case mesh_type::line_mesh:
+		glLineWidth(10.0f);
+		glDrawArrays(GL_LINES, 0, (GLsizei)m->m_verts.size());
+		glLineWidth(1.0f);
+		break;
+	default:
+		break;
+	}
 	glBindVertexArray(0);
 }

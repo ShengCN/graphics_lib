@@ -82,14 +82,14 @@ public:
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
 
-	// compute diagnoal size in world space
+	// compute diagonal size in world space
 	void set_color(vec3 col);
 
 	void normalize_position_orientation(vec3 scale=vec3(1.0f), 
 										glm::quat rot_quant = glm::quat(0.0f,0.0f,0.0f,0.0f));
 	
 	void set_matrix(const vec3 scale, const quat rot, const vec3 translate);
-	void reset_matrix();
+	void reset_matrix(bool is_update_to_center=true);
 
 	void clear_vertices();
 	void recompute_normal();
@@ -106,6 +106,7 @@ public:
 	mat4 get_scale() { return m_scale; }
 	
 	void set_to_center();
+	void set_to_center(vec3 position);
 
 	int get_id() { return cur_id; }
 	bool get_is_selected() { return m_is_selected; }

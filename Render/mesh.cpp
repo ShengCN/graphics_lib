@@ -161,8 +161,11 @@ void mesh::set_matrix(const vec3 scale, const quat rot, const vec3 translate) {
 	m_translation = glm::translate(translate);
 }
 
-void mesh::reset_matrix() {
-	m_translation = m_scale = m_rotation = m_to_center = glm::identity<mat4>();
+void mesh::reset_matrix(bool is_update_to_center) {
+	m_translation = m_scale = m_rotation = glm::identity<mat4>();
+	if(is_update_to_center) {
+		m_to_center = glm::identity<mat4>();
+	}
 }
 
 void mesh::clear_vertices() { 
@@ -200,5 +203,9 @@ void mesh::remove_duplicate_vertices() {
 }
 
 void mesh::set_to_center() {
-	m_to_center = glm::translate(compute_center());
+	set_to_center(compute_center());
+}
+
+void mesh::set_to_center(vec3 position) {
+	m_to_center = glm::translate(position);
 }
