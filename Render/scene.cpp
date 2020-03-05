@@ -284,7 +284,7 @@ void scene::draw_visualize_direction() {
 		}
 
 		pd::rad rot_angle = std::acos(glm::dot(y, normalized_target));
-		m_visualize_direction->add_rotate(rot_angle,rot_axs);
+		m_visualize_direction->add_rotate(rot_angle, rot_axs);
 		m_visualize_direction->add_scale(vec3(1.0f,1.0f,1.0f) * dv.scale);
 
 		manager.m_rendering_mappings.at(m_visualize_direction)->draw_mesh(
@@ -294,4 +294,36 @@ void scene::draw_visualize_direction() {
 		m_visualize_direction->reset_matrix();
 	}
 
+}
+
+void visualize_direction::arcball_rotate(pd::rad degree, vec3 &rot_axis) {
+	mat4 to_camera = asset_manager::instance().cur_camera->GetV();
+	mat4 camera_to_obj = glm::inverse(to_camera);
+
+	vec3 obj_space_rot_axis = glm::normalize(rot_axis);
+	direction = glm::rotate(degree, obj_space_rot_axis) * direction;
+	INFO("rot deg: " + std::to_string(degree));
+	INFO("rot axis: " + to_string(obj_space_rot_axis));
+
+	INFO(to_string(direction));
+}
+
+mat4 visualize_direction::compute_to_world() {
+
+	mat4 translation_mat = glm::translate(position);
+
+	// default direction is y direction
+	// compute axis and angle
+	vec3 y = vec3(0.0f, 1.0f, 0.0f);
+	vec3 rot_axs = vec3(1.0f, 0.0f, 0.0f);
+	vec3 normalized_target = glm::normalize(direction);
+	bool is_close_parallel = std::abs(1.0f - std::abs(glm::dot(y, normalized_target))) < 1e-3;
+	if (!is_close_parallel) {
+		rot_axs = glm::cross(y, normalized_target);
+	}
+
+	pd::rad rot_angle = std::acos(glm::dot(y, normalized_target));
+	mat4 rotation_mat = glm::rotate(rot_angle, rot_axs);
+	mat4 scale_mat = glm::scale(vec3(scale));
+	return translation_mat * rotation_mat * scale_mat;
 }

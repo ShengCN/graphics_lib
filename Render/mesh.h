@@ -72,7 +72,7 @@ public:
 	
 	void add_world_transate(vec3 v);
 	void add_scale(vec3 s);	// scale in model space
-	void add_rotate(pd::deg angle, vec3 axis);
+	void add_rotate(pd::rad angle, vec3 axis);
 
 	void add_face(vec3 va, vec3 vb, vec3 vc, vec3 na, vec3 nb, vec3 nc);
 	void add_face(vec3 va, vec3 vb, vec3 vc);	// estimate face normal by cross product

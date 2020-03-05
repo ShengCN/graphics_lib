@@ -64,8 +64,8 @@ void mesh::add_scale(vec3 s) {
 	m_scale = scale_mat * m_scale;
 }
 
-void mesh::add_rotate(pd::deg angle, vec3 axis) {
-	mat4 rot_mat = glm::rotate(deg2rad(angle), axis);
+void mesh::add_rotate(pd::rad angle, vec3 axis) {
+	mat4 rot_mat = glm::rotate(angle, axis);
 	m_rotation = rot_mat * m_rotation;
 }
 

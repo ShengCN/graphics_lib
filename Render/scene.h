@@ -16,6 +16,9 @@ struct visualize_direction {
 
 	visualize_direction(vec3 p, vec3 d, vec3 c, float s):
 		position(p), direction(d), color(c), scale(s){}
+
+	void arcball_rotate(pd::rad degree, vec3 &rot_axis);
+	mat4 compute_to_world();
 };
 
 class scene {
@@ -58,7 +61,6 @@ public:
 	void add_visualize_direction(visualize_direction &vd);
 	void draw_visualize_direction();
 	std::vector<visualize_direction>& get_vis_direction_stacks() { return m_visualize_direction_stacks; };
-
 
 	//------- Protected Variables --------//
 protected:
