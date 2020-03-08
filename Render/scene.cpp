@@ -134,18 +134,10 @@ bool scene::save_scene(const std::string filename) {
 
 std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader, bool is_added_in_scene) {
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
-	auto loader = model_loader::create(mesh_file);
-	try {
-		if (loader->load_model(mesh_file, new_mesh)) {
-			INFO("Loading file " + mesh_file + " success");
-		}
-		else {
-			WARN("Loading file " + mesh_file + " failed");
-			return nullptr;
-		}
-	}
-	catch (std::exception& e) {
-		WARN(e.what());
+
+	if(!model_loader::load(mesh_file, new_mesh)) {
+		WARN("Loading file: [" + mesh_file + "] failed!");
+		return nullptr;
 	}
 
 	new_mesh->set_to_center();

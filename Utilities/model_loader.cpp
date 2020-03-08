@@ -10,6 +10,30 @@
 model_loader::~model_loader() {
 }
 
+bool model_loader::load(std::string file_path, std::shared_ptr<mesh>& m) {
+	auto loader = create(file_path);
+
+	try {
+		return loader->load_model(file_path, m);
+	}
+	catch (std::exception& e) {
+		WARN(e.what());
+		return false;
+	}
+}
+
+bool model_loader::save(std::string file_path, std::shared_ptr<mesh>& m) {
+	auto model = create(file_path);
+
+	try {
+		return model->save_model(file_path, m);
+	}
+	catch (std::exception& e) {
+		WARN(e.what());
+		return false;
+	}
+}
+
 std::shared_ptr<model_loader> model_loader::create(model_type mt) {
 	std::shared_ptr<model_loader> ret;
 	switch (mt) {
@@ -129,7 +153,34 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 }
 
 bool obj_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m_) {
-	return false;
+	if (m_ == nullptr)
+		return false;
+
+	std::ofstream oss(file_path);
+	if(oss.is_open()) {
+		auto &vertices = m_->m_verts;
+		auto &normals = m_->m_norms;
+		// todo, save materials and textures
+		for(auto &v:vertices) {
+			oss << "v " << to_string(v) << std::endl;
+		}
+
+		for(auto &n:normals) {
+			oss << "vn " << to_string(n) << std::endl;
+		}
+
+		int counter = 1;
+		for(int ti = 0; ti < vertices.size() / 3; ++ti) {
+			oss << "f " << counter++ << " " << counter++ << " " << counter++ << std::endl;
+		}
+
+		oss.close();
+	}
+	else {
+		WARN("File: [" + file_path + "] cannot open. Saving mesh failed.");
+		return false;
+	}
+	return true;
 }
 
 void obj_loader::print_info(const tinyobj::attrib_t& attrib, 

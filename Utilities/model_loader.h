@@ -17,15 +17,18 @@ public:
 	model_loader() = default;
 	~model_loader();
 
-public:
-	static std::shared_ptr<model_loader> create(model_type mt);
-	static std::shared_ptr<model_loader> create(const std::string file_path);
+	//------- Public Functions --------//
+	static bool load(std::string file_path, std::shared_ptr<mesh>& m);
+	static bool save(std::string file_path, std::shared_ptr<mesh>& m);
 
 	//------- Interface --------//
 public:
-	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m) = 0;
-	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m) = 0;
+	virtual bool load_model(std::string file_path, std::shared_ptr<mesh>& m)=0;
+	virtual bool save_model(std::string file_path, std::shared_ptr<mesh>& m)=0;
 
+private:
+	static std::shared_ptr<model_loader> create(model_type mt);
+	static std::shared_ptr<model_loader> create(const std::string file_path);
 };
 
 class obj_loader : public model_loader {
