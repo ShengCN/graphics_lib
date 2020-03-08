@@ -53,9 +53,12 @@ public:
 
 	//------- Visualization Meshes --------//
 	std::shared_ptr<mesh> add_visualize_sphere(vec3 p, float radius=1, vec3 col=vec3(1.0f,0.0f,0.0f));
-	void clear_visualize_point() { m_visualize_objs.clear(); }
-	std::vector<std::shared_ptr<mesh>> get_visualize_meshes() { return m_visualize_objs; }
+	void clear_visualize_point() { m_visualize_spheres.clear(); }
+	std::vector<std::shared_ptr<mesh>> get_visualize_meshes() { return m_visualize_spheres; }
 	
+	void add_visualize_lines(const std::vector<std::vector<glm::vec3>> &position_list);
+	void clear_visualize_lines();
+
 	void initialize_direction_mesh(const std::string mesh_file);
 	void clear_visualize_direction() { m_visualize_direction_stacks.clear(); }
 	void add_visualize_direction(visualize_direction &vd);
@@ -63,13 +66,19 @@ public:
 	std::vector<visualize_direction>& get_vis_direction_stacks() { return m_visualize_direction_stacks; };
 	void draw_axis();
 
+	//------- Protected Functions --------//
+protected:
+	void draw_triangle_mesh(std::shared_ptr<mesh> &m);
+	void draw_lines(std::shared_ptr<mesh> &m);
+
 	//------- Protected Variables --------//
 protected:
 	std::vector<std::shared_ptr<mesh>> m_meshes;
 	std::vector<std::shared_ptr<mesh>> m_lights;
-	std::vector<std::shared_ptr<mesh>> m_visualize_objs;
+	std::vector<std::shared_ptr<mesh>> m_visualize_spheres;
 	std::vector<visualize_direction> m_visualize_direction_stacks;
 	std::shared_ptr<mesh> m_visualize_direction;
+	std::shared_ptr<mesh> m_visualize_lines;
 	std::shared_ptr<scene_shared_parameters> m_scene_rendering_shared;
 	std::shared_ptr<mesh> m_axis;
 	std::shared_ptr<mesh> m_target_mesh = nullptr;

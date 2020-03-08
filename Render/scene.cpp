@@ -48,17 +48,28 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 	m_scene_rendering_shared->iter = iter;
 	// scene meshes
 	for (auto m : m_meshes) {
-		asset_manager::instance().m_rendering_mappings.at(m)->draw_mesh(cur_camera, m, m_scene_rendering_shared);
+		//asset_manager::instance().m_rendering_mappings.at(m)->draw_mesh(cur_camera, m, m_scene_rendering_shared);
+		draw_triangle_mesh(m);
 	}
 
 	// visualization meshes
 	if(asset_manager::instance().m_is_visualize) {
-		for (auto m : m_visualize_objs) {
-			asset_manager::instance().m_rendering_mappings.at(m)->draw_mesh(cur_camera, m, m_scene_rendering_shared);
+		for (auto m : m_visualize_spheres) {
+			//asset_manager::instance().m_rendering_mappings.at(m)->draw_mesh(cur_camera, m, m_scene_rendering_shared);
+			draw_triangle_mesh(m);
 		}
 
 		if(m_visualize_direction) {
 			draw_visualize_direction();
+		}
+
+		if(m_visualize_lines) {
+			//asset_manager::instance().m_rendering_mappings.at(m_visualize_lines)->draw_mesh(
+			//	cur_camera, 
+			//	m_visualize_lines, 
+			//	m_scene_rendering_shared,
+			//	mesh_type::line_mesh);
+			draw_lines(m_visualize_lines);
 		}
 	}
 
@@ -264,9 +275,35 @@ std::shared_ptr<mesh> scene::add_visualize_sphere(vec3 p, float radius, vec3 col
 
 	auto &manager = asset_manager::instance();
 	manager.set_rendering_shader(sphere, "template");
-	m_visualize_objs.push_back(sphere);
+	m_visualize_spheres.push_back(sphere);
 
 	return sphere;
+}
+
+void scene::add_visualize_lines(const std::vector<std::vector<glm::vec3>> &position_list) {
+	if(m_visualize_lines == nullptr) {
+		m_visualize_lines = std::make_shared<mesh>();
+		auto &manager = asset_manager::instance();
+		manager.m_rendering_mappings[m_visualize_lines] = manager.shaders.at("line_segment");
+	}
+
+	if (position_list.empty() || position_list[0].empty())
+		return;
+
+	int line_num = position_list[0].size();
+	// input is a 2D array
+	// p[t, i] t is time step, i is the id
+	for(int ti = 0; ti < position_list.size()-1; ++ti) {
+		for(int id = 0; id < line_num; ++id) {
+			m_visualize_lines->add_vertex(position_list[ti][id], vec3(0.0f), vec3(0.0f));
+			m_visualize_lines->add_vertex(position_list[ti + 1][id], vec3(0.0f), vec3(0.0f));
+		}
+	}
+}
+
+void scene::clear_visualize_lines() {
+	if(m_visualize_lines)
+		m_visualize_lines->clear_vertices();
 }
 
 void scene::initialize_direction_mesh(const std::string mesh_file) {
@@ -311,10 +348,12 @@ void scene::draw_visualize_direction() {
 		m_visualize_direction->add_rotate(rot_angle, rot_axs);
 		m_visualize_direction->add_scale(vec3(1.0f,1.0f,1.0f) * dv.scale);
 
-		manager.m_rendering_mappings.at(m_visualize_direction)->draw_mesh(
-			manager.cur_camera, 
-			m_visualize_direction, 
-			m_scene_rendering_shared);
+		//manager.m_rendering_mappings.at(m_visualize_direction)->draw_mesh(
+		//	manager.cur_camera, 
+		//	m_visualize_direction, 
+		//	m_scene_rendering_shared);
+		draw_triangle_mesh(m_visualize_direction);
+
 		m_visualize_direction->reset_matrix(false);
 	}
 
@@ -328,6 +367,26 @@ void scene::draw_axis() {
 	manager.m_rendering_mappings.at(m_axis)->draw_mesh(
 		manager.cur_camera,
 		m_axis,
+		m_scene_rendering_shared,
+		mesh_type::line_mesh);
+}
+
+void scene::draw_triangle_mesh(std::shared_ptr<mesh> &m) {
+	auto &manager = asset_manager::instance();
+
+	manager.m_rendering_mappings.at(m)->draw_mesh(
+		manager.cur_camera,
+		m,
+		m_scene_rendering_shared,
+		mesh_type::triangle_mesh);
+}
+
+void scene::draw_lines(std::shared_ptr<mesh> &m) {
+	auto &manager = asset_manager::instance();
+
+	manager.m_rendering_mappings.at(m)->draw_mesh(
+		manager.cur_camera,
+		m,
 		m_scene_rendering_shared,
 		mesh_type::line_mesh);
 }
