@@ -21,6 +21,10 @@ struct visualize_direction {
 	mat4 compute_to_world();
 };
 
+struct axis {
+	glm::vec3 center, x, y, z;
+};
+
 class scene {
 public:
 	scene();
@@ -64,7 +68,12 @@ public:
 	void add_visualize_direction(visualize_direction &vd);
 	void draw_visualize_direction();
 	std::vector<visualize_direction>& get_vis_direction_stacks() { return m_visualize_direction_stacks; };
-	void draw_axis();
+
+	void add_visualize_axis(axis a) { m_visualize_axis_stacks.push_back(a); }
+	void clear_visualize_axis() { m_visualize_axis_stacks.clear(); }
+	void draw_visualize_axis();
+	void scene::draw_axis();
+	void draw_axis(glm::vec3 c, glm::vec3 x, glm::vec3 y, glm::vec3 z, float length=0.1f);
 
 	//------- Protected Functions --------//
 protected:
@@ -77,6 +86,7 @@ protected:
 	std::vector<std::shared_ptr<mesh>> m_lights;
 	std::vector<std::shared_ptr<mesh>> m_visualize_spheres;
 	std::vector<visualize_direction> m_visualize_direction_stacks;
+	std::vector<axis> m_visualize_axis_stacks;
 	std::shared_ptr<mesh> m_visualize_direction;
 	std::shared_ptr<mesh> m_visualize_lines;
 	std::shared_ptr<scene_shared_parameters> m_scene_rendering_shared;

@@ -74,6 +74,7 @@ void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
 	}
 
 	draw_axis();
+	draw_visualize_axis();
 }
 
 void scene::clean_up() {
@@ -351,6 +352,12 @@ void scene::draw_visualize_direction() {
 
 }
 
+void scene::draw_visualize_axis() {
+	for(auto &a:m_visualize_axis_stacks) {
+		draw_axis(a.center, a.x, a.y, a.z);
+	}
+}
+
 void scene::draw_axis() {
 	if (m_axis == nullptr)
 		return;
@@ -361,6 +368,25 @@ void scene::draw_axis() {
 		m_axis,
 		m_scene_rendering_shared,
 		mesh_type::line_mesh);
+}
+
+void scene::draw_axis(glm::vec3 c, glm::vec3 x, glm::vec3 y, glm::vec3 z, float length) {
+	if (m_axis == nullptr)
+		return;
+
+	auto origin_vertices = m_axis->m_verts;
+	m_axis->m_verts[0] = c; m_axis->m_verts[1] = c + x * length;
+	m_axis->m_verts[2] = c; m_axis->m_verts[3] = c + y * length;
+	m_axis->m_verts[4] = c; m_axis->m_verts[5] = c + z * length;
+
+	auto &manager = asset_manager::instance();
+	manager.m_rendering_mappings.at(m_axis)->draw_mesh(
+		manager.cur_camera,
+		m_axis,
+		m_scene_rendering_shared,
+		mesh_type::line_mesh);
+
+	m_axis->m_verts = origin_vertices;
 }
 
 void scene::draw_triangle_mesh(std::shared_ptr<mesh> &m) {

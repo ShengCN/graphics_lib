@@ -110,7 +110,7 @@ void shader::draw_mesh(std::shared_ptr<ppc> cur_camera,
 		assert("false");
 		break;
 	case mesh_type::line_mesh:
-		glLineWidth(10.0f);
+		glLineWidth(5.0f);
 		glDrawArrays(GL_LINES, 0, (GLsizei)m->m_verts.size());
 		glLineWidth(1.0f);
 		break;
