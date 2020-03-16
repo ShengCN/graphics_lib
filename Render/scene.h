@@ -73,7 +73,7 @@ public:
 	void clear_visualize_axis() { m_visualize_axis_stacks.clear(); }
 	void draw_visualize_axis();
 	void scene::draw_axis();
-	void draw_axis(glm::vec3 c, glm::vec3 x, glm::vec3 y, glm::vec3 z, float length=0.1f);
+	void draw_axis(glm::vec3 c, glm::vec3 x, glm::vec3 y, glm::vec3 z, float length=0.05f);
 
 	//------- Protected Functions --------//
 protected:
