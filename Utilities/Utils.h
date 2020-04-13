@@ -135,3 +135,17 @@ inline std::string vec3_2_string(vec3 v) {
 inline bool same_point(const vec3 &a, const vec3 &b) {
 	return glm::distance(a, b) < 1e-3;
 }
+
+inline std::vector<std::string> split_string(const std::string s, const std::string delimiter = ",") {
+	std::vector<std::string> ret;
+	std::string tmp = s;
+	size_t pos = 0;
+	std::string token;
+	while ((pos = tmp.find(delimiter)) != std::string::npos) {
+		token = tmp.substr(0, pos);
+		ret.push_back(token);
+		tmp.erase(0, pos + delimiter.length());
+	}
+
+	return ret;
+}

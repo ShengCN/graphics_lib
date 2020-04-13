@@ -130,6 +130,16 @@ void mesh::set_color(vec3 col)
 
 }
 
+void mesh::set_color(unsigned triangle_id, vec3 col) {
+	// ensure there exist colors
+	if (m_colors.empty()) {
+		set_color(glm::vec3(0.3f));
+	}
+
+	unsigned int vi = 3 * triangle_id + 0, vj = 3 * triangle_id + 1, vk = 3 * triangle_id + 2;
+	m_colors[vi] = m_colors[vj] = m_colors[vk] = col;
+}
+
 bool mesh::reload_shaders() {
 	clean_up();
 
@@ -140,9 +150,10 @@ bool mesh::reload_shaders() {
 void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat rot_quant /*= glm::quat(0.0f,0.0f,0.0f,1.0f)*/) {
 	// normalize, move to center and align
 	vec3 center = compute_center();
+	float diagnoal = compute_world_aabb().diag_length();
 	mat4 norm_transform = glm::toMat4(rot_quant) * 
 		glm::rotate(deg2rad(90.0f), vec3(1.0f, 0.0f, 0.0f)) *
-		glm::scale(scale) *
+		glm::scale(scale/ diagnoal) *
 		glm::translate(-center);
 	m_world = norm_transform;
 }

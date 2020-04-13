@@ -81,6 +81,7 @@ public:
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
 	void set_color(vec3 col);
+	void set_color(unsigned triangle_id, vec3 col);
 	virtual bool init_shaders()=0;
 	bool reload_shaders();
 
