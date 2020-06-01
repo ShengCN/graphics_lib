@@ -2,7 +2,7 @@
 
 asset_manager::asset_manager() {
 	if(cur_camera == nullptr) {
-		cur_camera = std::make_shared<ppc>(w, h, 50.0f);
+		cur_camera = std::make_shared<ppc>(w, h, 65.0f);
 	}
 }
 

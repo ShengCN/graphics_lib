@@ -8,6 +8,7 @@
 #include "mesh.h"
 #include "graphics_lib/Utilities/Utils.h" 
 #include "graphics_lib/Utilities/Logger.h"
+using namespace purdue;
 
 int mesh::id = 0;
 

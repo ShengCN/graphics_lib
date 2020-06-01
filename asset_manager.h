@@ -12,8 +12,10 @@ public:
 	std::vector<std::shared_ptr<shader>> shaders;
 	std::unordered_map<int, std::shared_ptr<shader>> m_rendering_mappings; // mesh_id -> shader
 	std::shared_ptr<ppc> cur_camera=nullptr;
-	int w = 512, h = 512;
-	int threads=1, id=1;
+	
+	float shadow_ppc_fov = 30.0f;
+	int w = 256, h = 256;
+	int threads=1, id=0;
 
 	float a=0.0, b=0.0;
 

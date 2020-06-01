@@ -5,7 +5,7 @@
 #include "graphics_lib/Utilities/Utils.h"
 
 using namespace glm;
-
+using namespace purdue;
 float ppc::GetFocal() {
 	return static_cast<float>(_width / 2) / tan(_fov / 2.0f);
 }
@@ -121,4 +121,15 @@ void ppc::pitch(double deg)
 	vec3 up = GetUp();
 	_front += up * float(deg);
 	_front = glm::normalize(_front);
+}
+
+std::string ppc::to_string() {
+	std::ostringstream oss;
+	oss << "w: " << _width << " h: " << _height<< std::endl;
+	oss << "look: " << purdue::to_string(_position) << std::endl;
+	oss << "at: " << purdue::to_string(_position + _front) << std::endl;
+	oss << "up: " << purdue::to_string(GetUp()) << std::endl;
+	oss << "fov: " << std::to_string(_fov) << std::endl;
+
+	return oss.str();
 }

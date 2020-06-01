@@ -6,6 +6,7 @@
 #include "graphics_lib/common.h"
 #include "graphics_lib/Utilities/Utils.h"
 #include "graphics_lib/Utilities/Logger.h"
+using namespace purdue;
 
 model_loader::~model_loader() {
 }
@@ -445,7 +446,12 @@ bool off_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 	}
 
 	m->file_path = file_path;
-	std::ifstream input(file_path, std::ifstream::in);
+	std::ifstream input(file_path);
+	if (!input.is_open()) {
+		WARN("Cannot open file " + file_path);
+		return false;
+	}
+
 	int vert_num, tri_num;
 	std::string tmp;
 	input >> tmp;
