@@ -11,7 +11,7 @@
 
 #include "graphics_lib/common.h"
 #include "Logger.h"
-
+#include <cstdarg>
 #include <chrono>
 typedef std::chrono::high_resolution_clock Clock;
 namespace fs = boost::filesystem;
@@ -68,6 +68,13 @@ namespace purdue {
 		fs::path p(folder);
 		if (!fs::exists(folder))
 			fs::create_directory(folder);
+	}
+
+	inline std::string get_prefix(int iter, const std::string fmt) {
+		char buff[100];
+		snprintf(buff, sizeof(buff), fmt.c_str(), iter);
+		std::string buffAsStdStr = buff;
+		return buffAsStdStr;
 	}
 
 	bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
