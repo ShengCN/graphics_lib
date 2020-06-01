@@ -9,7 +9,7 @@ class asset_manager {
 public:
 	std::shared_ptr<scene> cur_scene;
 	std::vector<std::shared_ptr<mesh>> m_lights;
-	std::vector<std::shared_ptr<shader>> shaders;
+	std::unordered_map<std::string, std::shared_ptr<shader>> shaders;
 	std::unordered_map<int, std::shared_ptr<shader>> m_rendering_mappings; // mesh_id -> shader
 	std::shared_ptr<ppc> cur_camera=nullptr;
 	
