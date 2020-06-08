@@ -537,7 +537,24 @@ bool off_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		return false;
 	}
 
-
 	output.close();
 	return true;
+}
+
+bool load_model(const std::string mesh_file, std::shared_ptr<mesh>& m) {
+	auto loader = model_loader::create(mesh_file);
+	try {
+		if (loader->load_model(mesh_file, m)) {
+			INFO("Loading file " + mesh_file + " success");
+			return true;
+		}
+		else {
+			WARN("Loading file " + mesh_file + " failed");
+			return false;
+		}
+	}
+	catch (std::exception& e) {
+		WARN(e.what());
+		return false;
+	}
 }

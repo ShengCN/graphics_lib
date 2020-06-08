@@ -11,6 +11,8 @@ enum model_type {
 	unknown
 };
 
+bool load_model(const std::string mesh_file, std::shared_ptr<mesh>& m);
+
 class model_loader
 {
 public:

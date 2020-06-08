@@ -95,19 +95,7 @@ bool scene::save_scene(const std::string filename) {
 
 std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader) {
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
-	auto loader = model_loader::create(mesh_file);
-	try {
-		if (loader->load_model(mesh_file, new_mesh)) {
-			INFO("Loading file " + mesh_file + " success");
-		}
-		else {
-			WARN("Loading file " + mesh_file + " failed");
-		}
-	}
-	catch (std::exception& e) {
-		WARN(e.what());
-	}
-
+	load_model(mesh_file, new_mesh);
 	m_meshes.push_back(new_mesh);
 	asset_manager::instance().m_rendering_mappings[new_mesh->get_id()] = render_shader;
 

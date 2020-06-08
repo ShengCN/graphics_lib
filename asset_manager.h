@@ -14,7 +14,7 @@ public:
 	std::shared_ptr<ppc> cur_camera=nullptr;
 	
 	float shadow_ppc_fov = 30.0f;
-	int w = 256, h = 256;
+	int w = 1024, h = 720;
 	int threads=1, id=0;
 
 	float a=0.0, b=0.0;
