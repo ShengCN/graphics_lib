@@ -1,13 +1,11 @@
 #pragma once
 #include <iostream>
 #include <sstream>
-#include <QObject>
 
-#include "global_variable.h"
+//#include "global_variable.h"
 
-class logger : public QObject
+class logger 
 {
-	Q_OBJECT
 public:
 	~logger() {};
 
@@ -19,34 +17,14 @@ public:
 	}
 
 	template<typename T, typename TT, typename TTT>
-	void log_fail(const std::string info, T file, TT line, TTT func) {
-		std::stringstream os;
-		os << info << " failed\n";
-		os << "File: " << file << "\n"
-			<< "Line: " << line << "\n"
-			<< "Func: " << func << std::endl;
-
-		if (global_variable::instance()->verbose)
-			std::cerr << os.str();
-
-		m_log_str += os.str();
-		//#todo_log_files
-
-		emit update_log_view();
-
-	}
-
-	template<typename T, typename TT, typename TTT>
 	void log(const std::string info, T file, TT line, TTT func) {
 		std::stringstream oss;
 		oss << info << std::endl;
 
-		if (global_variable::instance()->verbose)
+		//if (global_variable::instance()->verbose)
 			std::cerr << oss.str();
 
 		m_log_str += oss.str();
-
-		emit update_log_view();
 	}
 
 	template<typename INFO_T, typename FUNC>
@@ -54,12 +32,10 @@ public:
 		std::stringstream oss;
 		oss << s << std::endl;
 
-		if (global_variable::instance()->verbose)
+		//if (global_variable::instance()->verbose)
 			std::cout << oss.str();
 
 		m_log_str += oss.str();
-
-		emit update_log_view();
 	}
 
 	template<typename INFO_T, typename FUNC>
@@ -67,12 +43,10 @@ public:
 		std::stringstream oss;
 		oss << s << std::endl;
 
-		if (global_variable::instance()->verbose)
+		//if (global_variable::instance()->verbose)
 			std::cerr << oss.str();
 
 		m_log_str += oss.str();
-
-		emit update_log_view();
 	}
 
 	std::string get_log() { return m_log_str; }
@@ -80,18 +54,7 @@ public:
 private:
 	std::string m_log_str;
 	static logger *m_instance;
-
-	logger(QObject* parent = nullptr);
-
-public:
-signals:
-	void update_log_view();
 };
-
-#ifndef LOG_FAIL
-#define LOG_FAIL(s) logger::instance()->log_fail(s, __FILE__, __LINE__, __FUNCTION__)
-#endif
-
 
 #ifndef LOG
 #define LOG(s) logger::instance()->log(s, __FILE__, __LINE__, __FUNCTION__)
