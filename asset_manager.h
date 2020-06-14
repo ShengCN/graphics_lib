@@ -20,16 +20,15 @@ public:
 	float a=0.0, b=0.0;
 
 public:
-	static asset_manager& instance() {
-		static asset_manager ins;
-		return ins;
-	}
-
-	static std::shared_ptr<mesh> add_point_light(vec3 p);
-private:
+	//static asset_manager& instance() {
+	//	static asset_manager ins;
+	//	return ins;
+	//}
 	asset_manager();
 
+	static std::shared_ptr<mesh> add_point_light(vec3 p);
+
 public:
-	asset_manager(asset_manager const&) = delete;
-	void operator=(asset_manager const&) = delete;
+	//asset_manager(asset_manager const&) = default;
+	//void operator=(asset_manager const&) = delete;
 };

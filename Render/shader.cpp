@@ -11,80 +11,35 @@ using std::ios;
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 
-// Create a NULL-terminated string by reading the provided file
-static char* readShaderSource(const char* shaderFile) {
-	ifstream ifs(shaderFile, ios::in | ios::binary | ios::ate);
-	if (ifs.is_open()) {
-		unsigned int filesize = static_cast<unsigned int>(ifs.tellg());
-		ifs.seekg(0, ios::beg);
-		char* bytes = new char[filesize + 1];
-		memset(bytes, 0, filesize + 1);
-		ifs.read(bytes, filesize);
-		ifs.close();
-		return bytes;
-	}
-	return NULL;
-}
-
-void printShaderCompileError(GLuint shader) {
-	GLint  logSize;
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-	char* logMsg = new char[logSize];
-	glGetShaderInfoLog(shader, logSize, NULL, logMsg);
-	std::cerr << logMsg << std::endl;
-	delete[] logMsg;
-}
-
-void printProgramLinkError(GLuint program) {
-	GLint  logSize;
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logSize);
-	char* logMsg = new char[logSize];
-	glGetProgramInfoLog(program, logSize, NULL, logMsg);
-	std::cerr << logMsg << std::endl;
-	delete[] logMsg;
-}
-
 shader::shader(const char* computeShaderFile) {
 	m_cs = computeShaderFile;
 	m_type = shader_type::compute_shader;
 
-	m_program = init_compute_shader();
+	reload_shader();
 }
 
 shader::shader(const char* vertexShaderFile, const char* fragmentShaderFile) {
 	m_vs = vertexShaderFile; m_fs = fragmentShaderFile;
 	m_type = shader_type::template_shader;
 
-	m_program = init_template_shader();
+	reload_shader();
 }
 
 shader::shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile) {
 	m_vs = vertexShaderFile; m_gs = geometryShader; m_fs = fragmentShaderFile;
 	m_type = shader_type::geometry_shader;
 
-	m_program = init_geometry_shader();
+	reload_shader();
 }
 
 bool shader::reload_shader() {
-	if(m_program != -1)
-		glDeleteShader(m_program);
+	init_ogl();
 
-	switch (m_type) {
-	case shader_type::template_shader:
-		m_program = init_template_shader();
-		break;
-	case shader_type::compute_shader:
-		m_program = init_compute_shader();
-		break;
-	case shader_type::geometry_shader:
-		m_program = init_geometry_shader();
-		break;
-	default:
-		return false;
-		break;
+	if (m_shader_program != nullptr) {
+		m_shader_program->removeAllShaders();
 	}
 
-	return true;
+	return init_template_shader();
 }
 
 void shader::draw_mesh(std::shared_ptr<mesh> m) {
@@ -159,167 +114,26 @@ void shader::draw_mesh(std::shared_ptr<mesh> m) {
 	glBindVertexArray(0);
 }
 
-GLuint shader::init_compute_shader() {
-	bool error = false;
-	struct Shader
-	{
-		const char*  filename;
-		GLenum       type;
-		GLchar*      source;
-	}  shaders[1] =
-	{
-	   { m_cs.c_str(), GL_COMPUTE_SHADER, NULL }
-	};
-
-	GLuint program = glCreateProgram();
-
-	for (int i = 0; i < 1; ++i) {
-		Shader& s = shaders[i];
-		s.source = readShaderSource(s.filename);
-		if (shaders[i].source == NULL) {
-			std::cerr << "Failed to read " << s.filename << std::endl;
-			error = true;
-		}
-
-		GLuint shader = glCreateShader(s.type);
-		glShaderSource(shader, 1, (const GLchar**)&s.source, NULL);
-		glCompileShader(shader);
-
-		GLint  compiled;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-		if (!compiled) {
-			std::cerr << s.filename << " failed to compile:" << std::endl;
-			printShaderCompileError(shader);
-			error = true;
-		}
-
-		delete[] s.source;
-
-		glAttachShader(program, shader);
+bool shader::init_template_shader() {
+	bool success = true;
+	
+	if (pd::file_exists(m_vs) && pd::file_exists(m_fs)) {
+		success &= m_shader_program->addShaderFromSourceFile(QOpenGLShader::Vertex, QString::fromStdString(m_vs));
+		success &= m_shader_program->addShaderFromSourceFile(QOpenGLShader::Fragment, QString::fromStdString(m_fs));
+		success &= m_shader_program->link();
 	}
-
-	/* link  and error check */
-	glLinkProgram(program);
-
-	GLint  linked;
-	glGetProgramiv(program, GL_LINK_STATUS, &linked);
-	if (!linked) {
-		std::cerr << "Shader program failed to link" << std::endl;
-		printProgramLinkError(program);
-
-		error = true;
+	else {
+		WARN("Cannot find shader source files");
+		return false;
 	}
-
-	return program;
+	return success;
 }
 
-GLuint shader::init_template_shader() {
-	bool error = false;
-	struct Shader
-	{
-		const char*  filename;
-		GLenum       type;
-		GLchar*      source;
-	}  shaders[2] =
-	{
-	   { m_vs.c_str(), GL_VERTEX_SHADER, NULL },
-	   { m_fs.c_str(), GL_FRAGMENT_SHADER, NULL }
-	};
+void shader::init_ogl() {
+	initializeOpenGLFunctions();
 
-	GLuint program = glCreateProgram();
-
-	for (int i = 0; i < 2; ++i) {
-		Shader& s = shaders[i];
-		s.source = readShaderSource(s.filename);
-		if (shaders[i].source == NULL) {
-			std::cerr << "Failed to read " << s.filename << std::endl;
-			error = true;
-		}
-
-		GLuint shader = glCreateShader(s.type);
-		glShaderSource(shader, 1, (const GLchar**)&s.source, NULL);
-		glCompileShader(shader);
-
-		GLint  compiled;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-		if (!compiled) {
-			std::cerr << s.filename << " failed to compile:" << std::endl;
-			printShaderCompileError(shader);
-			error = true;
-		}
-
-		delete[] s.source;
-
-		glAttachShader(program, shader);
-	}
-
-	/* link  and error check */
-	glLinkProgram(program);
-
-	GLint  linked;
-	glGetProgramiv(program, GL_LINK_STATUS, &linked);
-	if (!linked) {
-		std::cerr << "Shader program failed to link" << std::endl;
-		printProgramLinkError(program);
-
-		error = true;
-	}
-
-	return program;
-}
-
-GLuint shader::init_geometry_shader() {
-	bool error = false;
-	struct Shader
-	{
-		const char*  filename;
-		GLenum       type;
-		GLchar*      source;
-	}  shaders[3] =
-	{
-	   { m_vs.c_str(), GL_VERTEX_SHADER, NULL },
-	   { m_gs.c_str(), GL_GEOMETRY_SHADER, NULL },
-	   { m_fs.c_str(), GL_FRAGMENT_SHADER, NULL }
-	};
-
-	GLuint program = glCreateProgram();
-
-	for (int i = 0; i < 3; ++i) {
-		Shader& s = shaders[i];
-		s.source = readShaderSource(s.filename);
-		if (shaders[i].source == NULL) {
-			std::cerr << "Failed to read " << s.filename << std::endl;
-			error = true;
-		}
-
-		GLuint shader = glCreateShader(s.type);
-		glShaderSource(shader, 1, (const GLchar**)&s.source, NULL);
-		glCompileShader(shader);
-
-		GLint  compiled;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-		if (!compiled) {
-			std::cerr << s.filename << " failed to compile:" << std::endl;
-			printShaderCompileError(shader);
-			error = true;
-		}
-
-		delete[] s.source;
-
-		glAttachShader(program, shader);
-	}
-
-	/* link  and error check */
-	glLinkProgram(program);
-
-	GLint  linked;
-	glGetProgramiv(program, GL_LINK_STATUS, &linked);
-	if (!linked) {
-		std::cerr << "Shader program failed to link" << std::endl;
-		printProgramLinkError(program);
-
-		error = true;
-	}
-
-	return program;
+	if (m_shader_program == nullptr) 
+		m_shader_program = new QOpenGLShaderProgram(nullptr);
+	
+	m_program = m_shader_program->programId();
 }
