@@ -8,7 +8,6 @@
 #include "graphics_lib/Utilities/Logger.h"
 #include "graphics_lib/Utilities/Utils.h"
 #include "graphics_lib/Utilities/model_loader.h"
-#include "graphics_lib/asset_manager.h"
 
 scene::scene() {
 }
@@ -21,20 +20,6 @@ scene::~scene() {
 void scene::load_scene(std::string scene_file) {
 	//#todo_parse_scene
 	//#todo_parse_ppc
-}
-
-void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
-	if (cur_camera == nullptr) {
-		WARN("Camera initialized failed");
-		// assert(false);
-		return;
-	}
-
-	// scene meshes
-	for (auto m : m_meshes) {
-		// m->draw(cur_camera, iter);
-		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(m);
-	}
 }
 
 void scene::clean_up() {
@@ -97,7 +82,6 @@ std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
 	load_model(mesh_file, new_mesh);
 	m_meshes.push_back(new_mesh);
-	asset_manager::instance().m_rendering_mappings[new_mesh->get_id()] = render_shader;
 
 	return new_mesh;
 }

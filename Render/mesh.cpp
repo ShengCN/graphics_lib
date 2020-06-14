@@ -143,13 +143,6 @@ void mesh::set_color(unsigned triangle_id, vec3 col) {
 	m_colors[vi] = m_colors[vj] = m_colors[vk] = col;
 }
 
-bool mesh::reload_shaders() {
-	clean_up();
-
-	//this may change later, cautious
-	return init_shaders();	
-}
-
 void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat rot_quant /*= glm::quat(0.0f,0.0f,0.0f,1.0f)*/) {
 	// normalize, move to center and align
 	vec3 center = compute_center();

@@ -42,7 +42,7 @@ bool shader::reload_shader() {
 	return init_template_shader();
 }
 
-void shader::draw_mesh(std::shared_ptr<mesh> m) {
+void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 	GLuint vert_attr = glGetAttribLocation(m_program, "pos_attr");
 	GLuint norm_attr = glGetAttribLocation(m_program, "norm_attr");
 	GLuint col_attr = glGetAttribLocation(m_program, "col_attr");
@@ -86,9 +86,8 @@ void shader::draw_mesh(std::shared_ptr<mesh> m) {
 
 	glUseProgram(m_program);
 
-	auto &manager = asset_manager::instance();
-	mat4 p = manager.cur_camera->GetP();
-	mat4 v = manager.cur_camera->GetV();
+	mat4 p = params.cur_camera->GetP();
+	mat4 v = params.cur_camera->GetV();
 	mat4 pvm = p * v * m->m_world;
 	auto uniform_loc = glGetUniformLocation(m_program, "PVM");
 	glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(pvm));
@@ -106,8 +105,10 @@ void shader::draw_mesh(std::shared_ptr<mesh> m) {
 		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(m->m_world));
 
 	uniform_loc = glGetUniformLocation(m_program, "light_pos");
-	if (uniform_loc != -1)
-		glUniform3f(uniform_loc, manager.m_lights[0]->m_verts[0].x, manager.m_lights[0]->m_verts[0].y, manager.m_lights[0]->m_verts[0].z);
+	if (uniform_loc != -1) {
+		//#todo_multiple_lights
+		glUniform3f(uniform_loc, params.p_lights[0].x, params.p_lights[0].y, params.p_lights[0].z);
+	}
 
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m->m_verts.size());

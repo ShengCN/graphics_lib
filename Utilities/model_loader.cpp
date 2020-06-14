@@ -39,7 +39,7 @@ std::shared_ptr<model_loader> model_loader::create(const std::string file_path) 
 	std::string ext = get_file_ext(file_path);
 	if(ext == "obj") {
 		return create(model_type::obj);
-	} else if(ext == "stl") {
+	} else if((ext == "stl") || (ext == "STL")) {
 		return create(model_type::stl);
 	} else if(ext == "off") {
 		return create(model_type::off);
@@ -327,7 +327,7 @@ bool stl_loader::load_model(std::string file, std::shared_ptr<mesh>& m) {
 	m->clear_vertices();
 
 	// loading 
-	if (check_file_extension(file, ".stl") || check_file_extension(file, ".STL")) {
+	if (check_file_extension(file, "stl") || check_file_extension(file, "STL")) {
 		std::ifstream mfile(file, std::ios::in | std::ios::binary);
 
 		char header_info[81] = "";

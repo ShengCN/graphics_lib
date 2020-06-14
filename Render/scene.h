@@ -17,7 +17,6 @@ public:
 	virtual void add_mesh(std::shared_ptr<mesh> m);
 
 	virtual void load_scene(std::string scene_file);
-	virtual void draw_scene(std::shared_ptr<ppc> cur_camera, int iter=0);
 	virtual void clean_up();
 	virtual vec3 scene_center();
 	virtual std::vector<std::shared_ptr<mesh>> get_meshes();
