@@ -1,14 +1,22 @@
 #include "render_engine.h"
+#include "Utilities/voxelization.h"
 
 render_engine::render_engine() {
+	m_draw_render = true;
+	m_draw_visualize = false;
 }
 
 void render_engine::render(int frame) {
-	render_scene(cur_manager.render_scene);
-}
+	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
 
-void render_engine::render_visualize(int frame) {
-	render_scene(cur_manager.visualize_scene);
+	if (m_draw_render)
+		render_scene(cur_manager.render_scene, params);
+	if (m_draw_visualize) {
+		params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::line_segments };
+		if (m_vis_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		render_scene(cur_manager.visualize_scene, params);
+		if (m_vis_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 }
 
 void render_engine::init() {
@@ -30,14 +38,19 @@ void render_engine::init() {
 	cur_manager.visualize_scene = std::make_shared<scene>();
 }
 
-void render_engine::render_scene(std::shared_ptr<scene> cur_scene) {
+void render_engine::render_scene(std::shared_ptr<scene> cur_scene, rendering_params params) {
 	// shader render mesh
 	auto& meshes = cur_scene->get_meshes();
-	rendering_params params = { cur_manager.cur_camera, cur_manager.lights };
 
 	for(auto &m:meshes) {
 		cur_manager.rendering_mappings.at(m)->draw_mesh(m, params);
 	}
+}
+
+std::shared_ptr<mesh> render_engine::vis_new_mesh() {
+	auto ret_mesh = cur_manager.visualize_scene->new_mesh();
+	cur_manager.rendering_mappings[ret_mesh] = cur_manager.shaders.at("template");
+	return ret_mesh;
 }
 
 std::vector<std::shared_ptr<mesh>> render_engine::get_rendering_meshes() {
@@ -52,6 +65,17 @@ int render_engine::load_mesh(const std::string model_fname) {
 	auto cur_mesh = cur_manager.render_scene->load_mesh(model_fname, cur_manager.shaders["template"]);
 	if (cur_mesh) {
 		cur_manager.rendering_mappings[cur_mesh] = cur_manager.shaders["template"];
+		return cur_mesh->get_id();
+	}
+
+	return -1;
+}
+
+int render_engine::load_mesh(const std::string model_fname, vec3 c) {
+	auto cur_mesh = cur_manager.render_scene->load_mesh(model_fname, cur_manager.shaders["template"]);
+	if (cur_mesh) {
+		cur_manager.rendering_mappings[cur_mesh] = cur_manager.shaders["template"];
+		cur_mesh->set_color(c);
 		return cur_mesh->get_id();
 	}
 
@@ -136,6 +160,16 @@ void render_engine::set_render_camera(int w, int h, float fov) {
 	cur_manager.cur_camera->_fov = fov;
 }
 
+void render_engine::voxel_vis(int mesh_id) {
+	auto& mesh_ptr = get_mesh(mesh_id);
+	auto& vis_mesh = vis_new_mesh();
+
+	if (mesh_ptr && vis_mesh) {
+		voxelizater::voxelize(mesh_ptr, 10, vis_mesh);
+		vis_mesh->set_color(vec3(0.0f, 0.0f, 0.8f));
+	}
+}
+
 std::shared_ptr<ppc> render_engine::get_render_ppc() {
 	return cur_manager.cur_camera;
 }
@@ -143,9 +177,6 @@ std::shared_ptr<ppc> render_engine::get_render_ppc() {
 void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
 }
 
-void render_engine::draw_visualize_voxels(AABB voxel) {
-
-}
 
 void render_engine::clear_visualize() {
 

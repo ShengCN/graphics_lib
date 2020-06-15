@@ -133,10 +133,11 @@ void ppc::mouse_release(int x, int y) {
 
 void ppc::mouse_move(int x, int y) {
 	auto to_sphere=[](int x,int y, int w, int h){
-		float x_fract = 1.0 - (float)x / w * 2.0, y_fract = (float)y / h * 2.0 - 1.0;
+		float x_fract = (float)x / w * 2.0, y_fract = (float)y / h * 2.0 - 1.0;
 		float alpha = x_fract * 180.0f - 90.0f, beta = y_fract * 90.0f;
 		return vec3(cos(deg2rad(beta)) * cos(deg2rad(alpha)), sin(deg2rad(beta)), cos(deg2rad(beta)) * sin(deg2rad(alpha)));
 	};
+	
 	vec3 last = to_sphere(m_last_x, m_last_y, _width, _height), cur = to_sphere(x, y, _width, _height);
 	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(glm::dot(last, cur));
 	printf("axis: %s rot angle: %f \n", pd::to_string(rot_axis).c_str(), rot_ang);

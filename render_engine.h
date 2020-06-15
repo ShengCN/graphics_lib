@@ -14,7 +14,6 @@ public:
 
 	//------- Render --------//
 	void render(int frame);
-	void render_visualize(int frame);
 
 	//------- Queries --------//
 	std::vector<std::shared_ptr<mesh>> get_rendering_meshes();
@@ -23,6 +22,7 @@ public:
 
 	//------- IO --------//
 	int load_mesh(const std::string model_fname);
+	int load_mesh(const std::string model_fname, vec3 c);
 	bool save_mesh(std::shared_ptr<mesh> m, const std::string model_fname);
 	bool load_render_scene(const std::string scene_file);
 	bool reload_shaders();
@@ -44,14 +44,20 @@ public:
 	void add_point_light(glm::vec3 lp);
 	void set_render_camera(int w, int h, float fov);
 
+	void draw_render(bool trigger) { m_draw_render = trigger; }
+	void draw_visualize(bool trigger) { m_draw_visualize = trigger; }
+	void set_vis_frame(bool trigger) { m_vis_frame_mode = trigger; }
+	void voxel_vis(int mesh_id);
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);
-	void draw_visualize_voxels(AABB voxel);
 
 	void clear_visualize();
 
 private:
-	void render_scene(std::shared_ptr<scene> cur_scene);
+	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);
+	std::shared_ptr<mesh> vis_new_mesh();
 
 private:
 	asset_manager cur_manager;
+	bool m_draw_render, m_draw_visualize;
+	bool m_vis_frame_mode;
 };

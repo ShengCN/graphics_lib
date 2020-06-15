@@ -86,6 +86,13 @@ std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_
 	return new_mesh;
 }
 
+std::shared_ptr<mesh> scene::new_mesh() {
+	std::shared_ptr<mesh> ret = std::make_shared<mesh>();
+	m_meshes.push_back(ret);
+
+	return ret;
+}
+
 void scene::add_mesh(std::shared_ptr<mesh> m) {
 	if (!m)
 		WARN("Add mesh failed");
@@ -127,7 +134,7 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
 	float mesh_length = m->compute_world_aabb().diag_length();
 	if (mesh_length < 0.1f)
 		mesh_length = 5.0f;
-	new_pos = meshes_center + 2.0f * vec3(0.0f, mesh_length * 0.3f, mesh_length);
+	new_pos = meshes_center + 2.0f * vec3(0.0f, mesh_length, mesh_length);
 	new_at = meshes_center;
 
 	camera->_position = new_pos;

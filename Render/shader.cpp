@@ -109,9 +109,17 @@ void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 		//#todo_multiple_lights
 		glUniform3f(uniform_loc, params.p_lights[0].x, params.p_lights[0].y, params.p_lights[0].z);
 	}
+	int ogl_draw_type = 0;
+	if (params.dtype == draw_type::triangle) {
+		ogl_draw_type = GL_TRIANGLES;
+	} 
+
+	if (params.dtype == draw_type::line_segments) {
+		ogl_draw_type = GL_LINES;
+	}
 
 	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m->m_verts.size());
+	glDrawArrays(ogl_draw_type, 0, (GLsizei)m->m_verts.size());
 	glBindVertexArray(0);
 }
 

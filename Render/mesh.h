@@ -47,6 +47,15 @@ struct AABB
 	vec3 center() {
 		return 0.5f * (p1 + p0);
 	}
+
+	std::string to_string() {
+		std::ostringstream oss;
+		oss << "p0 " << pd::to_string(p0) << " p1 " << pd::to_string(p1);
+		return oss.str();
+	}
+
+	std::vector<glm::vec3> to_tri_mesh();
+	std::vector<glm::vec3> to_line_mesh();
 };
 
 /*!
@@ -76,6 +85,8 @@ public:
 	void add_face(vec3 va, vec3 vb, vec3 vc);	// estimate normal
 	void add_vertex(vec3 v, vec3 n, vec3 c);
 	void add_vertex(vec3 v, vec3 n, vec3 c, vec2 uv);
+	void add_vertices(std::vector<vec3>& verts);
+
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
 	void set_color(vec3 col);

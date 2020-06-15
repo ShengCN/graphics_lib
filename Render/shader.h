@@ -4,9 +4,16 @@
 #include <QOpenGLShaderProgram>
 #include "mesh.h"
 
+enum class draw_type {
+	triangle,
+	line_segments
+};
+
 struct rendering_params {
 	std::shared_ptr<ppc> cur_camera;
 	std::vector<vec3> p_lights;
+	int frame;
+	draw_type dtype;
 };
 
 enum class shader_type {

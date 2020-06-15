@@ -94,6 +94,10 @@ void mesh::add_vertex(vec3 v, vec3 n, vec3 c, vec2 uv) {
 	m_uvs.push_back(uv);
 }
 
+void mesh::add_vertices(std::vector<vec3>& verts) {
+	m_verts.insert(m_verts.end(), verts.begin(), verts.end());
+}
+
 AABB mesh::compute_aabb() const {
 	assert(m_verts.size() > 0);
 
@@ -198,4 +202,94 @@ void mesh::remove_duplicate_vertices() {
 			}
 		}
 	}
+}
+
+std::vector<glm::vec3> AABB::to_tri_mesh() {
+	std::vector<glm::vec3> ret;
+	auto add_face = [](std::vector<glm::vec3>& ret, vec3 a, vec3 b, vec3 c) {
+		ret.push_back(a); ret.push_back(b); ret.push_back(c);
+	};
+
+	vec3 diag = diagonal();
+	vec3 x = diag * vec3(1.0f, 0.0f, 0.0f), y = diag * vec3(0.0f, 1.0f, 0.0f), z = diag * vec3(0.0f, 0.0f, 1.0f);
+	
+	//		a--b
+	//		c--d
+	//  h--e
+	//  f--g
+	vec3 h = p0,    e = h + x, f = h + z, g = h + x + z;
+	vec3 a = h + y, b = e + y, c = f + y, d = g + y;
+
+	// bottom
+	add_face(ret, h, e, f); 
+	add_face(ret, f, e, g);
+
+	// front
+	add_face(ret, f, g, d);
+	add_face(ret, d, c, f);
+
+	// left
+	add_face(ret, f, c, a);
+	add_face(ret, a, h, f);
+
+	// back
+	add_face(ret, a, b, e);
+	add_face(ret, e, h, a);
+
+	// right
+	add_face(ret, b, d, g);
+	add_face(ret, g, e, b);
+
+	// top
+	add_face(ret, a, c, d);
+	add_face(ret, d, b, a);
+
+	return ret;
+}
+
+std::vector<glm::vec3> AABB::to_line_mesh() {
+	std::vector<glm::vec3> ret;
+	auto add_line = [](std::vector<glm::vec3>& ret, vec3 a, vec3 b) {
+		ret.push_back(a); ret.push_back(b);
+	};
+
+	vec3 diag = diagonal();
+	vec3 x = diag * vec3(1.0f, 0.0f, 0.0f), y = diag * vec3(0.0f, 1.0f, 0.0f), z = diag * vec3(0.0f, 0.0f, 1.0f);
+
+	//		a--b
+	//		c--d
+	//  h--e
+	//  f--g
+	vec3 h = p0, e = h + x, f = h + z, g = h + x + z;
+	vec3 a = h + y, b = e + y, c = f + y, d = g + y;
+
+	// bottom
+	add_line(ret, h, e);
+	add_line(ret, e, g);
+	add_line(ret, g, f);
+	add_line(ret, f, h);
+
+	// front
+	add_line(ret, f, c);
+	add_line(ret, g, d);
+
+	// left
+	add_line(ret, f, c);
+	add_line(ret, h, a);
+
+	// back
+	add_line(ret, h, a);
+	add_line(ret, e, b);
+
+	// right
+	add_line(ret, e, b);
+	add_line(ret, g, d);
+
+	// top
+	add_line(ret, a, b);
+	add_line(ret, b, d);
+	add_line(ret, d, c);
+	add_line(ret, c, a);
+
+	return ret;
 }
