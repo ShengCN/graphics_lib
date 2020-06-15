@@ -27,6 +27,11 @@ public:
 	bool load_render_scene(const std::string scene_file);
 	bool reload_shaders();
 
+	//------- UI --------//
+	void camera_press(int x, int y);
+	void camera_release(int x, int y);
+	void camera_move(int x, int y);
+
 	//------- Modify --------//
 	void look_at(int mesh_id);
 	void norm_render_scene();
@@ -38,7 +43,6 @@ public:
 	void cut_mesh(std::shared_ptr<mesh> m, vec3 p, vec3 n);
 	void add_point_light(glm::vec3 lp);
 	void set_render_camera(int w, int h, float fov);
-
 
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);
 	void draw_visualize_voxels(AABB voxel);

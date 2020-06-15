@@ -90,9 +90,16 @@ public:
 	void pan(double deg);
 	void tilt(double deg);
 	void pitch(double deg);
+	void mouse_press(int x, int y);
+	void mouse_release(int x, int y);
+	void mouse_move(int x, int y);
 
 	std::string to_string();
 
 private:
 	float GetFocal();
+
+private:
+	int m_last_x, m_last_y;
+	vec3 m_last_orientation;
 };

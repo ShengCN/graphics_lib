@@ -1,12 +1,6 @@
 #include "render_engine.h"
 
 render_engine::render_engine() {
-	//------- initialize rendering states --------//
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glPointSize(5.0f);
 }
 
 void render_engine::render(int frame) {
@@ -19,6 +13,13 @@ void render_engine::render_visualize(int frame) {
 
 void render_engine::init() {
 	//#todo_init_scene
+		//------- initialize rendering states --------//
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glPointSize(5.0f);
+
 	//------- initialize Shaders --------//
 	const std::string template_vs = "Shaders/template_vs.glsl";
 	const std::string template_fs = "Shaders/template_fs.glsl";
@@ -71,6 +72,18 @@ bool render_engine::reload_shaders() {
 		success = success && s.second->reload_shader();
 	}
 	return success;
+}
+
+void render_engine::camera_press(int x, int y) {
+	cur_manager.cur_camera->mouse_press(x, y);
+}
+
+void render_engine::camera_release(int x, int y) {
+	cur_manager.cur_camera->mouse_release(x, y);
+}
+
+void render_engine::camera_move(int x, int y) {
+	cur_manager.cur_camera->mouse_move(x, y);
 }
 
 void render_engine::look_at(int mesh_id) {
