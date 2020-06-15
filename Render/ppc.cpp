@@ -132,16 +132,20 @@ void ppc::mouse_release(int x, int y) {
 }
 
 void ppc::mouse_move(int x, int y) {
-	auto to_sphere=[](int x,int y, int w, int h){
-		float x_fract = (float)x / w * 2.0, y_fract = (float)y / h * 2.0 - 1.0;
-		float alpha = x_fract * 180.0f - 90.0f, beta = y_fract * 90.0f;
-		return vec3(cos(deg2rad(beta)) * cos(deg2rad(alpha)), sin(deg2rad(beta)), cos(deg2rad(beta)) * sin(deg2rad(alpha)));
+	auto arcball_vector=[](int x, int y, int w, int h){
+		float x_fract = (float)x / w * 2.0 - 1.0, y_fract = 1.0 - (float)y / h * 2.0;
+		return glm::normalize(vec3(x_fract, y_fract, std::sqrt(1.0- x_fract * x_fract - y_fract * y_fract) ));
 	};
 	
-	vec3 last = to_sphere(m_last_x, m_last_y, _width, _height), cur = to_sphere(x, y, _width, _height);
-	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(glm::dot(last, cur));
+	vec3 last = arcball_vector(m_last_x, m_last_y, _width, _height), cur = arcball_vector(x, y, _width, _height);
+	
+	float dot_ang = glm::dot(last, cur);
+	INFO(dot_ang);
+	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
+	INFO(dot_ang);
+	
 	printf("axis: %s rot angle: %f \n", pd::to_string(rot_axis).c_str(), rot_ang);
-	_front = glm::rotate(rot_ang * 0.2f, rot_axis) * m_last_orientation;
+	_front = glm::rotate(rot_ang, rot_axis) * m_last_orientation;
 
 	//INFO(pd::to_string(relative));
 	//_front = glm::normalize(glm::normalize(m_last_orientation) + relative);
