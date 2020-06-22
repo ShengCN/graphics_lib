@@ -61,6 +61,14 @@ std::shared_ptr<mesh> render_engine::get_mesh(int id) {
 	return cur_manager.render_scene->get_mesh(id);
 }
 
+std::vector<std::shared_ptr<mesh>> render_engine::get_meshes(std::vector<int> ids) {
+	std::vector<std::shared_ptr<mesh>> ret;
+	for(int id : ids) {
+		ret.push_back(get_mesh(id));
+	}
+	return ret;
+}
+
 int render_engine::load_mesh(const std::string model_fname) {
 	auto cur_mesh = cur_manager.render_scene->load_mesh(model_fname, cur_manager.shaders["template"]);
 	if (cur_mesh) {
@@ -124,11 +132,11 @@ void render_engine::norm_render_scene() {
 }
 
 void render_engine::draw_line(glm::vec3 t, glm::vec3 h) {
-
 }
 
 void render_engine::set_mesh_color(std::shared_ptr<mesh> m, vec3 c) {
-	m->set_color(c);
+	if(m)
+		m->set_color(c);
 }
 
 void render_engine::mesh_add_transform(std::shared_ptr<mesh> m, glm::mat4 mat) {
@@ -160,13 +168,21 @@ void render_engine::set_render_camera(int w, int h, float fov) {
 	cur_manager.cur_camera->_fov = fov;
 }
 
+void render_engine::draw_visualize_voxels(std::vector<AABB> voxels) {
+	auto& vis_mesh = vis_new_mesh();
+	if (vis_mesh) {
+		for(auto& cur_bb : voxels) {
+			vis_mesh->add_vertices(cur_bb.to_tri_mesh());
+		}
+	}
+	vis_mesh->set_color(vec3(0.0f, 0.0f, 0.8f));
+}
+
 void render_engine::voxel_vis(int mesh_id) {
 	auto& mesh_ptr = get_mesh(mesh_id);
-	auto& vis_mesh = vis_new_mesh();
-
-	if (mesh_ptr && vis_mesh) {
-		voxelizater::voxelize(mesh_ptr, 10, vis_mesh);
-		vis_mesh->set_color(vec3(0.0f, 0.0f, 0.8f));
+	if (mesh_ptr) {
+		std::vector<AABB> voxels; voxelizater::voxelize(mesh_ptr, 10, voxels);
+		draw_visualize_voxels(voxels);
 	}
 }
 

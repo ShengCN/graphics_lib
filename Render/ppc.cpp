@@ -140,10 +140,10 @@ void ppc::mouse_move(int x, int y) {
 	vec3 last = arcball_vector(m_last_x, m_last_y, _width, _height), cur = arcball_vector(x, y, _width, _height);
 	
 	float dot_ang = glm::dot(last, cur);
-	INFO(dot_ang);
 	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
-	INFO(dot_ang);
 	
+	float speed = 0.75f;
+	rot_ang = rot_ang * speed;
 	printf("axis: %s rot angle: %f \n", pd::to_string(rot_axis).c_str(), rot_ang);
 	_front = glm::rotate(rot_ang, rot_axis) * m_last_orientation;
 

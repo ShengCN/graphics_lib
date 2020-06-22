@@ -18,6 +18,7 @@ public:
 	//------- Queries --------//
 	std::vector<std::shared_ptr<mesh>> get_rendering_meshes();
 	std::shared_ptr<mesh> get_mesh(int id);
+	std::vector<std::shared_ptr<mesh>> get_meshes(std::vector<int> ids);
 	std::shared_ptr<ppc> get_render_ppc();
 
 	//------- IO --------//
@@ -44,8 +45,10 @@ public:
 	void add_point_light(glm::vec3 lp);
 	void set_render_camera(int w, int h, float fov);
 
+	//------- Rendering --------//
 	void draw_render(bool trigger) { m_draw_render = trigger; }
 	void draw_visualize(bool trigger) { m_draw_visualize = trigger; }
+	void draw_visualize_voxels(std::vector<AABB> voxels);
 	void set_vis_frame(bool trigger) { m_vis_frame_mode = trigger; }
 	void voxel_vis(int mesh_id);
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);

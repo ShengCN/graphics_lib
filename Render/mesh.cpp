@@ -270,20 +270,10 @@ std::vector<glm::vec3> AABB::to_line_mesh() {
 	add_line(ret, g, f);
 	add_line(ret, f, h);
 
-	// front
-	add_line(ret, f, c);
-	add_line(ret, g, d);
-
-	// left
-	add_line(ret, f, c);
-	add_line(ret, h, a);
-
-	// back
+	// vertical
 	add_line(ret, h, a);
 	add_line(ret, e, b);
-
-	// right
-	add_line(ret, e, b);
+	add_line(ret, f, c);
 	add_line(ret, g, d);
 
 	// top
