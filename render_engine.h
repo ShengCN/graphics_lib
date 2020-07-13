@@ -40,6 +40,7 @@ public:
 	void set_mesh_color(std::shared_ptr<mesh> m, vec3 c);
 	void mesh_add_transform(std::shared_ptr<mesh> m, glm::mat4 mat);
 	void mesh_set_transform(std::shared_ptr<mesh> m, glm::mat4 mat);
+	void mesh_apply_transform(std::shared_ptr<mesh> m, glm::mat3 mat);
 	glm::mat4 get_mesh_world(std::shared_ptr<mesh> m);
 	void cut_mesh(std::shared_ptr<mesh> m, vec3 p, vec3 n);
 	void add_point_light(glm::vec3 lp);

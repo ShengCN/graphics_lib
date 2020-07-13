@@ -102,4 +102,5 @@ private:
 private:
 	int m_last_x, m_last_y;
 	vec3 m_last_orientation;
+	bool m_pressed;
 };

@@ -1,5 +1,6 @@
 #include "render_engine.h"
 #include "Utilities/voxelization.h"
+#include <glm/gtx/transform.hpp>
 
 render_engine::render_engine() {
 	m_draw_render = true;
@@ -145,6 +146,25 @@ void render_engine::mesh_add_transform(std::shared_ptr<mesh> m, glm::mat4 mat) {
 
 void render_engine::mesh_set_transform(std::shared_ptr<mesh> m, glm::mat4 mat) {
 	m->set_world_mat(mat);
+}
+
+void render_engine::mesh_apply_transform(std::shared_ptr<mesh> m, glm::mat3 mat) {
+	if(m == nullptr) {
+		return;
+	}
+
+	vec3 trans = mat[0];
+	vec3 rotate = mat[1];
+	vec3 scale = mat[2];
+
+	glm::mat4 new_scale = glm::scale(scale);
+	glm::mat4 new_rotation = glm::rotate(pd::deg2rad(rotate[0]), glm::vec3(1.0f, 0.0f, 0.0f)) *
+		glm::rotate(pd::deg2rad(rotate[1]), glm::vec3(0.0f, 1.0f, 0.0f)) *
+		glm::rotate(pd::deg2rad(rotate[2]), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 new_translate = glm::translate(trans);
+
+	glm::mat4 new_transform = new_translate * new_rotation * new_scale;
+	m->set_world_mat(new_transform);
 }
 
 glm::mat4 render_engine::get_mesh_world(std::shared_ptr<mesh> m) {

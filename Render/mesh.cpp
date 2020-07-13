@@ -19,11 +19,11 @@ mesh::mesh(){
 mesh::~mesh() {
 }
 
-std::vector<vec3> mesh::compute_world_space_coords()
-{
+std::vector<vec3> mesh::compute_world_space_coords() {
 	std::vector<vec3> world_coords = m_verts;
 	for (auto& v : world_coords) {
-		v = m_world * v;
+		vec4 tmp = m_world * vec4(v,1.0);
+		v = vec3(tmp) / tmp.w;
 	}
 	return world_coords;
 }
@@ -49,7 +49,10 @@ vec3 mesh::compute_center() {
 
 vec3 mesh::compute_world_center() {
 	vec3 center = compute_center();
-	return m_world * center;
+	vec4 tmp = vec4(center, 1.0f);
+	tmp = m_world * tmp;
+
+	return tmp / tmp.w;
 }
 
 void mesh::add_world_transate(vec3 v) {

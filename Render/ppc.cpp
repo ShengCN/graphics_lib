@@ -17,7 +17,8 @@ ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
 	_near(p_near),
 	_far(p_far),
 	_position(0.0f, 0.35f, 1.3f), 
-	_worldUp(0.0f, 1.0f, 0.0f) {
+	_worldUp(0.0f, 1.0f, 0.0f),
+	m_pressed(false) {
 }
 
 ppc::~ppc()
@@ -126,17 +127,22 @@ void ppc::pitch(double deg)
 void ppc::mouse_press(int x, int y) {
 	m_last_x = x; m_last_y = y;
 	m_last_orientation = _front;
+	m_pressed = true;
 }
 
 void ppc::mouse_release(int x, int y) {
+	m_pressed = false;
 }
 
 void ppc::mouse_move(int x, int y) {
+	if (!m_pressed)
+		return;
+
 	auto arcball_vector=[](int x, int y, int w, int h){
 		float x_fract = (float)x / w * 2.0 - 1.0, y_fract = 1.0 - (float)y / h * 2.0;
 		return glm::normalize(vec3(x_fract, y_fract, std::sqrt(1.0- x_fract * x_fract - y_fract * y_fract) ));
 	};
-	
+
 	vec3 last = arcball_vector(m_last_x, m_last_y, _width, _height), cur = arcball_vector(x, y, _width, _height);
 	
 	float dot_ang = glm::dot(last, cur);
@@ -145,7 +151,7 @@ void ppc::mouse_move(int x, int y) {
 	float speed = 0.75f;
 	rot_ang = rot_ang * speed;
 	printf("axis: %s rot angle: %f \n", pd::to_string(rot_axis).c_str(), rot_ang);
-	_front = glm::rotate(rot_ang, rot_axis) * m_last_orientation;
+	_front = glm::vec3(glm::rotate(rot_ang, rot_axis) * vec4(m_last_orientation,0.0f));
 
 	//INFO(pd::to_string(relative));
 	//_front = glm::normalize(glm::normalize(m_last_orientation) + relative);
