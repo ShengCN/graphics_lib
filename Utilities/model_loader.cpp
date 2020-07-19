@@ -394,7 +394,7 @@ bool stl_loader::load_model(std::string file, std::shared_ptr<mesh>& m) {
 		INFO("It's not a stl file!");
 	}
 
-	return success;
+	return true;
 }
 
 bool stl_loader::save_model(std::string file, std::shared_ptr<mesh>& m) {

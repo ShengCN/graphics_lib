@@ -10,8 +10,11 @@ render_engine::render_engine() {
 void render_engine::render(int frame) {
 	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
 
-	if (m_draw_render)
+	if (m_draw_render) {
+		glDisable(GL_DEPTH_TEST);
 		render_scene(cur_manager.render_scene, params);
+		glEnable(GL_DEPTH_TEST);
+	}
 	if (m_draw_visualize) {
 		params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::line_segments };
 		if (m_vis_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
