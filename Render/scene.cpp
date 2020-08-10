@@ -122,7 +122,7 @@ void scene::reset_camera(std::shared_ptr<ppc> camera) {
 	camera->_front = glm::normalize(new_at - new_pos);
 }
 
-void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
+void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m, glm::vec3 relative_vec) {
 	if (!camera || !m) {
 		WARN("input pointer nullptr");
 		return;
@@ -139,7 +139,7 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
 	float mesh_length = m->compute_world_aabb().diag_length();
 	if (mesh_length < 0.1f)
 		mesh_length = 5.0f;
-	new_pos = meshes_center + 1.0f * vec3(mesh_length, mesh_length, mesh_length);
+	new_pos = meshes_center + mesh_length * relative_vec;
 	new_at = meshes_center;
 
 	camera->_position = new_pos;

@@ -1,6 +1,5 @@
 #pragma once
 #include <QOpenGLFunctions_4_2_Core>
-#include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include "mesh.h"
 
@@ -30,7 +29,8 @@ public:
 	bool reload_shader();
 	virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
 	QOpenGLShaderProgram* get_program() { return m_shader_program; }
-
+	void bind() { glUseProgram(m_program); }
+	GLuint get_shader_program() { return m_program; }
 private:
 	bool init_template_shader();
 	void init_ogl();
