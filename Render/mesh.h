@@ -137,6 +137,9 @@ public:
 	void set_is_selected(bool is_selected) { m_is_selected = is_selected; }
 	void set_light(bool trigger = true) { m_is_emitter = true; }
 	bool is_light() { return m_is_emitter; }
+	void set_verts(std::vector<vec3> &verts) {
+		m_verts = verts;
+	}
 
 	//------- member variables --------//
 public:

@@ -76,7 +76,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 
 		glGenTextures(1, &accum_texture);
 		glBindTexture(GL_TEXTURE_2D, accum_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -85,7 +85,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 
 		glGenTextures(1, &reveal_texture);
 		glBindTexture(GL_TEXTURE_2D, reveal_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RED, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RED, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -108,29 +108,29 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	// clear initial values
 	// render transparent
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	
+	glDepthMask(GL_FALSE);
+
 	glDrawBuffer(GL_COLOR_ATTACHMENT0); 
-	GLfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	glClearBufferfv(GL_COLOR, 0, clearColor);
+	glClearColor(0.0f,0.0f,0.0f,0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glDrawBuffer(GL_COLOR_ATTACHMENT1);
-	GLfloat clear_reveal[] = { 1.0f };
-	glClearBufferfv(GL_COLOR, 1, clear_reveal);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	GLenum DrawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, DrawBuffers);
-
-	glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);
 	glBlendFunci(0, GL_ONE, GL_ONE);
-	glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+
 	render_scene(cur_scene, params);
 	glDepthMask(GL_TRUE);
 	
 	// ------------------------ pass 3, merge results ------------------------ //
-	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, QOpenGLContext::currentContext()->defaultFramebufferObject());
-	glDrawBuffer(GL_BACK);
+	//glDrawBuffer(GL_BACK);
 
 	cur_manager.shaders.at("quad")->bind();
 	glActiveTexture(GL_TEXTURE0);
@@ -142,7 +142,9 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	glUniform1i(glGetUniformLocation(cur_manager.shaders.at("quad")->get_shader_program(), "weight_tex"), 1);
 
 	glViewport(0, 0, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
 	draw_quad();
 }
@@ -235,6 +237,10 @@ bool render_engine::reload_shaders() {
 	return success;
 }
 
+void render_engine::add_mesh(std::shared_ptr<mesh> m) {
+	cur_manager.render_scene->add_mesh(m);
+}
+
 void render_engine::camera_press(int x, int y) {
 	cur_manager.cur_camera->mouse_press(x, y);
 }
@@ -321,6 +327,14 @@ void render_engine::set_render_camera(int w, int h, float fov) {
 	cur_manager.cur_camera->_width = w;
 	cur_manager.cur_camera->_height = h;
 	cur_manager.cur_camera->_fov = fov;
+}
+
+void render_engine::set_shader(std::shared_ptr<mesh> m, const std::string shader_name) {
+	cur_manager.rendering_mappings[m] = cur_manager.shaders.at(shader_name);
+}
+
+void render_engine::remove_mesh(int mesh_id) {
+	cur_manager.render_scene->remove_mesh(mesh_id);
 }
 
 void render_engine::draw_visualize_voxels(std::vector<AABB> voxels) {

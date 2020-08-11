@@ -15,6 +15,7 @@ public:
 	//------- Shared Functions --------//
 	std::shared_ptr<mesh> load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader);
 	std::shared_ptr<mesh> new_mesh();
+	void remove_mesh(int mesh_id);
 
 	virtual void add_mesh(std::shared_ptr<mesh> m);
 	virtual void load_scene(std::string scene_file);

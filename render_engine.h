@@ -29,6 +29,7 @@ public:
 	bool save_mesh(std::shared_ptr<mesh> m, const std::string model_fname);
 	bool load_render_scene(const std::string scene_file);
 	bool reload_shaders();
+	void add_mesh(std::shared_ptr<mesh> m);
 
 	//------- UI --------//
 	void camera_press(int x, int y);
@@ -48,6 +49,8 @@ public:
 	void cut_mesh(std::shared_ptr<mesh> m, vec3 p, vec3 n);
 	void add_point_light(glm::vec3 lp);
 	void set_render_camera(int w, int h, float fov);
+	void set_shader(std::shared_ptr<mesh> m, const std::string shader_name);
+	void remove_mesh(int mesh_id);
 
 	//------- Rendering --------//
 	void draw_render(bool trigger) { m_draw_render = trigger; }

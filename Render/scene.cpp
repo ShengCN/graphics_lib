@@ -93,6 +93,15 @@ std::shared_ptr<mesh> scene::new_mesh() {
 	return ret;
 }
 
+void scene::remove_mesh(int mesh_id) {
+	for(auto iter = m_meshes.begin(); iter != m_meshes.end(); ++iter) {
+		if((*iter)->get_id() == mesh_id) {
+			m_meshes.erase(iter);
+			break;
+		}
+	}
+}
+
 void scene::add_mesh(std::shared_ptr<mesh> m) {
 	if (!m)
 		WARN("Add mesh failed");
