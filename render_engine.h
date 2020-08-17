@@ -39,7 +39,7 @@ public:
 	//------- Modify --------//
 	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));
 	void norm_render_scene();
-	void draw_line(glm::vec3 t, glm::vec3 h);
+	void draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc);
 	void set_mesh_color(std::shared_ptr<mesh> m, vec3 c);
 	void mesh_add_transform(std::shared_ptr<mesh> m, glm::mat4 mat);
 	void mesh_add_transform(int id, glm::mat4 mat);

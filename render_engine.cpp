@@ -266,7 +266,18 @@ void render_engine::norm_render_scene() {
 	//#todo_normalize_render_scene
 }
 
-void render_engine::draw_line(glm::vec3 t, glm::vec3 h) {
+void render_engine::draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc) {
+	std::shared_ptr<mesh> line_mesh = std::make_shared<mesh>();
+	line_mesh->add_vertex(t, vec3(0.0f), tc);
+	line_mesh->add_vertex(h, vec3(0.0f), hc);
+	
+	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, 0, draw_type::line_segments};
+
+	glDisable(GL_DEPTH_TEST);
+	cur_manager.shaders.at("template") ->draw_mesh(line_mesh, params);
+	glEnable(GL_DEPTH_TEST);
+
+	mesh::id--;
 }
 
 void render_engine::set_mesh_color(std::shared_ptr<mesh> m, vec3 c) {
