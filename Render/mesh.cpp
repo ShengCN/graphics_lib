@@ -19,11 +19,11 @@ mesh::mesh(){
 mesh::~mesh() {
 }
 
-std::vector<vec3> mesh::compute_world_space_coords()
-{
+std::vector<vec3> mesh::compute_world_space_coords() {
 	std::vector<vec3> world_coords = m_verts;
 	for (auto& v : world_coords) {
-		v = m_world * v;
+		vec4 tmp = m_world * vec4(v,1.0);
+		v = vec3(tmp) / tmp.w;
 	}
 	return world_coords;
 }
@@ -49,7 +49,10 @@ vec3 mesh::compute_center() {
 
 vec3 mesh::compute_world_center() {
 	vec3 center = compute_center();
-	return m_world * center;
+	vec4 tmp = vec4(center, 1.0f);
+	tmp = m_world * tmp;
+
+	return tmp / tmp.w;
 }
 
 void mesh::add_world_transate(vec3 v) {
@@ -78,9 +81,10 @@ void mesh::add_face(vec3 va, vec3 vb, vec3 vc) {
 	m_norms.push_back(normal);
 	m_norms.push_back(normal);
 
-	m_colors.push_back(GGV.default_stl_color);
-	m_colors.push_back(GGV.default_stl_color);
-	m_colors.push_back(GGV.default_stl_color);
+	vec3 default_stl_color = vec3(0.7f);
+	m_colors.push_back(default_stl_color);
+	m_colors.push_back(default_stl_color);
+	m_colors.push_back(default_stl_color);
 }
 
 void mesh::add_vertex(vec3 v, vec3 n, vec3 c) {
@@ -92,6 +96,10 @@ void mesh::add_vertex(vec3 v, vec3 n, vec3 c) {
 void mesh::add_vertex(vec3 v, vec3 n, vec3 c, vec2 uv) {
 	add_vertex(v, n, c);
 	m_uvs.push_back(uv);
+}
+
+void mesh::add_vertices(std::vector<vec3>& verts) {
+	m_verts.insert(m_verts.end(), verts.begin(), verts.end());
 }
 
 AABB mesh::compute_aabb() const {
@@ -198,4 +206,84 @@ void mesh::remove_duplicate_vertices() {
 			}
 		}
 	}
+}
+
+std::vector<glm::vec3> AABB::to_tri_mesh() {
+	std::vector<glm::vec3> ret;
+	auto add_face = [](std::vector<glm::vec3>& ret, vec3 a, vec3 b, vec3 c) {
+		ret.push_back(a); ret.push_back(b); ret.push_back(c);
+	};
+
+	vec3 diag = diagonal();
+	vec3 x = diag * vec3(1.0f, 0.0f, 0.0f), y = diag * vec3(0.0f, 1.0f, 0.0f), z = diag * vec3(0.0f, 0.0f, 1.0f);
+	
+	//		a--b
+	//		c--d
+	//  h--e
+	//  f--g
+	vec3 h = p0,    e = h + x, f = h + z, g = h + x + z;
+	vec3 a = h + y, b = e + y, c = f + y, d = g + y;
+
+	// bottom
+	add_face(ret, h, e, f); 
+	add_face(ret, f, e, g);
+
+	// front
+	add_face(ret, f, g, d);
+	add_face(ret, d, c, f);
+
+	// left
+	add_face(ret, f, c, a);
+	add_face(ret, a, h, f);
+
+	// back
+	add_face(ret, a, b, e);
+	add_face(ret, e, h, a);
+
+	// right
+	add_face(ret, b, d, g);
+	add_face(ret, g, e, b);
+
+	// top
+	add_face(ret, a, c, d);
+	add_face(ret, d, b, a);
+
+	return ret;
+}
+
+std::vector<glm::vec3> AABB::to_line_mesh() {
+	std::vector<glm::vec3> ret;
+	auto add_line = [](std::vector<glm::vec3>& ret, vec3 a, vec3 b) {
+		ret.push_back(a); ret.push_back(b);
+	};
+
+	vec3 diag = diagonal();
+	vec3 x = diag * vec3(1.0f, 0.0f, 0.0f), y = diag * vec3(0.0f, 1.0f, 0.0f), z = diag * vec3(0.0f, 0.0f, 1.0f);
+
+	//		a--b
+	//		c--d
+	//  h--e
+	//  f--g
+	vec3 h = p0, e = h + x, f = h + z, g = h + x + z;
+	vec3 a = h + y, b = e + y, c = f + y, d = g + y;
+
+	// bottom
+	add_line(ret, h, e);
+	add_line(ret, e, g);
+	add_line(ret, g, f);
+	add_line(ret, f, h);
+
+	// vertical
+	add_line(ret, h, a);
+	add_line(ret, e, b);
+	add_line(ret, f, c);
+	add_line(ret, g, d);
+
+	// top
+	add_line(ret, a, b);
+	add_line(ret, b, d);
+	add_line(ret, d, c);
+	add_line(ret, c, a);
+
+	return ret;
 }

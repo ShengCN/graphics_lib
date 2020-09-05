@@ -8,7 +8,6 @@
 #include "graphics_lib/Utilities/Logger.h"
 #include "graphics_lib/Utilities/Utils.h"
 #include "graphics_lib/Utilities/model_loader.h"
-#include "graphics_lib/asset_manager.h"
 
 scene::scene() {
 }
@@ -21,20 +20,6 @@ scene::~scene() {
 void scene::load_scene(std::string scene_file) {
 	//#todo_parse_scene
 	//#todo_parse_ppc
-}
-
-void scene::draw_scene(std::shared_ptr<ppc> cur_camera, int iter) {
-	if (cur_camera == nullptr) {
-		WARN("Camera initialized failed");
-		// assert(false);
-		return;
-	}
-
-	// scene meshes
-	for (auto m : m_meshes) {
-		// m->draw(cur_camera, iter);
-		asset_manager::instance().m_rendering_mappings.at(m->get_id())->draw_mesh(m);
-	}
 }
 
 void scene::clean_up() {
@@ -97,9 +82,24 @@ std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
 	load_model(mesh_file, new_mesh);
 	m_meshes.push_back(new_mesh);
-	asset_manager::instance().m_rendering_mappings[new_mesh->get_id()] = render_shader;
 
 	return new_mesh;
+}
+
+std::shared_ptr<mesh> scene::new_mesh() {
+	std::shared_ptr<mesh> ret = std::make_shared<mesh>();
+	m_meshes.push_back(ret);
+
+	return ret;
+}
+
+void scene::remove_mesh(int mesh_id) {
+	for(auto iter = m_meshes.begin(); iter != m_meshes.end(); ++iter) {
+		if((*iter)->get_id() == mesh_id) {
+			m_meshes.erase(iter);
+			break;
+		}
+	}
 }
 
 void scene::add_mesh(std::shared_ptr<mesh> m) {
@@ -131,7 +131,7 @@ void scene::reset_camera(std::shared_ptr<ppc> camera) {
 	camera->_front = glm::normalize(new_at - new_pos);
 }
 
-void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
+void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m, glm::vec3 relative_vec) {
 	if (!camera || !m) {
 		WARN("input pointer nullptr");
 		return;
@@ -139,11 +139,16 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m) {
 
 	vec3 new_pos, new_at;
 	
-	vec3 meshes_center = m->compute_world_center();
+	//vec3 meshes_center = m->compute_world_center();
+	INFO("center: " + pd::to_string(m->compute_center()));
+	INFO("world matrix: " + pd::to_string(m->m_world));
+
+	AABB world_aabb = m->compute_world_aabb();
+	vec3 meshes_center = world_aabb.center();
 	float mesh_length = m->compute_world_aabb().diag_length();
 	if (mesh_length < 0.1f)
 		mesh_length = 5.0f;
-	new_pos = meshes_center + 2.0f * vec3(0.0f, mesh_length * 0.3f, mesh_length);
+	new_pos = meshes_center + mesh_length * relative_vec;
 	new_at = meshes_center;
 
 	camera->_position = new_pos;

@@ -47,6 +47,40 @@ struct AABB
 	vec3 center() {
 		return 0.5f * (p1 + p0);
 	}
+
+	bool inside(vec3 p) {
+		return (p.x >= p0.x && p.x <= p1.x) && (p.y >= p0.y && p.y <= p1.y) && (p.z >= p0.z && p.z <= p1.z);
+	}
+
+	bool collide(AABB b) {
+		auto &a = *this;
+		return (a.p0.x <= b.p1.x && a.p1.x >= b.p0.x) &&
+			(a.p0.y <= b.p1.y && a.p1.y >= b.p0.y) &&
+			(a.p0.z <= b.p1.z && a.p1.z >= b.p0.z);
+	}
+
+	AABB transform(mat4 m) {
+		auto mat_vec3 = [](mat4 m, vec3 p) {
+			vec4 tmp = vec4(p, 1.0f);
+			tmp = m * tmp;
+
+			return vec3(tmp / tmp.w);
+		};
+
+		AABB ret = *this;
+		ret.p0 = mat_vec3(m, ret.p0);
+		ret.p1 = mat_vec3(m, ret.p1);
+		return ret;
+	}
+
+	std::string to_string() {
+		std::ostringstream oss;
+		oss << "p0 " << pd::to_string(p0) << " p1 " << pd::to_string(p1);
+		return oss.str();
+	}
+
+	std::vector<glm::vec3> to_tri_mesh();
+	std::vector<glm::vec3> to_line_mesh();
 };
 
 /*!
@@ -57,8 +91,7 @@ struct AABB
  * \author YichenSheng
  * \date August 2019
  */
-class mesh
-{
+class mesh {
 public:
 	mesh();
 	~mesh();
@@ -77,6 +110,8 @@ public:
 	void add_face(vec3 va, vec3 vb, vec3 vc);	// estimate normal
 	void add_vertex(vec3 v, vec3 n, vec3 c);
 	void add_vertex(vec3 v, vec3 n, vec3 c, vec2 uv);
+	void add_vertices(std::vector<vec3>& verts);
+
 	AABB compute_aabb() const;
 	AABB compute_world_aabb();
 	void set_color(vec3 col);
@@ -102,6 +137,9 @@ public:
 	void set_is_selected(bool is_selected) { m_is_selected = is_selected; }
 	void set_light(bool trigger = true) { m_is_emitter = true; }
 	bool is_light() { return m_is_emitter; }
+	void set_verts(std::vector<vec3> &verts) {
+		m_verts = verts;
+	}
 
 	//------- member variables --------//
 public:
