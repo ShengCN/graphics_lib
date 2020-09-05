@@ -1,7 +1,7 @@
 #pragma once
-#include "graphics_lib/Render/shader.h"
-#include "graphics_lib/Render/scene.h"
-#include "graphics_lib/Render/ppc.h"
+#include "Render/shader.h"
+#include "Render/scene.h"
+#include "Render/ppc.h"
 
 // rendering related assets
 struct asset_manager {

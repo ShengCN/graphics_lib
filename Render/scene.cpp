@@ -4,10 +4,10 @@
 #include <exception>
 
 #include "scene.h"
-#include "graphics_lib/common.h"
-#include "graphics_lib/Utilities/Logger.h"
-#include "graphics_lib/Utilities/Utils.h"
-#include "graphics_lib/Utilities/model_loader.h"
+#include "common.h"
+#include "Utilities/Logger.h"
+#include "Utilities/Utils.h"
+#include "Utilities/model_loader.h"
 
 scene::scene() {
 }
