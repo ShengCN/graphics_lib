@@ -81,8 +81,6 @@ public:
 	AABB compute_world_aabb();
 	void set_color(vec3 col);
 	void set_color(unsigned triangle_id, vec3 col);
-	virtual bool init_shaders()=0;
-	bool reload_shaders();
 	void normalize_position_orientation(vec3 scale=vec3(1.0f), 
 										glm::quat rot_quant = glm::quat(0.0f,0.0f,0.0f,0.0f));
 	
