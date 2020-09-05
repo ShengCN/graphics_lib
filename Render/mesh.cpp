@@ -6,9 +6,8 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "mesh.h"
-#include "graphics_lib/Utilities/Utils.h" 
-#include "graphics_lib/Utilities/Logger.h"
-using namespace purdue;
+#include "Utilities/Utils.h" 
+#include "Utilities/Logger.h"
 
 int mesh::id = 0;
 
@@ -66,7 +65,7 @@ void mesh::add_scale(vec3 s) {
 }
 
 void mesh::add_rotate(pd::deg angle, vec3 axis) {
-	mat4 rot_mat = glm::rotate(deg2rad(angle), axis);
+	mat4 rot_mat = glm::rotate(pd::deg2rad(angle), axis);
 	m_world = rot_mat * m_world;
 }
 
@@ -156,7 +155,7 @@ void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat r
 	vec3 center = compute_center();
 	float diagnoal = compute_world_aabb().diag_length();
 	mat4 norm_transform = glm::toMat4(rot_quant) * 
-		glm::rotate(deg2rad(90.0f), vec3(1.0f, 0.0f, 0.0f)) *
+		glm::rotate(pd::deg2rad(90.0f), vec3(1.0f, 0.0f, 0.0f)) *
 		glm::scale(scale/ diagnoal) *
 		glm::translate(-center);
 
@@ -200,7 +199,7 @@ void mesh::remove_duplicate_vertices() {
 		if (vert_visited[vi])	continue;
 		
 		for (int ovi = vi + 1; ovi < m_verts.size(); ++ovi) {
-			if(same_point(m_verts[vi], m_verts[ovi])) {
+			if(pd::same_point(m_verts[vi], m_verts[ovi])) {
 				vert_visited[ovi] = true;
 				m_verts[ovi] = m_verts[vi];
 			}

@@ -9,7 +9,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include "graphics_lib/common.h"
+#include "common.h"
 #include "Logger.h"
 #include <cstdarg>
 #include <chrono>
@@ -176,32 +176,6 @@ namespace purdue {
 		out << v.x << "," << v.y << "," << v.z;
 		return out;
 	}
-
-	inline std::string to_string(vec3 v) {
-		std::stringstream out;
-		out << v.x << "," << v.y << "," << v.z;
-		return out.str();
-	}
-
-	inline std::string to_string(vec4 v) {
-		std::stringstream out;
-		out << v.x << "," << v.y << "," << v.z << "," << v.w;
-		return out.str();
-	}
-
-	inline std::string to_string(mat4 m) {
-		std::stringstream out;
-		out << to_string(m[0]) << std::endl;
-		out << to_string(m[1]) << std::endl;
-		out << to_string(m[2]) << std::endl;
-		out << to_string(m[3]);
-		return out.str();
-	}
-
-	inline bool same_point(const vec3 &a, const vec3 &b) {
-		return glm::distance(a, b) < 1e-3;
-	}
-
 }
 
 inline std::vector<std::string> split_string(const std::string s, const std::string delimiter = ",") {

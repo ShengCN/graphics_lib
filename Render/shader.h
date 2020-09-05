@@ -1,6 +1,5 @@
 #pragma once
-#include <QOpenGLFunctions_4_2_Core>
-#include <QOpenGLShaderProgram>
+#include <glad/glad.h>
 #include "mesh.h"
 
 enum class draw_type {
@@ -20,7 +19,7 @@ enum class shader_type {
 	compute_shader,
 	geometry_shader
 };
-class shader : public QOpenGLFunctions_4_2_Core {
+class shader  {
 public:
 	shader(const char* computeShaderFile);
 	shader(const char* vertexShaderFile, const char* fragmentShaderFile);
@@ -28,15 +27,15 @@ public:
 	
 	bool reload_shader();
 	virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
-	QOpenGLShaderProgram* get_program() { return m_shader_program; }
+	GLuint get_program() { return m_program; }
 	void bind() { glUseProgram(m_program); }
 	GLuint get_shader_program() { return m_program; }
 private:
-	bool init_template_shader();
-	void init_ogl();
+	GLuint init_template_shader();
+	GLuint init_compute_shader();
+	GLuint init_geometry_shader();
 
 protected:
-	QOpenGLShaderProgram* m_shader_program=nullptr;
 	GLuint m_program;
 	std::string m_vs, m_fs, m_gs, m_cs;
 	shader_type m_type;

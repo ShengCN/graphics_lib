@@ -2,7 +2,7 @@
 #include <sstream>
 #include <glm/common.hpp>
 #include <glm/gtx/transform.hpp>
-#include "graphics_lib/Utilities/Utils.h"
+#include "Utilities/Utils.h"
 
 using namespace glm;
 using namespace purdue;

@@ -3,9 +3,9 @@
 
 #include "model_loader.h"
 
-#include "graphics_lib/common.h"
-#include "graphics_lib/Utilities/Utils.h"
-#include "graphics_lib/Utilities/Logger.h"
+#include "common.h"
+#include "Utilities/Utils.h"
+#include "Utilities/Logger.h"
 using namespace purdue;
 
 model_loader::~model_loader() {
