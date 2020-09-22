@@ -18,6 +18,7 @@ public:
 	std::unordered_map<std::string, std::shared_ptr<shader>> shaders;
 	std::unordered_map<std::shared_ptr<mesh>, std::shared_ptr<shader>> rendering_mappings; // mesh_id -> shader
 	std::shared_ptr<ppc> cur_camera=nullptr;
-
+	
+	std::shared_ptr<mesh> plane=nullptr;
 	float shadow_ppc_fov = 30.0f;
 };

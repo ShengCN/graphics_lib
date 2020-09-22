@@ -22,6 +22,10 @@ enum class CameraMovement
 	down
 };
 
+struct ray {
+	glm::vec3 ro, rd;
+};
+
 class ppc
 {
 public:
@@ -93,6 +97,7 @@ public:
 	void mouse_press(int x, int y);
 	void mouse_release(int x, int y);
 	void mouse_move(int x, int y);
+	ray get_ray(int x, int y);
 
 	std::string to_string();
 

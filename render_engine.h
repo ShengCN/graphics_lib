@@ -51,6 +51,7 @@ public:
 	void set_render_camera(int w, int h, float fov);
 	void set_shader(std::shared_ptr<mesh> m, const std::string shader_name);
 	void remove_mesh(int mesh_id);
+	void clear_all();
 
 	//------- Rendering --------//
 	void draw_render(bool trigger) { m_draw_render = trigger; }
@@ -60,6 +61,7 @@ public:
 	void voxel_vis(int mesh_id);
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);
 	void draw_quad();
+	void draw_aabb_axis(glm::vec3 p);
 
 	void clear_visualize();
 

@@ -348,6 +348,11 @@ void render_engine::remove_mesh(int mesh_id) {
 	cur_manager.render_scene->remove_mesh(mesh_id);
 }
 
+void render_engine::clear_all() {
+	cur_manager.render_scene->clean_up();
+	mesh::id = 0;
+}
+
 void render_engine::draw_visualize_voxels(std::vector<AABB> voxels) {
 	auto& vis_mesh = vis_new_mesh();
 	if (vis_mesh) {
@@ -377,6 +382,39 @@ void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
 void render_engine::draw_quad() {
 	glBindVertexArray(m_quad_vao);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void render_engine::draw_aabb_axis(glm::vec3 p) {
+	glDisable(GL_DEPTH_TEST);
+	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, 0, draw_type::triangle};
+	auto plane = cur_manager.plane;
+	mat4 old_mat = plane->get_world_mat();
+
+	// x
+	vec3 offset = plane->compute_world_aabb().diagonal() * 0.5f;
+	plane->add_world_transate(p + offset);
+	plane->set_color(vec3(1.0f, 0.0f, 0.0f));
+	cur_manager.shaders.at("template")->draw_mesh(plane, params);
+
+	// y
+	plane->set_world_mat(old_mat);
+	plane->add_rotate(90.0f, vec3(1.0f, 0.0f, 0.0f));
+	offset = plane->compute_world_aabb().diagonal() * 0.5f;
+	plane->add_world_transate(p + offset);
+	plane->set_color(vec3(0.0f, 1.0f, 0.0f));
+	cur_manager.shaders.at("template")->draw_mesh(plane, params);
+
+	// z
+	plane->set_world_mat(old_mat);
+	plane->add_rotate(90.0f, vec3(0.0f, 0.0f, 1.0f));
+	offset = plane->compute_world_aabb().diagonal() * 0.5f;
+	plane->add_world_transate(p + offset);
+	plane->set_color(vec3(0.0f, 0.0f, 1.0f));
+	cur_manager.shaders.at("template")->draw_mesh(plane, params);
+	glEnable(GL_DEPTH_TEST);
+
+	plane->set_color(vec3(0.7f));
+	plane->set_world_mat(old_mat);
 }
 
 void render_engine::clear_visualize() {
