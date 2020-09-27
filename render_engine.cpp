@@ -68,15 +68,23 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	static unsigned int accum_texture = -1;
 	static unsigned int reveal_texture = -1;
 	static unsigned int rbo = -1;
+	static int cam_width = cur_manager.cur_camera->_width;
+	static int cam_height = cur_manager.cur_camera->_height;
 	
+	bool update = false;
+	update = (cam_width != cur_manager.cur_camera->_width) || (cam_height != cur_manager.cur_camera->_height);
+
 	// initialize 
-	if (framebuffer == -1) {
+	if (framebuffer == -1 || update) {
+		cam_width = cur_manager.cur_camera->_width;
+		cam_height = cur_manager.cur_camera->_height;
+
 		glGenFramebuffers(1, &framebuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
 		glGenTextures(1, &accum_texture);
 		glBindTexture(GL_TEXTURE_2D, accum_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, cam_width, cam_height, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -85,7 +93,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 
 		glGenTextures(1, &reveal_texture);
 		glBindTexture(GL_TEXTURE_2D, reveal_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RED, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, cam_width, cam_height, 0, GL_RED, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
