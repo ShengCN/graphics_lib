@@ -9,9 +9,10 @@ bool ray_plane(ray r, vec3 p, vec3 n, vec3 &intersect_point) {
 }
 
 bool ray_square(ray r, vec3 p, vec3 n, vec3 pp, vec3 &intersect_point) {
-	if (!ray_plane(r, p, n, intersect_point))
-		return false;
+	//if (!ray_plane(r, p, n, intersect_point))
+	//	return false;
 
+	ray_plane(r, p, n, intersect_point);
 	INFO(pd::to_string(p));
 	INFO(pd::to_string(pp));
 	INFO(pd::to_string(intersect_point));
