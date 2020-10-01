@@ -90,9 +90,7 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		printf("Failed to load/parse .obj.\n");
 		return false;
 	}
-
-	std::cerr << "Success fully loaded file: \n" << file_path << std::endl;
-
+	
 	// For each shape
 	for (size_t i = 0; i < shapes.size(); i++) {
 		size_t index_offset = 0;
@@ -126,6 +124,7 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		}
 	}
 
+	std::cerr << "Success fully loaded file: \n" << file_path << std::endl;
 	return true;
 }
 

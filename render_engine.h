@@ -1,18 +1,17 @@
 #pragma once
-#include "graphics_lib/Render/shader.h"
-#include "graphics_lib/Render/scene.h"
-#include "graphics_lib/Render/ppc.h"
+#include "Render/shader.h"
+#include "Render/scene.h"
+#include "Render/ppc.h"
 #include "asset_manager.h"
 
-#include <QOpenGLFunctions_4_2_Core>
-
 // rendering related assets
-class render_engine : public QOpenGLFunctions_4_2_Core {
+class render_engine {
 	//-------  APIs --------//
 public:
 	//------- Initialize --------//
 	render_engine();
 	void init();
+	void test_scene(int w, int h);
 
 	//------- Render --------//
 	void render(int frame);
@@ -35,6 +34,8 @@ public:
 	void camera_press(int x, int y);
 	void camera_release(int x, int y);
 	void camera_move(int x, int y);
+	void camera_scroll(int offset);
+	void camera_keyboard(char m, bool shift);
 
 	//------- Modify --------//
 	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));
@@ -51,6 +52,7 @@ public:
 	void set_render_camera(int w, int h, float fov);
 	void set_shader(std::shared_ptr<mesh> m, const std::string shader_name);
 	void remove_mesh(int mesh_id);
+	void recompute_normal(int mesh_id);
 
 	//------- Rendering --------//
 	void draw_render(bool trigger) { m_draw_render = trigger; }

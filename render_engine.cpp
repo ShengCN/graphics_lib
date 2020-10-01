@@ -1,20 +1,37 @@
+#include <Dep/glad/glad.h>
 #include "render_engine.h"
 #include "Utilities/voxelization.h"
 #include <glm/gtx/transform.hpp>
+#include "Utilities/Utils.h"
 
 render_engine::render_engine() {
 	m_draw_render = true;
 	m_draw_visualize = false;
 }
 
-void render_engine::render(int frame) {
+void render_engine::test_scene(int w, int h) {
+	int id = load_mesh("Meshes/bunny.obj");
+	INFO("finish loading mesh buny");
+
+	set_mesh_color(get_mesh(id), vec3(0.8f));
+	recompute_normal(id);
+
+	cur_manager.cur_camera = std::make_shared<ppc>(w, h, 50.0f);
+	look_at(id);
+}
+
+void render_engine::recompute_normal(int mesh_id) {
+	get_mesh(mesh_id)->recompute_normal();
+}
+
+
+void render_engine::render(int frame) {	
 	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
 
 	if (m_draw_render) {
-		//glDisable(GL_DEPTH_TEST);
-		//render_scene(cur_manager.render_scene, params);
-		//glEnable(GL_DEPTH_TEST);
-		render_weighted_OIT(cur_manager.render_scene, params);
+		glDisable(GL_DEPTH_TEST);
+		render_scene(cur_manager.render_scene, params);
+		glEnable(GL_DEPTH_TEST);
 	}
 	if (m_draw_visualize) {
 		params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::line_segments };
@@ -25,38 +42,38 @@ void render_engine::render(int frame) {
 }
 
 void render_engine::init() {
-	//#todo_init_scene
-	initializeOpenGLFunctions();
-
 	//------- initialize rendering states --------//
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glPointSize(5.0f);
+	// glEnable(GL_BLEND);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_MULTISAMPLE);
 
 	//------- initialize Shaders --------//
 	const std::string template_vs = "Shaders/template_vs.glsl";
 	const std::string template_fs = "Shaders/template_fs.glsl";
 	cur_manager.shaders["template"] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
 
-	const std::string weighted_OIT_vs = "Shaders/transparent_vs.glsl";
-	const std::string weighted_OIT_fs = "Shaders/transparent_fs.glsl";
-	cur_manager.shaders["weight_OIT"] = std::make_shared<shader>(weighted_OIT_vs.c_str(), weighted_OIT_fs.c_str());
+	INFO("shader finished");
 
-	const std::string quad_vs = "Shaders/quad_vs.glsl";
-	const std::string quad_fs = "Shaders/quad_fs.glsl";
-	cur_manager.shaders["quad"] = std::make_shared<shader>(quad_vs.c_str(), quad_fs.c_str());
+	// const std::string weighted_OIT_vs = "Shaders/transparent_vs.glsl";
+	// const std::string weighted_OIT_fs = "Shaders/transparent_fs.glsl";
+	// cur_manager.shaders["weight_OIT"] = std::make_shared<shader>(weighted_OIT_vs.c_str(), weighted_OIT_fs.c_str());
+
+	// const std::string quad_vs = "Shaders/quad_vs.glsl";
+	// const std::string quad_fs = "Shaders/quad_fs.glsl";
+	// cur_manager.shaders["quad"] = std::make_shared<shader>(quad_vs.c_str(), quad_fs.c_str());
 
 	//------- initialize scene --------//
 	cur_manager.render_scene = std::make_shared<scene>();
 	cur_manager.visualize_scene = std::make_shared<scene>();
-	m_quad_vao = create_quad();
+	// m_quad_vao = create_quad();
 }
 
 void render_engine::render_scene(std::shared_ptr<scene> cur_scene, rendering_params params) {
 	// shader render mesh
-	auto& meshes = cur_scene->get_meshes();
+	auto meshes = cur_scene->get_meshes();
 
 	for(auto &m:meshes) {
 		cur_manager.rendering_mappings.at(m)->draw_mesh(m, params);
@@ -77,8 +94,8 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 		glGenTextures(1, &accum_texture);
 		glBindTexture(GL_TEXTURE_2D, accum_texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RGBA, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -86,8 +103,8 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 		glGenTextures(1, &reveal_texture);
 		glBindTexture(GL_TEXTURE_2D, reveal_texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RED, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -129,8 +146,8 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	glDepthMask(GL_TRUE);
 	
 	// ------------------------ pass 3, merge results ------------------------ //
-	glBindFramebuffer(GL_FRAMEBUFFER, QOpenGLContext::currentContext()->defaultFramebufferObject());
-	//glDrawBuffer(GL_BACK);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDrawBuffer(GL_BACK);
 
 	cur_manager.shaders.at("quad")->bind();
 	glActiveTexture(GL_TEXTURE0);
@@ -253,8 +270,42 @@ void render_engine::camera_move(int x, int y) {
 	cur_manager.cur_camera->mouse_move(x, y);
 }
 
+void render_engine::camera_scroll(int offset) {
+	cur_manager.cur_camera->scroll((double)offset);
+}
+
+void render_engine::camera_keyboard(char m, bool shift) {
+	float speed = 1.0f * 0.1f;
+	if(shift) 
+		speed *= 10.0f;
+	
+	switch (m)
+	{
+	case 'w': 
+		cur_manager.cur_camera->Keyboard(CameraMovement::forward, speed);
+		break;
+	case 'a': 
+		cur_manager.cur_camera->Keyboard(CameraMovement::left, speed);
+		break;
+	case 's': 
+		cur_manager.cur_camera->Keyboard(CameraMovement::backward, speed);
+		break;
+	case 'd': 
+		cur_manager.cur_camera->Keyboard(CameraMovement::right, speed);
+		break;
+	case 'q': 
+		cur_manager.cur_camera->Keyboard(CameraMovement::up, speed);
+		break;
+	case 'e': 
+		cur_manager.cur_camera->Keyboard(CameraMovement::down, speed);
+		break;
+	default:
+		break;
+	}
+}
+
 void render_engine::look_at(int mesh_id, vec3 relative) {
-	auto& at_mesh = get_mesh(mesh_id);
+	auto at_mesh = get_mesh(mesh_id);
 	if(at_mesh) {
 		cur_manager.render_scene->focus_at(cur_manager.cur_camera, at_mesh, relative);
 	} else {
@@ -349,17 +400,18 @@ void render_engine::remove_mesh(int mesh_id) {
 }
 
 void render_engine::draw_visualize_voxels(std::vector<AABB> voxels) {
-	auto& vis_mesh = vis_new_mesh();
+	auto vis_mesh = vis_new_mesh();
 	if (vis_mesh) {
 		for(auto& cur_bb : voxels) {
-			vis_mesh->add_vertices(cur_bb.to_tri_mesh());
+			auto tri_meshes = cur_bb.to_tri_mesh();
+			vis_mesh->add_vertices(tri_meshes);
 		}
 	}
 	vis_mesh->set_color(vec3(0.0f, 0.0f, 0.8f));
 }
 
 void render_engine::voxel_vis(int mesh_id) {
-	auto& mesh_ptr = get_mesh(mesh_id);
+	auto mesh_ptr = get_mesh(mesh_id);
 	if (mesh_ptr) {
 		std::vector<AABB> voxels; voxelizater::voxelize(mesh_ptr, 10, voxels);
 		draw_visualize_voxels(voxels);

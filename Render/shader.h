@@ -1,7 +1,7 @@
 #pragma once
-#include <glad/glad.h>
-#include "mesh.h"
 
+#include "mesh.h"
+#include "ppc.h"
 enum class draw_type {
 	triangle,
 	line_segments
@@ -19,6 +19,7 @@ enum class shader_type {
 	compute_shader,
 	geometry_shader
 };
+
 class shader  {
 public:
 	shader(const char* computeShaderFile);
@@ -28,8 +29,8 @@ public:
 	bool reload_shader();
 	virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
 	GLuint get_program() { return m_program; }
-	void bind() { glUseProgram(m_program); }
 	GLuint get_shader_program() { return m_program; }
+	void bind() {	glUseProgram(m_program);	}
 private:
 	GLuint init_template_shader();
 	GLuint init_compute_shader();
