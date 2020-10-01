@@ -1,5 +1,5 @@
 #pragma once
-#include <QOpenGLFunctions_4_2_Core>
+#include <QOpenGLFunctions_4_0_Core>
 #include <QOpenGLShaderProgram>
 #include "mesh.h"
 
@@ -20,7 +20,7 @@ enum class shader_type {
 	compute_shader,
 	geometry_shader
 };
-class shader : public QOpenGLFunctions_4_2_Core {
+class shader : public QOpenGLFunctions_4_0_Core {
 public:
 	shader(const char* computeShaderFile);
 	shader(const char* vertexShaderFile, const char* fragmentShaderFile);

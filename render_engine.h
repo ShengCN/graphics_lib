@@ -4,10 +4,10 @@
 #include "graphics_lib/Render/ppc.h"
 #include "asset_manager.h"
 
-#include <QOpenGLFunctions_4_2_Core>
+#include <QOpenGLFunctions_4_0_Core>
 
 // rendering related assets
-class render_engine : public QOpenGLFunctions_4_2_Core {
+class render_engine : public QOpenGLFunctions_4_0_Core {
 	//-------  APIs --------//
 public:
 	//------- Initialize --------//
