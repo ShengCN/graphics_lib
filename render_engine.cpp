@@ -20,18 +20,30 @@ void render_engine::test_scene(int w, int h) {
 	look_at(id);
 }
 
+void render_engine::init_camera(int w, int h, float fov) {
+	cur_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
+}
+
 void render_engine::recompute_normal(int mesh_id) {
 	get_mesh(mesh_id)->recompute_normal();
 }
 
+void render_engine::stand_on_plane(int mesh_id, vec3 p, vec3 n) {
+	auto mesh_ptr = get_mesh(mesh_id);
+	if(mesh_ptr == nullptr) return;
+
+	AABB world_aabb = mesh_ptr->compute_world_aabb();
+	vec3 normalized_n = glm::normalize(n);
+	glm::vec3 trans_vec = -glm::dot(world_aabb.p0 - p, normalized_n) * normalized_n;
+	
+	mesh_ptr->add_world_transate(trans_vec); 
+}
 
 void render_engine::render(int frame) {	
 	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
 
 	if (m_draw_render) {
-		glDisable(GL_DEPTH_TEST);
 		render_scene(cur_manager.render_scene, params);
-		glEnable(GL_DEPTH_TEST);
 	}
 	if (m_draw_visualize) {
 		params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::line_segments };
@@ -44,9 +56,6 @@ void render_engine::render(int frame) {
 void render_engine::init() {
 	//------- initialize rendering states --------//
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
-	// glEnable(GL_BLEND);
-	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 
@@ -86,7 +95,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	static unsigned int reveal_texture = -1;
 	static unsigned int rbo = -1;
 	
-	// initialize 
+	// initialize
 	if (framebuffer == -1) {
 		glGenFramebuffers(1, &framebuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);

@@ -141,7 +141,7 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m, glm::
 	
 	//vec3 meshes_center = m->compute_world_center();
 	INFO("center: " + pd::to_string(m->compute_center()));
-	INFO("world matrix: " + pd::to_string(m->m_world));
+	INFO("world matrix: \n" + pd::to_string(m->m_world));
 
 	AABB world_aabb = m->compute_world_aabb();
 	vec3 meshes_center = world_aabb.center();

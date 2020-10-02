@@ -12,6 +12,7 @@ public:
 	render_engine();
 	void init();
 	void test_scene(int w, int h);
+	void init_camera(int w, int h, float fov);
 
 	//------- Render --------//
 	void render(int frame);
@@ -53,6 +54,7 @@ public:
 	void set_shader(std::shared_ptr<mesh> m, const std::string shader_name);
 	void remove_mesh(int mesh_id);
 	void recompute_normal(int mesh_id);
+	void stand_on_plane(int mesh_id, vec3 p, vec3 n);
 
 	//------- Rendering --------//
 	void draw_render(bool trigger) { m_draw_render = trigger; }

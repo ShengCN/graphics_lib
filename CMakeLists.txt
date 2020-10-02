@@ -20,6 +20,7 @@ ${PROJECT_SOURCE_DIR}/Dep
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
 
+add_definitions(-DGLM_FORCE_RADIANS)
 target_link_libraries(graphics_lib 
 ${Boost_LIBRARIES})
 
