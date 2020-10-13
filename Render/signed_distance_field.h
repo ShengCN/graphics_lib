@@ -9,7 +9,8 @@ public:
 	void construct(std::shared_ptr<mesh> m);
 
 	// query
-	float query(glm::vec3 p);
+	bool query(glm::vec3 p, float &ret);
+	float at(int u, int v, int w);
 private:
 	AABB m_world_pos;
 	int m_w, m_h, m_z;

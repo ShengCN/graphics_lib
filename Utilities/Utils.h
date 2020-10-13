@@ -97,7 +97,13 @@ namespace purdue {
 	inline float deg2quat(pd::deg d) {
 		return std::cos(deg2rad(d / 2));
 	}
-
+	
+	template<typename T>
+	inline T clamp(T v, T m, T mm) {
+		v = std::max(v, m);
+		v = std::min(v, mm);
+		return v;
+	}
 	
 	static std::random_device rd;
 	inline float random_float(float fmin = 0.0f, float fmax = 1.0f) {

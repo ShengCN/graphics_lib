@@ -18,7 +18,7 @@
 struct AABB
 {
 	vec3 p0, p1;
-	AABB(vec3 p) :p0(p), p1(p) {}
+	AABB(vec3 p=vec3(0.0f)) :p0(p), p1(p) {}
 	AABB(vec3 sm, vec3 lg) :p0(sm), p1(lg) {} // small, large
 
 	void add_point(vec3 p) {
