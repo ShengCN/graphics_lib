@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "graphics_lib/Utilities/cuda_helper.h"
 #include "graphics_lib/Utilities/Utils.h"
 #include "ppc.h"
 
@@ -40,6 +41,7 @@ struct AABB
 		return glm::distance(p0, p1);
 	}
 	
+	__host__ __device__
 	vec3 diagonal() {
 		return p1 - p0;
 	}

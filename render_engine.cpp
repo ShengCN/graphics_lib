@@ -5,10 +5,11 @@
 render_engine::render_engine() {
 	m_draw_render = true;
 	m_draw_visualize = false;
+	m_cur_draw_type = draw_type::triangle;
 }
 
 void render_engine::render(int frame) {
-	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
+	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, m_cur_draw_type};
 
 	if (m_draw_render) {
 		//glDisable(GL_DEPTH_TEST);

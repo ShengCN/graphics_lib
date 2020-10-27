@@ -52,6 +52,7 @@ public:
 	void set_shader(std::shared_ptr<mesh> m, const std::string shader_name);
 	void remove_mesh(int mesh_id);
 	void clear_all();
+	void set_draw_type(draw_type t) { m_cur_draw_type = t; }
 
 	//------- Rendering --------//
 	void draw_render(bool trigger) { m_draw_render = trigger; }
@@ -76,4 +77,5 @@ private:
 	bool m_draw_render, m_draw_visualize;
 	bool m_vis_frame_mode;
 	GLuint m_quad_vao;
+	draw_type m_cur_draw_type;
 };

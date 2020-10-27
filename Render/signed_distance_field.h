@@ -4,15 +4,20 @@
 
 class signed_distance_field {
 public:
-	signed_distance_field(int w, int h, int z);
+	signed_distance_field(int w=128, int h=128, int z=128);
 	
-	void construct(std::shared_ptr<mesh> m);
+	void construct(std::shared_ptr<mesh> m, AABB field_range);
+	void to_visualize_mesh(std::shared_ptr<mesh> m);
 
 	// query
 	bool query(glm::vec3 p, float &ret);
-	float at(int u, int v, int w);
+	float& at(int u, int v, int w);
+
 private:
-	AABB m_world_pos;
+	float close_distance(std::shared_ptr<mesh> m, glm::vec3 p);
+
+private:
+	AABB m_field_range;
 	int m_w, m_h, m_z;
-	std::vector<float> field_buffer;
+	std::vector<float> m_field_buffer;
 };
