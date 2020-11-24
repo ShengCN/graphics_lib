@@ -147,6 +147,12 @@ void ppc::mouse_move(int x, int y) {
 	
 	float dot_ang = glm::dot(last, cur);
 	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
+	if (glm::all(glm::isnan(rot_axis))) {
+		INFO("Rotatoin NaN: ");
+		INFO("last: " + pd::to_string(last) + " " + "cur: " + pd::to_string(cur));
+
+		return;
+	}
 	
 	float speed = 0.75f;
 	rot_ang = rot_ang * speed;

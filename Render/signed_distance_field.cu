@@ -77,27 +77,18 @@ signed_distance_field::signed_distance_field(int w, int h, int z):m_w(w), m_h(h)
 void signed_distance_field::construct(std::shared_ptr<mesh> m, AABB field_range) {
 	m_field_range = field_range;
 	
-	cuda::timer clc;
-
+	cuda_timer clc;
 	clc.tic();
 	// memory
-	vec3 *verts; int N = m->m_verts.size();
-	float *sdf; int sdf_N = (int)m_field_buffer.size();
-	GC(cudaMalloc(&verts, sizeof(vec3) * N));
-	GC(cudaMalloc(&sdf, sizeof(float) * sdf_N));
-	GC(cudaMemcpy(verts, m->m_verts.data(), sizeof(vec3) * N, cudaMemcpyHostToDevice));
+	container_cuda<vec3> d_verts(m->m_verts);
+	container_cuda<float> d_sdf(m_field_buffer);
 
-	//int grid = 512, block = (sdf_N + grid - 1) / grid;
-	int grid = 32, block = 16;
-	cuda_construct<<<grid, block >>>(verts, N, sdf, sdf_N, m_w, m_h, m_z, m_field_range);
+	int grid = 512, block = (d_sdf.get_n() + grid - 1) / grid;
+	cuda_construct<<<grid, block >>>(d_verts.get_d(), d_verts.get_n(), d_sdf.get_d(), d_sdf.get_n(), m_w, m_h, m_z, m_field_range);
 	GC(cudaDeviceSynchronize());
 
 	// copy back
-	GC(cudaMemcpy(m_field_buffer.data(),sdf, sizeof(float) * sdf_N, cudaMemcpyDeviceToHost));
-
-	// deallocation
-	cudaFree(verts);
-	cudaFree(sdf);
+	d_sdf.mem_copy_back();
 	clc.toc();
 	INFO("constructing spent: " + std::to_string(clc.get_time()) + "ms");
 
