@@ -6,6 +6,7 @@
 
 using namespace glm;
 using namespace purdue;
+
 float ppc::GetFocal() {
 	return static_cast<float>(_width / 2) / tan(_fov / 2.0f);
 }
@@ -17,8 +18,9 @@ ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
 	_near(p_near),
 	_far(p_far),
 	_position(0.0f, 0.35f, 1.3f), 
-	_worldUp(0.0f, 1.0f, 0.0f),
-	m_pressed(false) {
+	_up(0.0f, 1.0f, 0.0f),
+	m_pressed(false),
+	m_trackball(true){
 }
 
 ppc::~ppc()
@@ -29,7 +31,7 @@ vec3 ppc::GetRight()
 {
 	vec3 view = GetViewVec();
 
-	return cross(view, _worldUp);
+	return cross(view, _up);
 }
 
 vec3 ppc::GetUp()
@@ -41,7 +43,7 @@ void ppc::PositionAndOrient(vec3 p, vec3 lookatP, vec3 up)
 {
 	_position = p;
 	_front = glm::normalize(lookatP - p);
-	_worldUp = up;
+	_up = up;
 }
 
 glm::mat4 ppc::GetP() {
@@ -50,7 +52,7 @@ glm::mat4 ppc::GetP() {
 
 glm::mat4 ppc::GetV()
 {
-	return glm::lookAt(_position, _position + _front, _worldUp);
+	return glm::lookAt(_position, _position + _front, _up);
 	// return glm::lookAt(_position, target, _worldUp);
 }
 
@@ -97,6 +99,9 @@ void ppc::Keyboard(CameraMovement cm, float speed)
 	default:
 		break;
 	}
+
+	INFO("Current PPC: ");
+	INFO(this->to_string());	
 }
 
 void ppc::pan(double deg)
@@ -127,34 +132,62 @@ void ppc::pitch(double deg)
 void ppc::mouse_press(int x, int y) {
 	m_last_x = x; m_last_y = y;
 	m_last_orientation = _front;
+	m_last_position = _position;
 	m_pressed = true;
 }
 
 void ppc::mouse_release(int x, int y) {
 	m_pressed = false;
+	
+	m_last_x = x; m_last_y = y;
+	m_last_orientation = _front;
+	m_last_position = _position;	
 }
+
 
 void ppc::mouse_move(int x, int y) {
 	if (!m_pressed)
 		return;
+	x = pd::clamp(x, 0, _width);
+	y = pd::clamp(y, 0, _height);
 
 	auto arcball_vector=[](int x, int y, int w, int h){
-		float x_fract = (float)x / w * 2.0 - 1.0, y_fract = 1.0 - (float)y / h * 2.0;
-		return glm::normalize(vec3(x_fract, y_fract, std::sqrt(1.0- x_fract * x_fract - y_fract * y_fract) ));
+		float x_fract = (float)x / w * 2.0f - 1.0f, y_fract = 1.0f - (float)y / h * 2.0f;
+		return glm::normalize(vec3(x_fract, y_fract, std::sqrt(1.0f - x_fract * x_fract - y_fract * y_fract) ));
 	};
 
 	vec3 last = arcball_vector(m_last_x, m_last_y, _width, _height), cur = arcball_vector(x, y, _width, _height);
 	
 	float dot_ang = glm::dot(last, cur);
+	dot_ang = pd::clamp(dot_ang, -1.0f, 1.0f);
 	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
-	
+
+	if(glm::all(glm::isnan(rot_axis))) {
+		return;
+	}	
+
 	float speed = 0.75f;
 	rot_ang = rot_ang * speed;
-	// printf("axis: %s rot angle: %f \n", pd::to_string(rot_axis).c_str(), rot_ang);
-	_front = glm::vec3(glm::rotate(rot_ang, rot_axis) * vec4(m_last_orientation,0.0f));
+	
+	if(!m_trackball) {
+		_front = glm::vec3(glm::rotate(rot_ang, rot_axis) * vec4(m_last_orientation,0.0f));
+		// INFO(pd::to_string(relative));
+		// _front = glm::normalize(glm::normalize(m_last_orientation) + relative);
+	}
+	else {
+		// use trackball
+		PositionAndOrient(glm::vec3(glm::rotate(rot_ang, rot_axis) * vec4(m_last_position,0.0f)), vec3(0.0f), _up);
+	}
+}
 
-	//INFO(pd::to_string(relative));
-	//_front = glm::normalize(glm::normalize(m_last_orientation) + relative);
+void ppc::set_trackball(bool tb) {
+	m_trackball = tb;
+}
+
+
+void ppc::camera_resize(int w, int h) {
+	_width = w;
+	_height = h;
 }
 
 std::string ppc::to_string() {

@@ -16,7 +16,13 @@ void render_engine::test_scene(int w, int h) {
 	set_mesh_color(get_mesh(id), vec3(0.8f));
 	recompute_normal(id);
 
-	cur_manager.cur_camera = std::make_shared<ppc>(w, h, 50.0f);
+	auto cur_mesh = get_mesh(id);
+	if(cur_mesh) {
+		cur_mesh->normalize_position_orientation();
+		cur_mesh->add_rotate(90.0f, vec3(-1.0f,0.0f,0.0f));
+	}	
+
+	cur_manager.cur_camera = std::make_shared<ppc>(w, h, 80.0f);
 	look_at(id);
 }
 
