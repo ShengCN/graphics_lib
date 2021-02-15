@@ -5,7 +5,7 @@
 #include <memory>
 #include <sstream>
 
-#include "ppc.h"
+#include "common.h"
 
 /*!
  * \class Axis aligned bounding box

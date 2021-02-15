@@ -150,7 +150,7 @@ void ppc::mouse_move(int x, int y) {
 	
 	float speed = 0.75f;
 	rot_ang = rot_ang * speed;
-	printf("axis: %s rot angle: %f \n", pd::to_string(rot_axis).c_str(), rot_ang);
+	// printf("axis: %s rot angle: %f \n", pd::to_string(rot_axis).c_str(), rot_ang);
 	_front = glm::vec3(glm::rotate(rot_ang, rot_axis) * vec4(m_last_orientation,0.0f));
 
 	//INFO(pd::to_string(relative));

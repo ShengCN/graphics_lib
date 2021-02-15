@@ -5,3 +5,6 @@
 [submodule "Dep/tinyxml2"]
 	path = Dep/tinyxml2
 	url = https://github.com/leethomason/tinyxml2.git
+[submodule "Dep/glfw"]
+	path = Dep/glfw
+	url = https://github.com/glfw/glfw.git

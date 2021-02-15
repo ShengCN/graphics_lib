@@ -90,9 +90,7 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		printf("Failed to load/parse .obj.\n");
 		return false;
 	}
-
-	std::cerr << "Success fully loaded file: \n" << file_path << std::endl;
-
+	
 	// For each shape
 	for (size_t i = 0; i < shapes.size(); i++) {
 		size_t index_offset = 0;
@@ -108,12 +106,15 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 								 attrib.vertices[3 * idx.vertex_index + 1],
 								 attrib.vertices[3 * idx.vertex_index + 2]);
 
-				glm::vec3 normal(attrib.normals[3 * idx.normal_index],
-								 attrib.normals[3 * idx.normal_index + 1],
-								 attrib.normals[3 * idx.normal_index + 2]);
-
 				m->m_verts.push_back(vertex);
-				m->m_norms.push_back(normal);
+				
+				if(attrib.normals.size() > 3 * idx.normal_index + 2) {
+					glm::vec3 normal(attrib.normals[3 * idx.normal_index],
+									 attrib.normals[3 * idx.normal_index + 1],
+									 attrib.normals[3 * idx.normal_index + 2]);
+
+					m->m_norms.push_back(normal);
+				}
 
 				if(attrib.texcoords.size()>0){
 					glm::vec2 uv(attrib.texcoords[2 * idx.texcoord_index],
@@ -126,6 +127,7 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		}
 	}
 
+	std::cerr << "Success fully loaded file: \n" << file_path << std::endl;
 	return true;
 }
 

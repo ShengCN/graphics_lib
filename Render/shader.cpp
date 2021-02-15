@@ -170,6 +170,59 @@ void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 	glDrawArrays(ogl_draw_type, 0, (GLsizei)m->m_verts.size());
 	glBindVertexArray(0);
 }
+GLuint shader::init_compute_shader() {
+	bool error = false;
+	struct Shader
+	{
+		const char*  filename;
+		GLenum       type;
+		GLchar*      source;
+	}  shaders[1] =
+	{
+	   { m_cs.c_str(), GL_COMPUTE_SHADER, NULL }
+	};
+
+	GLuint program = glCreateProgram();
+
+	for (int i = 0; i < 1; ++i) {
+		Shader& s = shaders[i];
+		s.source = readShaderSource(s.filename);
+		if (shaders[i].source == NULL) {
+			std::cerr << "Failed to read " << s.filename << std::endl;
+			error = true;
+		}
+
+		GLuint shader = glCreateShader(s.type);
+		glShaderSource(shader, 1, (const GLchar**)&s.source, NULL);
+		glCompileShader(shader);
+
+		GLint  compiled;
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+		if (!compiled) {
+			std::cerr << s.filename << " failed to compile:" << std::endl;
+			printShaderCompileError(shader);
+			error = true;
+		}
+
+		delete[] s.source;
+
+		glAttachShader(program, shader);
+	}
+
+	/* link  and error check */
+	glLinkProgram(program);
+
+	GLint  linked;
+	glGetProgramiv(program, GL_LINK_STATUS, &linked);
+	if (!linked) {
+		std::cerr << "Shader program failed to link" << std::endl;
+		printProgramLinkError(program);
+
+		error = true;
+	}
+
+	return program;
+}
 
 GLuint shader::init_template_shader() {
 	bool error = false;
