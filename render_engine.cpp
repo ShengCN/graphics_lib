@@ -1,4 +1,5 @@
 #include <Dep/glad/glad.h>
+#include "Render/geo.h"
 #include "render_engine.h"
 #include "Utilities/voxelization.h"
 #include <glm/gtx/transform.hpp>
@@ -10,7 +11,8 @@ render_engine::render_engine() {
 }
 
 void render_engine::test_scene(int w, int h) {
-	int id = load_mesh("Meshes/bunny.obj");
+	// int id = load_mesh("Meshes/bunny.obj");
+	int id = load_mesh("Meshes/cylinder.obj");
 	INFO("finish loading mesh buny");
 
 	set_mesh_color(get_mesh(id), vec3(0.8f));
@@ -43,6 +45,16 @@ void render_engine::stand_on_plane(int mesh_id, vec3 p, vec3 n) {
 	glm::vec3 trans_vec = -glm::dot(world_aabb.p0 - p, normalized_n) * normalized_n;
 	
 	mesh_ptr->add_world_transate(trans_vec); 
+}
+
+int render_engine::add_visualize_line(vec3 h, vec3 t) {
+	std::shared_ptr<mesh> vis_mesh = std::make_shared<mesh>();
+	vis_mesh->add_vertex(h, vec3(0.0f), vec3(1.0f,0.0f,0.0f)); 
+	vis_mesh->add_vertex(t, vec3(0.0f), vec3(1.0f,0.0f,0.0f)); 
+
+	cur_manager.rendering_mappings[vis_mesh] = cur_manager.shaders.at("template");
+	cur_manager.visualize_scene->add_mesh(vis_mesh);	
+	return vis_mesh->get_id();
 }
 
 void render_engine::render(int frame) {	
@@ -143,7 +155,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	glDepthMask(GL_FALSE);
 
 	glDrawBuffer(GL_COLOR_ATTACHMENT0); 
-	glClearColor(0.0f,0.0f,0.0f,0.0f);
+	glClearColor(0.0f,0.0f,0.0f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glDrawBuffer(GL_COLOR_ATTACHMENT1);
@@ -444,6 +456,45 @@ void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
 void render_engine::draw_quad() {
 	glBindVertexArray(m_quad_vao);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void render_engine::draw_sihouette(int mesh_id, vec3 light_pos) {
+	auto mesh_ptr = get_mesh(mesh_id);
+	if (!mesh_ptr) {
+		INFO("Cannot find the mesh" + std::to_string(mesh_id));
+		return;
+	}
+
+	// compute sihouette
+	std::vector<std::shared_ptr<geo_edge>> sihouettes = compute_sihouette(mesh_ptr, light_pos);
+
+	// visualize sihouette
+	for(auto sptr:sihouettes) {
+		add_visualize_line(sptr->h->p, sptr->t->p);
+	}
+}
+
+void render_engine::draw_shadow_volume(int mesh_id, vec3 light_pos) {
+	// compute sihouette edges
+	auto mesh_ptr = get_mesh(mesh_id);
+	if (!mesh_ptr) {
+		INFO("Cannot find the mesh" + std::to_string(mesh_id));
+		return;
+	}
+	std::vector<std::shared_ptr<geo_edge>> sihouettes = compute_sihouette(mesh_ptr, light_pos);
+
+	// compute extruded triangles
+	std::shared_ptr<mesh> shadow_volume = std::make_shared<mesh>();
+	for(auto e:sihouettes) {
+		vec3 h = e->h->p, t = e->t->p;
+		vec3 lh_vec = glm::normalize(h-light_pos), lt_vec = glm::normalize(t - light_pos);
+
+		shadow_volume->add_face(h, h + lh_vec * 1e9f, t + lt_vec * 1e9f);
+		shadow_volume->add_face(h, t + lt_vec * 1e9f, t);
+	}
+	
+	cur_manager.rendering_mappings[shadow_volume] = cur_manager.shaders["template"];
+	cur_manager.visualize_scene->add_mesh(shadow_volume);
 }
 
 void render_engine::clear_visualize() {
