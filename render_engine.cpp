@@ -481,22 +481,18 @@ void render_engine::draw_shadow_volume(int mesh_id, vec3 light_pos) {
 		INFO("Cannot find the mesh" + std::to_string(mesh_id));
 		return;
 	}
-	std::vector<std::shared_ptr<geo_edge>> sihouettes = compute_sihouette(mesh_ptr, light_pos);
 
 	// compute extruded triangles
 	std::shared_ptr<mesh> shadow_volume = std::make_shared<mesh>();
-	for(auto e:sihouettes) {
-		vec3 h = e->h->p, t = e->t->p;
-		vec3 lh_vec = glm::normalize(h-light_pos), lt_vec = glm::normalize(t - light_pos);
-
-		shadow_volume->add_face(h, h + lh_vec * 1e9f, t + lt_vec * 1e9f);
-		shadow_volume->add_face(h, t + lt_vec * 1e9f, t);
-	}
+	auto shadow_verts = compute_shadow_volume(mesh_ptr, light_pos);
+	shadow_volume->add_vertices(shadow_verts);
+	shadow_volume->set_color(vec3(1.0f));
 	
 	cur_manager.rendering_mappings[shadow_volume] = cur_manager.shaders["template"];
+	clear_visualize();
 	cur_manager.visualize_scene->add_mesh(shadow_volume);
 }
 
 void render_engine::clear_visualize() {
-
+	cur_manager.visualize_scene->clean_up();
 }

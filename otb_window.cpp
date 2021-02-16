@@ -235,6 +235,7 @@ void otb_window::draw_gui() {
 	if(ImGui::Button("save")) {
 		save_framebuffer("test.png");
 	}
+	
 	if (ImGui::Button("dbg")) {
 		dbg();
 	}
@@ -262,7 +263,7 @@ void otb_window::render_mask() {
 
 void otb_window::dbg() {
 	// draw sihouette 
-	vec3 light_pos = vec3(100.0f);
+	vec3 light_pos = vec3(1000.0f);
 	
 	int cur_mesh = m_engine.get_rendering_meshes()[0]->get_id();
 	m_engine.draw_shadow_volume(cur_mesh, light_pos);

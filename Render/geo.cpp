@@ -136,6 +136,25 @@ compute_sihouette(std::shared_ptr<mesh> mesh_ptr, vec3 p) {
     return ret;
 }
 
+std::vector<vec3> compute_shadow_volume(std::shared_ptr<mesh> mesh_ptr, vec3 p) {
+	std::vector<std::shared_ptr<geo_edge>> sihouettes = compute_sihouette(mesh_ptr, p);
+    std::vector<vec3> ret;
+	for(auto e:sihouettes) {
+		vec3 h = e->h->p, t = e->t->p;
+		vec3 lh_vec = glm::normalize(h-p), lt_vec = glm::normalize(t - p);
+		
+        ret.push_back(h);
+        ret.push_back(h + lh_vec * 1e9f);
+        ret.push_back(t + lt_vec * 1e9f);
+
+        ret.push_back(h);
+        ret.push_back(t + lt_vec * 1e9f);
+        ret.push_back(t);
+	}
+    
+    return ret;
+}
+
 geo_face::~geo_face() {}
 
 vec3 geo_face::normal() {

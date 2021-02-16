@@ -59,3 +59,4 @@ private:
 };
 
 std::vector<std::shared_ptr<geo_edge>> compute_sihouette(std::shared_ptr<mesh> mesh_ptr, vec3 p);
+std::vector<vec3> compute_shadow_volume(std::shared_ptr<mesh> mesh_ptr, vec3 p);
