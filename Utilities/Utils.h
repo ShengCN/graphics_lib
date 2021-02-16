@@ -98,6 +98,13 @@ namespace purdue {
 		return std::cos(deg2rad(d / 2));
 	}
 
+	template<typename T>
+	inline T clamp(T v, T m, T mm) {
+		v = std::max(v, m);
+		v = std::min(v, mm);
+		return v;
+	}
+	
 	inline float random_float(float fmin = 0.0f, float fmax = 1.0f) {
 		// engine
 		std::random_device rd;

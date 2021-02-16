@@ -55,6 +55,7 @@ public:
 	void remove_mesh(int mesh_id);
 	void recompute_normal(int mesh_id);
 	void stand_on_plane(int mesh_id, vec3 p, vec3 n);
+	int add_visualize_line(vec3 h, vec3 t);
 
 	//------- Rendering --------//
 	void draw_render(bool trigger) { m_draw_render = trigger; }
@@ -64,6 +65,8 @@ public:
 	void voxel_vis(int mesh_id);
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);
 	void draw_quad();
+	void draw_sihouette(int mesh_id, vec3 light_pos);
+	void draw_shadow_volume(int mesh_id, vec3 light_pos);
 
 	void clear_visualize();
 

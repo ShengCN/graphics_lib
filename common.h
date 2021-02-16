@@ -9,7 +9,9 @@
 #include <glm/gtx/quaternion.hpp>
 #include <string>
 #include <sstream>
-
+#include <memory>
+#include <vector>
+#include "Utilities/Logger.h"
 namespace purdue {
 	typedef float deg;
 	typedef float rad;
