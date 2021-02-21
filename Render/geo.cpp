@@ -155,6 +155,23 @@ std::vector<vec3> compute_shadow_volume(std::shared_ptr<geo_mesh> mesh_ptr, vec3
     return ret;
 }
 
+std::vector<vec3> back_face_culling(const std::vector<vec3> &verts, vec3 p) {
+    std::vector<vec3> ret;
+    for(int ti = 0; ti < verts.size(); ++ti) {
+        vec3 p0 = verts[3 * ti + 0];
+        vec3 p1 = verts[3 * ti + 1];
+        vec3 p2 = verts[3 * ti + 2];
+
+        vec3 n = glm::cross(p1-p0, p2-p1);
+        if (glm::dot(n, p - p0) >= 0.0) {
+            ret.push_back(p0);
+            ret.push_back(p1);
+            ret.push_back(p2);
+        }
+    }
+    return ret;
+}
+
 geo_face::~geo_face() {}
 
 vec3 geo_face::normal() {
