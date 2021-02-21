@@ -1,5 +1,7 @@
 #include "geo.h"
 #include "Utilities/Utils.h"
+#include <string>
+#include <omp.h>
 
 geo_mesh::geo_mesh() {}
 
@@ -24,13 +26,7 @@ std::shared_ptr<geo_face> geo_mesh::add_face(vec3 p0, vec3 p1, vec3 p2) {
     auto edge_head = add_edge(p0, p1);
     auto e1 = add_edge(p1, p2);
     auto e2 = add_edge(p2, p0);
-    
-    for(auto f:faces) {
-        if (f->edge_head == edge_head) {
-            return f;
-        }
-    }
-    
+
     edge_head->next = e1;
     e1->next = e2;
     e2->next = edge_head;
@@ -46,12 +42,17 @@ std::shared_ptr<geo_face> geo_mesh::add_face(vec3 p0, vec3 p1, vec3 p2) {
 }
 
 std::shared_ptr<geo_point> geo_mesh::add_point(vec3 p) {
-    for(auto point:points) {
+    int found_point_id = -1;
+    for(int i = 0; i < points.size(); ++i) {
+        std::shared_ptr<geo_point> point = points[i];
         if (pd::same_point(point->p, p)) {
-            return point;
+            found_point_id = i;
         }
     }    
     
+    if (found_point_id != -1) {
+        return points[found_point_id];
+    }
     auto new_point = std::make_shared<geo_point>(p);
     points.push_back(new_point);
 
@@ -66,7 +67,9 @@ std::shared_ptr<geo_edge> geo_mesh::add_edge(vec3 p0, vec3 p1) {
 
     /* find twin edge, avoid duplicate */
     std::shared_ptr<geo_edge> twin = nullptr;
-    for(auto e:edges) {
+
+    for(int i = 0; i < edges.size(); ++i) {
+        auto e = edges[i];
         if (e->h == head && e->t == tail) {
             new_edge = e;
         }
@@ -86,7 +89,7 @@ std::shared_ptr<geo_edge> geo_mesh::add_edge(vec3 p0, vec3 p1) {
 }
 
 std::vector<std::shared_ptr<geo_edge>>
-compute_sihouette(std::shared_ptr<mesh> mesh_ptr, vec3 p) {
+compute_sihouette(std::shared_ptr<geo_mesh> mesh_ptr, vec3 p) {
     if (mesh_ptr == nullptr) {
         INFO("Cannot find the mesh");
         return {};
@@ -94,15 +97,11 @@ compute_sihouette(std::shared_ptr<mesh> mesh_ptr, vec3 p) {
 
     /* Iterate over all edges, sihouette edges are those have different dot
      * products relative to p */
-    pd::timer clc;
-    clc.tic();
-    geo_mesh cur_mesh(mesh_ptr);
-    clc.toc();
-    clc.print_elapsed();
-    
+    auto &cur_mesh = *mesh_ptr;
     std::vector<std::shared_ptr<geo_edge>> ret;
 
-    for (auto edge : cur_mesh.edges) {
+    for (int i = 0; i < cur_mesh.edges.size(); ++i ) {
+        auto edge = cur_mesh.edges[i];
         if (edge->twin == nullptr) {
             // INFO("Check mesh, one edge does not have twin");
             continue;
@@ -136,20 +135,21 @@ compute_sihouette(std::shared_ptr<mesh> mesh_ptr, vec3 p) {
     return ret;
 }
 
-std::vector<vec3> compute_shadow_volume(std::shared_ptr<mesh> mesh_ptr, vec3 p) {
+std::vector<vec3> compute_shadow_volume(std::shared_ptr<geo_mesh> mesh_ptr, vec3 p) {
 	std::vector<std::shared_ptr<geo_edge>> sihouettes = compute_sihouette(mesh_ptr, p);
-    std::vector<vec3> ret;
+    std::vector<vec3> ret(sihouettes.size() * 6);
+    int counter = 0;
 	for(auto e:sihouettes) {
 		vec3 h = e->h->p, t = e->t->p;
 		vec3 lh_vec = glm::normalize(h-p), lt_vec = glm::normalize(t - p);
 		
-        ret.push_back(h);
-        ret.push_back(h + lh_vec * 1e9f);
-        ret.push_back(t + lt_vec * 1e9f);
+        ret[counter++] = h;
+        ret[counter++] = (h + lh_vec * 1e9f);
+        ret[counter++] = (t + lt_vec * 1e9f);
 
-        ret.push_back(h);
-        ret.push_back(t + lt_vec * 1e9f);
-        ret.push_back(t);
+        ret[counter++] = (h);
+        ret[counter++] = (t + lt_vec * 1e9f);
+        ret[counter++] = (t);
 	}
     
     return ret;

@@ -5,7 +5,7 @@
 #include <memory>
 #include <sstream>
 
-#include "common.h"
+#include "graphics.h"
 
 /*!
  * \class Axis aligned bounding box

@@ -1,5 +1,5 @@
 #pragma once
-#include <common.h>
+#include "graphics.h"
 #include <Render/mesh.h>
 
 /** 
@@ -58,5 +58,5 @@ private:
     std::shared_ptr<geo_edge> add_edge(vec3 p0, vec3 p1);
 };
 
-std::vector<std::shared_ptr<geo_edge>> compute_sihouette(std::shared_ptr<mesh> mesh_ptr, vec3 p);
-std::vector<vec3> compute_shadow_volume(std::shared_ptr<mesh> mesh_ptr, vec3 p);
+std::vector<std::shared_ptr<geo_edge>> compute_sihouette(std::shared_ptr<geo_mesh> mesh_ptr, vec3 p);
+std::vector<vec3> compute_shadow_volume(std::shared_ptr<geo_mesh> mesh_ptr, vec3 p);

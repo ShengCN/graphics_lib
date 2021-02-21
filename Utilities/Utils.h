@@ -9,7 +9,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include "common.h"
+#include "graphics.h"
 #include "Logger.h"
 #include <cstdarg>
 #include <chrono>

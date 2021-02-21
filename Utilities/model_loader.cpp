@@ -3,7 +3,7 @@
 
 #include "model_loader.h"
 
-#include "common.h"
+#include "graphics.h"
 #include "Utilities/Utils.h"
 #include "Utilities/Logger.h"
 using namespace purdue;
