@@ -3,12 +3,13 @@
 #include <glm/common.hpp>
 #include <glm/gtx/transform.hpp>
 #include "Utilities/Utils.h"
+#include "glm/geometric.hpp"
 
 using namespace glm;
 using namespace purdue;
 
 float ppc::GetFocal() {
-	return static_cast<float>(_width / 2) / tan(_fov / 2.0f);
+	return static_cast<float>(_width / 2) / tan(pd::deg2rad(_fov / 2.0f));
 }
 
 ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
@@ -199,4 +200,28 @@ std::string ppc::to_string() {
 	oss << "fov: " << std::to_string(_fov) << std::endl;
 
 	return oss.str();
+}
+
+ray ppc::get_ray(int u, int v) {
+	ray r;
+
+	vec3 p = _position, view = glm::normalize(GetViewVec());
+	float focal = GetFocal(); 
+
+	r.ro = p;
+	r.rd = focal * view + ((u+0.5f)-_width/2) * GetRight() + ((v+0.5f)-_height/2) * GetUp();
+	r.rd = glm::normalize(r.rd);
+	return r;	
+}
+
+ray ppc::get_parrallel_ray(int u, int v) {
+	ray r;
+
+	vec3 p = _position, view = glm::normalize(GetViewVec());
+	float focal = GetFocal(); 
+
+	r.ro = p + focal * view + ((u+0.5f)-_width/2) * GetRight() + ((v+0.5f)-_height/2) * GetUp();
+	r.rd = view;
+	return r;	
+	
 }

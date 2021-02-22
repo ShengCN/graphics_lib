@@ -468,7 +468,8 @@ void render_engine::draw_sihouette(int mesh_id, vec3 light_pos) {
 	}
 
 	// compute sihouette
-	std::vector<std::shared_ptr<geo_edge>> sihouettes = compute_sihouette(mesh_ptr, light_pos);
+	std::shared_ptr<geo_mesh> cur_geo_mesh = std::make_shared<geo_mesh>(mesh_ptr);
+	std::vector<std::shared_ptr<geo_edge>> sihouettes = compute_sihouette(cur_geo_mesh, light_pos);
 
 	// visualize sihouette
 	for(auto sptr:sihouettes) {
@@ -486,7 +487,8 @@ void render_engine::draw_shadow_volume(int mesh_id, vec3 light_pos) {
 
 	// compute extruded triangles
 	std::shared_ptr<mesh> shadow_volume = std::make_shared<mesh>();
-	auto shadow_verts = compute_shadow_volume(mesh_ptr, light_pos);
+	std::shared_ptr<geo_mesh> cur_geo_mesh = std::make_shared<geo_mesh>(mesh_ptr);
+	auto shadow_verts = compute_shadow_volume(cur_geo_mesh, light_pos);
 	shadow_volume->add_vertices(shadow_verts);
 	shadow_volume->set_color(vec3(1.0f));
 	

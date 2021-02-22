@@ -4,7 +4,7 @@
 #include <exception>
 
 #include "scene.h"
-#include "common.h"
+#include "graphics.h"
 #include "Utilities/Logger.h"
 #include "Utilities/Utils.h"
 #include "Utilities/model_loader.h"

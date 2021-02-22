@@ -3,7 +3,11 @@
 #include <fstream>
 #include <string>
 #include <memory>
-#include "common.h"
+#include "graphics.h"
+
+struct ray {
+	glm::vec3 ro, rd;
+};
 
 /*
  *
@@ -97,6 +101,8 @@ public:
 	void camera_resize(int w, int h);
 
 	std::string to_string();
+	ray get_ray(int u, int v);
+	ray get_parrallel_ray(int u, int v);
 
 private:
 	float GetFocal();
