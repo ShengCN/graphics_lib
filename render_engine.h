@@ -67,6 +67,7 @@ public:
 	void draw_quad();
 	void draw_sihouette(int mesh_id, vec3 light_pos);
 	void draw_shadow_volume(int mesh_id, vec3 light_pos);
+	void set_draw_type(draw_type type);
 
 	void clear_visualize();
 
@@ -81,4 +82,5 @@ private:
 	bool m_draw_render, m_draw_visualize;
 	bool m_vis_frame_mode;
 	GLuint m_quad_vao;
+	draw_type m_cur_draw_type;
 };

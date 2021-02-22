@@ -1,5 +1,6 @@
 #include <Dep/glad/glad.h>
 #include "Render/geo.h"
+#include "Render/shader.h"
 #include "render_engine.h"
 #include "Utilities/voxelization.h"
 #include <glm/gtx/transform.hpp>
@@ -8,6 +9,7 @@
 render_engine::render_engine() {
 	m_draw_render = true;
 	m_draw_visualize = false;
+	m_cur_draw_type = draw_type::triangle;
 }
 
 void render_engine::test_scene(int w, int h) {
@@ -58,7 +60,7 @@ int render_engine::add_visualize_line(vec3 h, vec3 t) {
 }
 
 void render_engine::render(int frame) {	
-	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
+	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, m_cur_draw_type};
 
 	if (m_draw_render) {
 		render_scene(cur_manager.render_scene, params);
@@ -491,6 +493,10 @@ void render_engine::draw_shadow_volume(int mesh_id, vec3 light_pos) {
 	cur_manager.rendering_mappings[shadow_volume] = cur_manager.shaders["template"];
 	clear_visualize();
 	cur_manager.visualize_scene->add_mesh(shadow_volume);
+}
+
+void render_engine::set_draw_type(draw_type type) {
+	m_cur_draw_type = type;	
 }
 
 void render_engine::clear_visualize() {

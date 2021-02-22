@@ -1,9 +1,11 @@
+#include <fstream>
 #include <memory>
 #include <glm/ext/matrix_float4x4.hpp>
 #include "otb_window.h"
 #include <imgui/imgui.h>
 #include <imgui/examples/imgui_impl_glfw.h>
 #include <imgui/examples/imgui_impl_opengl3.h>
+#include <string>
 
 #include "Render/shader.h"
 #include "Utilities/Utils.h"
@@ -261,10 +263,64 @@ void otb_window::render_mask() {
 	m_engine.render(0);
 }
 
+struct bin_data {
+	float min, max;
+};
+bool read_matrix_data(std::string fname, std::vector<bin_data> &out_volume) {
+	std::fstream input(fname, std::ios::binary | std::ios::in);
+	if (input.is_open()) {
+		out_volume.clear();
+		while(true) {
+			bin_data cur_data;
+			input.read((char*)&cur_data.min, sizeof(float));
+			input.read((char*)&cur_data.max, sizeof(float));
+
+			out_volume.push_back(cur_data);
+			if (!input) {
+				break;
+			}
+		}
+	} else {
+		INFO("Cannot find matrix bin data");
+	}
+
+	INFO("Read finished");
+}
+
 void otb_window::dbg() {
 	// draw sihouette 
-	vec3 light_pos = vec3(1000.0f);
+	// vec3 light_pos = vec3(1000.0f);
 	
-	int cur_mesh = m_engine.get_rendering_meshes()[0]->get_id();
-	m_engine.draw_shadow_volume(cur_mesh, light_pos);
+	// int cur_mesh = m_engine.get_rendering_meshes()[0]->get_id();
+	// m_engine.draw_shadow_volume(cur_mesh, light_pos);
+	
+
+	// visualize voxels
+	// let's use point clouds first
+	auto cur_mesh = m_engine.get_rendering_meshes().front();
+	cur_mesh->clear_vertices();
+
+	// read matrix data
+	std::vector<bin_data> out_volume;
+	read_matrix_data("test.bin", out_volume);
+
+	// generate point clouds
+	int w = 256, h = 256, d = 20;
+	int counter = 0, total = w * h * d;
+	for(int x = 0; x < w; ++x) for(int y = 0; y < h; ++y) for (int z = 0; z < d; ++z) {
+		// pos: [0,1] x [0,1] x [0,1]
+		vec3 pos = vec3((float)x/w, (float)y/h, (float)z/d);
+		int ind = x * h + y;
+		vec3 color(0.5f);
+		if (pos.z > out_volume[ind].min && pos.z < out_volume[ind].max) {
+			color =	vec3(1.0f,0.0f,0.0f);
+		}
+		cur_mesh->add_vertex(pos, vec3(0.0f), color);
+		
+		INFO("Progress: " + std::to_string((float)counter++/total));
+	}
+	
+	m_engine.look_at(cur_mesh->get_id());
+	
+	m_engine.set_draw_type(draw_type::points);
 }
