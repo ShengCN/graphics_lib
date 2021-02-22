@@ -1,6 +1,4 @@
 #pragma once
-#include <random>
-
 #include <sstream>
 #include <iostream>
 
@@ -78,56 +76,6 @@ namespace purdue {
 	}
 
 	bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
-
-	/*!
-	 *
-	 * \brief Math lab
-	 *
-	 * \author YichenSheng
-	 * \date August 2019
-	 */
-	inline pd::rad deg2rad(pd::deg d) {
-		return d / 180.0f * pd::pi;
-	}
-
-	inline pd::deg rad2deg(pd::rad r) {
-		return r / pd::pi * 180.0f;
-	}
-
-	inline float deg2quat(pd::deg d) {
-		return std::cos(deg2rad(d / 2));
-	}
-
-	template<typename T>
-	inline T clamp(T v, T m, T mm) {
-		v = std::max(v, m);
-		v = std::min(v, mm);
-		return v;
-	}
-	
-	inline float random_float(float fmin = 0.0f, float fmax = 1.0f) {
-		// engine
-		std::random_device rd;
-		std::mt19937 engine(rd());
-		std::uniform_real_distribution<float> u(fmin, fmax);
-		return u(engine);
-	}
-
-	inline int random_int(int mi = 0, int ma = 10) {
-		// engine
-		std::random_device rd;
-		std::mt19937 engine(rd());
-		std::uniform_int_distribution<> dis(mi, ma);
-
-		return dis(engine);
-	}
-
-	float normal_random(float mean, float sig);
-
-	template<typename T>
-	T lerp(T a, T b, float fract) {
-		return (1.0f - fract) * a + fract * b;
-	}
 
 	class timer {
 	public:

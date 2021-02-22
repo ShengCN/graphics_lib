@@ -6,11 +6,6 @@
 #include "glm/geometric.hpp"
 
 using namespace glm;
-using namespace purdue;
-
-float ppc::GetFocal() {
-	return static_cast<float>(_width / 2) / tan(pd::deg2rad(_fov / 2.0f));
-}
 
 ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
 	_width(w),
@@ -24,20 +19,7 @@ ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
 	m_trackball(true){
 }
 
-ppc::~ppc()
-{
-}
-
-vec3 ppc::GetRight()
-{
-	vec3 view = GetViewVec();
-
-	return cross(view, _up);
-}
-
-vec3 ppc::GetUp()
-{
-	return cross(GetRight(), GetViewVec());
+ppc::~ppc()	{
 }
 
 void ppc::PositionAndOrient(vec3 p, vec3 lookatP, vec3 up)
@@ -48,7 +30,7 @@ void ppc::PositionAndOrient(vec3 p, vec3 lookatP, vec3 up)
 }
 
 glm::mat4 ppc::GetP() {
-	return glm::perspective(deg2rad(_fov), (float)_width / (float)_height, _near, _far);
+	return glm::perspective(pd::deg2rad(_fov), (float)_width / (float)_height, _near, _far);
 }
 
 glm::mat4 ppc::GetV()
@@ -60,7 +42,7 @@ glm::mat4 ppc::GetV()
 void ppc::Rotate_Axis(glm::vec3 O, glm::vec3 axis, float angled)
 {
 	glm::vec3 CO = _position - O;
-	auto rot_mat = glm::rotate(deg2rad(angled), normalize(axis));
+	auto rot_mat = glm::rotate(pd::deg2rad(angled), normalize(axis));
 	CO = vec3(rot_mat * vec4(CO, 0.0f));
 	_position = CO + O;
 
@@ -105,8 +87,7 @@ void ppc::Keyboard(CameraMovement cm, float speed)
 	INFO(this->to_string());	
 }
 
-void ppc::pan(double deg)
-{
+void ppc::pan(double deg) {
 	deg = deg / _width * 10.0f;
 	//glm::mat4 rot_y = glm::rotate(deg2rad(deg), glm::vec3(0.0f, 1.0f, 0.0f));
 	//_front = glm::vec3(rot_y * glm::vec4(_front, 0.0f));
@@ -161,7 +142,7 @@ void ppc::mouse_move(int x, int y) {
 	
 	float dot_ang = glm::dot(last, cur);
 	dot_ang = pd::clamp(dot_ang, -1.0f, 1.0f);
-	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
+	vec3 rot_axis = glm::cross(last, cur); pd::rad rot_ang = std::acos(std::min(dot_ang,1.0f));
 
 	if(glm::all(glm::isnan(rot_axis))) {
 		return;
@@ -200,28 +181,4 @@ std::string ppc::to_string() {
 	oss << "fov: " << std::to_string(_fov) << std::endl;
 
 	return oss.str();
-}
-
-ray ppc::get_ray(int u, int v) {
-	ray r;
-
-	vec3 p = _position, view = glm::normalize(GetViewVec());
-	float focal = GetFocal(); 
-
-	r.ro = p;
-	r.rd = focal * view + ((u+0.5f)-_width/2) * GetRight() + ((v+0.5f)-_height/2) * GetUp();
-	r.rd = glm::normalize(r.rd);
-	return r;	
-}
-
-ray ppc::get_parrallel_ray(int u, int v) {
-	ray r;
-
-	vec3 p = _position, view = glm::normalize(GetViewVec());
-	float focal = GetFocal(); 
-
-	r.ro = p + focal * view + ((u+0.5f)-_width/2) * GetRight() + ((v+0.5f)-_height/2) * GetUp();
-	r.rd = view;
-	return r;	
-	
 }

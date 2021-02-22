@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
+#include <cuda_runtime.h>
 #include "graphics.h"
 
 struct ray {
@@ -77,9 +78,28 @@ public:
 		}
 	}
 
-	vec3 GetRight();
-	vec3 GetUp();
+	__host__ __device__
+	vec3 GetRight() {
+		vec3 view = GetViewVec();
+		return glm::cross(view, _up);
+	}
+
+
+	__host__ __device__
+	vec3 GetUp() {
+		return cross(GetRight(), GetViewVec());
+	}
+
+
+	__host__ __device__
 	vec3 GetViewVec() { return _front; }
+
+	__host__ __device__
+	float GetFocal() {
+	return static_cast<float>(_width / 2) / tan(pd::deg2rad(_fov / 2.0f));
+	}
+
+
 	void PositionAndOrient(vec3 p, vec3 lookatP, vec3 up);
 	glm::mat4 GetP();
 	glm::mat4 GetV();
@@ -100,12 +120,9 @@ public:
 	void set_trackball(bool trackball);
 	void camera_resize(int w, int h);
 
-	std::string to_string();
-	ray get_ray(int u, int v);
-	ray get_parrallel_ray(int u, int v);
 
-private:
-	float GetFocal();
+	std::string to_string();
+
 
 private:
 	int m_last_x, m_last_y;
