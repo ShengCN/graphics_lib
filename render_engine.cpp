@@ -1,8 +1,9 @@
-#include <Dep/glad/glad.h>
+#include <glad/glad.h>
 #include "render_engine.h"
 #include "Utilities/voxelization.h"
 #include <glm/gtx/transform.hpp>
 #include "Utilities/Utils.h"
+#include "Render/image.h"
 
 render_engine::render_engine() {
 	m_draw_render = true;

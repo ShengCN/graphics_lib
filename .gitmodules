@@ -8,3 +8,6 @@
 [submodule "Dep/glfw"]
 	path = Dep/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "Dep/imgui"]
+	path = Dep/imgui
+	url = https://github.com/ocornut/imgui.git

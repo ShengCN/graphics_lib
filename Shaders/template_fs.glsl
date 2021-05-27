@@ -1,4 +1,4 @@
-#version 430
+#version 330
 
 in vec3 vs_pos;
 in vec3 vs_color;
@@ -35,5 +35,5 @@ void main(){
         col = vs_norm;
     }
 
-    frag_color = vec4(col, 0.5);
+    frag_color = vec4(col, 1.0);
 }

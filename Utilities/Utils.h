@@ -77,8 +77,6 @@ namespace purdue {
 		return buffAsStdStr;
 	}
 
-	bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
-
 	/*!
 	 *
 	 * \brief Math lab
@@ -129,10 +127,10 @@ namespace purdue {
 
 		void tic() {
 			_is_ticed = true;
-			_tic = Clock::now();
+			_tic = std::chrono::system_clock::now();
 		}
 		void toc() {
-			_toc = Clock::now();
+			_toc = std::chrono::system_clock::now();
 		}
 
 		long long get_elapse() {

@@ -3,6 +3,11 @@
 #include "Render/scene.h"
 #include "Render/ppc.h"
 #include "asset_manager.h"
+#include "Utilities/Utils.h"
+#include "Utilities/Logger.h" 
+#include "Utilities/model_loader.h"
+#include "Utilities/voxelization.h"
+#include "Render/image.h"
 
 // rendering related assets
 class render_engine {
