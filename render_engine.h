@@ -9,6 +9,11 @@
 #include "Utilities/voxelization.h"
 #include "Render/image.h"
 
+/*
+ * glm
+*/
+#include <glm/gtx/transform.hpp>
+
 // rendering related assets
 class render_engine {
 	//-------  APIs --------//
@@ -66,6 +71,7 @@ public:
 	void draw_visualize(bool trigger) { m_draw_visualize = trigger; }
 	void draw_visualize_voxels(std::vector<AABB> voxels);
 	void set_vis_frame(bool trigger) { m_vis_frame_mode = trigger; }
+	void set_draw_type(draw_type t) { m_cur_draw_type = t;}
 	void voxel_vis(int mesh_id);
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);
 	void draw_quad();
@@ -83,4 +89,5 @@ private:
 	bool m_draw_render, m_draw_visualize;
 	bool m_vis_frame_mode;
 	GLuint m_quad_vao;
+	draw_type m_cur_draw_type;
 };

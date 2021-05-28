@@ -82,3 +82,7 @@ bool image::load(const std::string fname) {
     m_buffer = std::vector<unsigned int>(img, img + m_w * m_h);
     return true;
 }
+
+image::image() {
+    
+}

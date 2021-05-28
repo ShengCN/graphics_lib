@@ -3,6 +3,7 @@
 #include "mesh.h"
 #include "ppc.h"
 enum class draw_type {
+	points,
 	triangle,
 	line_segments
 };

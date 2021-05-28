@@ -11,8 +11,7 @@
  *	Provide basic controls.
  *
  */
-enum class CameraMovement
-{
+enum class CameraMovement {
 	forward,
 	backward,
 	left,
@@ -92,6 +91,7 @@ public:
 	void mouse_press(int x, int y);
 	void mouse_release(int x, int y);
 	void mouse_move(int x, int y);
+	vec3 unproject(int i, int j, float d);
 
 	std::string to_string();
 

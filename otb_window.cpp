@@ -1,6 +1,7 @@
 #include <memory>
 #include <imgui/imgui.h>
 
+#include <stdio.h>
 #include "otb_window.h"
 #include "render_engine.h"
 #include "glm/ext/matrix_float4x4.hpp"
@@ -157,9 +158,10 @@ void otb_window::show() {
 
 		// animation
 		iter = (iter+1) % 10000;
-
-		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		float rot = 1.0 / 60.0f;
+		m_engine.mesh_add_transform(m_engine.get_rendering_meshes()[0], glm::rotate(rot,vec3(0.0f,1.0f,0.0f)));
 		render(iter);
 
 		draw_gui();
@@ -246,9 +248,56 @@ void otb_window::render(int iter) {
 }
 
 void otb_window::dbg() {
-    INFO("Test");
+    INFO("Reading Orginal & Depth image");
+
+	const std::string ori_path = "test_ori.jpeg"; 
+	const std::string dep_path = "test_depth.png"; 
+	if (!pd::file_exists(ori_path) || !pd::file_exists(dep_path)) {
+		WARN("Original or Depth image not found!");
+		return;
+	}
+
 	/* Read Original & Depth Image */
+	image ori_img, dep_img; 
+	if (!ori_img.load(ori_path) || !dep_img.load(dep_path)) {
+		WARN("original or depth image load failed");
+		return;
+	}
 
 	/* Recompute point clouds  */
+	auto ori_dep_mesh=[](image &ori, image &dep, std::shared_ptr<mesh> ptr) {
+		ptr->clear_vertices();
+		int h = ori.height(), w = ori.width();
 
+		/* Assume camera is at the center
+		*     fov: 60
+		*/
+		ppc tmp_camera(w,h,60.0f);
+		tmp_camera.PositionAndOrient(vec3(0.0f), vec3(0.0f,0.0f,-1.0f), vec3(0.0f,1.0f,0.0f));
+
+		float counter = 0.0f;
+		for(int i = 0; i < w; ++i) {
+			for(int j = 0; j < h; ++j) {
+				float depth = dep.get_rgb(i,j)[0];
+				vec3 c = ori.get_rgb(i, j);
+				vec3 p = tmp_camera.unproject(i, j, depth);
+				ptr->add_vertex(p, vec3(0.0f), c);
+				counter++;
+				// std::printf("Depth: %f, position: %f,%f,%f, color: %f, %f, %f\n", depth, p.x, p.y, p.z, c.x,c.y,c.x);
+				INFO("Finished " + std::to_string(counter/(w* h) * 100.0f));
+			}
+		}
+	};
+
+	auto cur_mesh = m_engine.get_rendering_meshes()[0];
+	ori_dep_mesh(ori_img, dep_img, cur_mesh);
+
+	INFO(pd::to_string(cur_mesh->compute_world_center()));
+
+	/* Calibrate Mesh and PPC */
+	cur_mesh->normalize_position_orientation();
+	cur_mesh->add_rotate(90.0f, vec3(-1.0f,0.0f,0.0f));
+	m_engine.look_at(cur_mesh->get_id());
+
+	m_engine.set_draw_type(draw_type::points);
 }

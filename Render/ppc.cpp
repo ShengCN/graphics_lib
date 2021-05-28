@@ -7,7 +7,7 @@
 using namespace glm;
 using namespace purdue;
 float ppc::GetFocal() {
-	return static_cast<float>(_width / 2) / tan(_fov / 2.0f);
+	return static_cast<float>(_width / 2) / tan(pd::deg2rad(_fov / 2.0f));
 }
 
 ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
@@ -155,6 +155,15 @@ void ppc::mouse_move(int x, int y) {
 
 	//INFO(pd::to_string(relative));
 	//_front = glm::normalize(glm::normalize(m_last_orientation) + relative);
+}
+
+vec3 ppc::unproject(int i, int j, float d) {
+	float focal = GetFocal();
+	vec3 view = GetViewVec();
+
+	vec3 relative = view * focal + (float)(i + 0.5 - _width/2) * GetRight() + (float)(j+0.5-_height/2) * GetUp();
+
+	return _position + relative * d;
 }
 
 std::string ppc::to_string() {

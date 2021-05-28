@@ -141,6 +141,10 @@ public:
 		m_verts = verts;
 	}
 
+	/* IO */
+	bool save(const std::string fname); // save to binary format
+	bool load(const std::string fname); 
+
 	//------- member variables --------//
 public:
 	mat4 m_world = glm::mat4(1.0f); // model space -> world space

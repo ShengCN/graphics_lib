@@ -11,8 +11,14 @@ private:
     std::vector<unsigned int> m_buffer;
 
 public:
+    image();
     image(int h, int w, int c);
     ~image()=default;
+
+    /* Properties */
+    int width() { return m_w; }
+    int height() { return m_h; }
+    int channel() { return m_c; }
 
     /* IO */
     bool save(const std::string fname);

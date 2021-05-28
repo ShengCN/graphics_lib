@@ -8,6 +8,7 @@
 render_engine::render_engine() {
 	m_draw_render = true;
 	m_draw_visualize = false;
+	m_cur_draw_type = draw_type::triangle;
 }
 
 void render_engine::test_scene(int w, int h) {
@@ -41,7 +42,7 @@ void render_engine::stand_on_plane(int mesh_id, vec3 p, vec3 n) {
 }
 
 void render_engine::render(int frame) {	
-	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
+	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, m_cur_draw_type};
 
 	if (m_draw_render) {
 		render_scene(cur_manager.render_scene, params);

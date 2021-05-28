@@ -207,6 +207,58 @@ void mesh::remove_duplicate_vertices() {
 	}
 }
 
+bool mesh::save(const std::string fname) {
+	std::fstream oss(fname, std::ios::binary | std::ios::out);
+	int vn = m_verts.size(), nn = m_norms.size(), cn = m_colors.size(), uvn = m_uvs.size();
+
+	if (!oss.is_open()) {
+		return false;
+	}
+
+	/* size of all arrays */
+	oss.write((char*)&vn, sizeof(int));
+	oss.write((char*)&nn, sizeof(int));
+	oss.write((char*)&cn, sizeof(int));
+	oss.write((char*)&uvn, sizeof(int));
+
+
+	oss.write((char*)&m_world, sizeof(glm::mat4));
+	oss.write((char*)&m_verts[0], sizeof(glm::vec3) * m_verts.size());
+	oss.write((char*)&m_norms[0], sizeof(glm::vec3) * m_norms.size());
+	oss.write((char*)&m_colors[0], sizeof(glm::vec3) * m_colors.size());
+	oss.write((char*)&m_uvs[0], sizeof(glm::vec2) * m_uvs.size());
+	oss.close();
+	return true;
+}
+
+bool mesh::load(const std::string fname) {
+	std::fstream iss(fname, std::ios::binary | std::ios::in);
+
+	if (!iss.is_open()) {
+		return false;
+	}
+
+	int vn, nn, cn, uvn;
+	/* size of all arrays */
+	iss.read((char*)&vn, sizeof(int));
+	iss.read((char*)&nn, sizeof(int));
+	iss.read((char*)&cn, sizeof(int));
+	iss.read((char*)&uvn, sizeof(int));
+
+	m_verts.resize(vn);
+	m_norms.resize(nn);
+	m_colors.resize(cn);
+	m_uvs.resize(uvn);
+
+	iss.read((char*)&m_world, sizeof(glm::mat4));
+	iss.read((char*)&m_verts[0], sizeof(glm::vec3) * m_verts.size());
+	iss.read((char*)&m_norms[0], sizeof(glm::vec3) * m_norms.size());
+	iss.read((char*)&m_colors[0], sizeof(glm::vec3) * m_colors.size());
+	iss.read((char*)&m_uvs[0], sizeof(glm::vec2) * m_uvs.size());
+	iss.close();
+	return true;
+}
+
 std::vector<glm::vec3> AABB::to_tri_mesh() {
 	std::vector<glm::vec3> ret;
 	auto add_face = [](std::vector<glm::vec3>& ret, vec3 a, vec3 b, vec3 c) {

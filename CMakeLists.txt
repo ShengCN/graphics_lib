@@ -6,7 +6,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glfw)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIMGUI_IMPL_OPENGL_LOADER_GLAD")
 add_definitions(-DGLM_FORCE_RADIANS)
-add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD)
+add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD=1)
 
 file(GLOB render_src
     "${PROJECT_SOURCE_DIR}/Render/*.cpp"
