@@ -8,6 +8,7 @@
 class image {
 private:
     int m_h, m_w, m_c;
+    unsigned int m_ogl_texid;
     std::vector<unsigned int> m_buffer;
 
 public:
@@ -20,6 +21,9 @@ public:
     int height() { return m_h; }
     int channel() { return m_c; }
 
+    /* OpenGL */
+    unsigned int ogl_texid();
+
     /* IO */
     bool save(const std::string fname);
     bool load(const std::string fname);
@@ -27,10 +31,16 @@ public:
     /* Low level IO */
     glm::vec3 get_rgb(int i, int j);
     float get_a(int i, int j);
+    bool set_rgb(int i, int j, glm::vec3 v);
+    bool set_rgba(int i, int j, glm::vec4 v);
+    bool set_a(int i, int j, float v);
+
     unsigned int* data() { return m_buffer.data();}
     unsigned int& at(int i, int j);
 
 private:
+    void init(int h, int w, int c);
+    bool ind_check(int i, int j);
     void init_buffer();
     glm::vec4 uint_vec4(unsigned int v);
     unsigned int vec3_uint(glm::vec3 v);

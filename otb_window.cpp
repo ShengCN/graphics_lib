@@ -12,6 +12,9 @@
 using namespace purdue;
 
 otb_window::otb_window() {
+	m_begin_save_frame = false;
+	m_frame_folder = "tmp";
+	safe_create_folder(m_frame_folder);
 }
 
 otb_window::~otb_window() {
@@ -129,6 +132,7 @@ int otb_window::create_window(int w, int h, const std::string title) {
 	return 1;
 }
 
+image ori_img, dep_img; 
 void otb_window::init_scene() {
 	int h, w;
 	glfwGetWindowSize(_window, &w, &h);
@@ -146,12 +150,34 @@ void otb_window::init_scene() {
 	// camera 
 	m_engine.init_camera(w, h, 60.0f);
 	m_engine.look_at(target_model, vec3(0.0f, 0.0f, 3.0f));
+
+
+    INFO("Reading Orginal & Depth image");
+	const std::string ori_path = "test_ori.jpeg"; 
+	const std::string dep_path = "test_depth.png"; 
+	if (!pd::file_exists(ori_path) || !pd::file_exists(dep_path)) {
+		WARN("Original or Depth image not found!");
+		return;
+	}
+
+	/* Read Original & Depth Image */
+	if (!ori_img.load(ori_path) || !dep_img.load(dep_path)) {
+		WARN("original or depth image load failed");
+		return;
+	}
+	unsigned int ori_texid = ori_img.ogl_texid(), dep_texid = dep_img.ogl_texid();
+	printf("Ori: %d, Dep: %d \n", ori_texid, dep_texid);
 }
 
+int iter = 0;
 void otb_window::show() {
 	glfwMakeContextCurrent(_window);
-	static int iter = 0;
 
+	auto deg_ani=[](int iter, float deg, float speed=0.01){
+		return deg * std::sin(iter * speed); 
+	};
+
+	float total_deg = 80.0f;
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(_window)) {
 		glfwPollEvents();
@@ -160,9 +186,16 @@ void otb_window::show() {
 		iter = (iter+1) % 10000;
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		float rot = 1.0 / 60.0f;
-		m_engine.mesh_add_transform(m_engine.get_rendering_meshes()[0], glm::rotate(rot,vec3(0.0f,1.0f,0.0f)));
+		float delta_deg = deg_ani(iter, total_deg) - deg_ani(iter-1,total_deg);
+		m_engine.mesh_add_transform(m_engine.get_rendering_meshes()[0], glm::rotate(pd::deg2rad(delta_deg),vec3(0.0f,1.0f,0.0f)));
 		render(iter);
+
+		if (m_begin_save_frame) {
+			char buffer[50];
+			std::sprintf(buffer, "%05d.png", iter);
+			std::string out_fname = m_frame_folder + "/" + buffer; 
+			save_framebuffer(out_fname);
+		}
 
 		draw_gui();
 		glfwSwapBuffers(_window);
@@ -229,10 +262,15 @@ void otb_window::draw_gui() {
 	ImGui::Begin("PC control");
 	// ImGui::SliderFloat("fov", &asset_manager::instance).cur_camera->_fov, 30.0f, 120.0f);
 	ImGui::SliderFloat("fov", &m_engine.get_render_ppc()->_fov, 5.0f, 120.0f);
+	GLuint ori_texid = ori_img.ogl_texid(), dep_texid = dep_img.ogl_texid();
+	ImGui::Image((ImTextureID)ori_texid, ImVec2((float)128, (float)128), ImVec2(0, 0), ImVec2(1, 1));
+	ImGui::SameLine();
+	ImGui::Image((ImTextureID)dep_texid, ImVec2((float)128, (float)128), ImVec2(0, 0), ImVec2(1, 1));
 
 	if(ImGui::Button("reload shader")) {
 		reload_all_shaders();
 	}
+	ImGui::SameLine();
 	if (ImGui::Button("dbg")) {
 		dbg();
 	}
@@ -248,22 +286,6 @@ void otb_window::render(int iter) {
 }
 
 void otb_window::dbg() {
-    INFO("Reading Orginal & Depth image");
-
-	const std::string ori_path = "test_ori.jpeg"; 
-	const std::string dep_path = "test_depth.png"; 
-	if (!pd::file_exists(ori_path) || !pd::file_exists(dep_path)) {
-		WARN("Original or Depth image not found!");
-		return;
-	}
-
-	/* Read Original & Depth Image */
-	image ori_img, dep_img; 
-	if (!ori_img.load(ori_path) || !dep_img.load(dep_path)) {
-		WARN("original or depth image load failed");
-		return;
-	}
-
 	/* Recompute point clouds  */
 	auto ori_dep_mesh=[](image &ori, image &dep, std::shared_ptr<mesh> ptr) {
 		ptr->clear_vertices();
@@ -272,15 +294,15 @@ void otb_window::dbg() {
 		/* Assume camera is at the center
 		*     fov: 60
 		*/
-		ppc tmp_camera(w,h,60.0f);
+		ppc tmp_camera(w,h,1.0f);
 		tmp_camera.PositionAndOrient(vec3(0.0f), vec3(0.0f,0.0f,-1.0f), vec3(0.0f,1.0f,0.0f));
 
 		float counter = 0.0f;
 		for(int i = 0; i < w; ++i) {
 			for(int j = 0; j < h; ++j) {
-				float depth = dep.get_rgb(i,j)[0];
-				vec3 c = ori.get_rgb(i, j);
-				vec3 p = tmp_camera.unproject(i, j, depth);
+				float depth = dep.get_rgb(i,h-j)[0];
+				vec3 c = ori.get_rgb(i, h-j);
+				vec3 p = tmp_camera.unproject(i, j, (depth) * 1000.0f);
 				ptr->add_vertex(p, vec3(0.0f), c);
 				counter++;
 				// std::printf("Depth: %f, position: %f,%f,%f, color: %f, %f, %f\n", depth, p.x, p.y, p.z, c.x,c.y,c.x);
@@ -290,14 +312,16 @@ void otb_window::dbg() {
 	};
 
 	auto cur_mesh = m_engine.get_rendering_meshes()[0];
-	ori_dep_mesh(ori_img, dep_img, cur_mesh);
 
+	ori_dep_mesh(ori_img, dep_img, cur_mesh);
 	INFO(pd::to_string(cur_mesh->compute_world_center()));
 
 	/* Calibrate Mesh and PPC */
 	cur_mesh->normalize_position_orientation();
-	cur_mesh->add_rotate(90.0f, vec3(-1.0f,0.0f,0.0f));
-	m_engine.look_at(cur_mesh->get_id());
+	// cur_mesh->add_rotate(90.0f, vec3(1.0f,0.0f,0.0f));
+	m_engine.look_at(cur_mesh->get_id(), vec3(0.0f,0.0f,1.0f));
 
 	m_engine.set_draw_type(draw_type::points);
+	iter = 0;
+	m_begin_save_frame = true;
 }

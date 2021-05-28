@@ -161,9 +161,9 @@ vec3 ppc::unproject(int i, int j, float d) {
 	float focal = GetFocal();
 	vec3 view = GetViewVec();
 
-	vec3 relative = view * focal + (float)(i + 0.5 - _width/2) * GetRight() + (float)(j+0.5-_height/2) * GetUp();
+	vec3 relative = (float)(i + 0.5 - _width/2) * GetRight() + (float)(j+0.5-_height/2) * GetUp();
 
-	return _position + relative * d;
+	return relative + vec3(0.0f,0.0f,d);
 }
 
 std::string ppc::to_string() {

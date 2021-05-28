@@ -50,4 +50,8 @@ private:
 	void dbg();
 private:
 	static render_engine m_engine;
+
+	// saving frames
+	bool m_begin_save_frame;
+	std::string m_frame_folder;
 };
