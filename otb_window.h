@@ -47,6 +47,8 @@ private:
 	void reload_all_shaders();
 	void render(int iter);
 
+	void render_animation(std::string out_folder);
+
 	void dbg();
 private:
 	static render_engine m_engine;

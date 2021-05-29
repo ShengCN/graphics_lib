@@ -9,12 +9,12 @@
 #include <imgui/examples/imgui_impl_glfw.h>
 #include <imgui/examples/imgui_impl_opengl3.h>
 
-using namespace purdue;
+namespace pd=purdue;
 
 otb_window::otb_window() {
 	m_begin_save_frame = false;
 	m_frame_folder = "tmp";
-	safe_create_folder(m_frame_folder);
+	pd::safe_create_folder(m_frame_folder);
 }
 
 otb_window::~otb_window() {
@@ -312,16 +312,60 @@ void otb_window::dbg() {
 	};
 
 	auto cur_mesh = m_engine.get_rendering_meshes()[0];
-
-	ori_dep_mesh(ori_img, dep_img, cur_mesh);
-	INFO(pd::to_string(cur_mesh->compute_world_center()));
-
-	/* Calibrate Mesh and PPC */
-	cur_mesh->normalize_position_orientation();
-	// cur_mesh->add_rotate(90.0f, vec3(1.0f,0.0f,0.0f));
-	m_engine.look_at(cur_mesh->get_id(), vec3(0.0f,0.0f,1.0f));
-
 	m_engine.set_draw_type(draw_type::points);
-	iter = 0;
-	m_begin_save_frame = true;
+
+	int total = 2401;
+	std::string render_root = "render_out/";
+	pd::safe_create_folder(render_root);	
+	for (int i = 0; i <= total; ++i) {
+		std::string ori_fname = "out/" + pd::get_prefix(i, "%05d.png");
+		std::string dep_fname = "out/" + pd::get_prefix(i, "%05d_disp.png");
+		if (!ori_img.load(ori_fname) || !dep_img.load(dep_fname)) {
+			WARN("Iter: " + std::to_string(i) + " failed!");
+			continue;
+		}
+
+		ori_dep_mesh(ori_img, dep_img, cur_mesh);
+
+		/* Calibrate Mesh and PPC */
+		cur_mesh->normalize_position_orientation();
+		m_engine.look_at(cur_mesh->get_id(), vec3(0.0f,0.0f,1.0f));
+
+        std::string out_folder = render_root + pd::get_prefix(i,"%05d");
+		pd::safe_create_folder(out_folder);
+
+	    render_animation(out_folder);
+		INFO("Rendering: " + std::to_string((float)i/total * 100.0f) + "%");
+	}
+}
+
+void otb_window::render_animation(std::string out_folder) {
+	if (!pd::file_exists(out_folder)) {
+		WARN("There is no folder: " + out_folder);
+		return;
+	}
+
+	auto deg_ani=[](float deg, int iter, int period){
+		float fract = (float)iter/period;
+		return deg * std::sin(pd::deg2rad(fract * 360.0f)); 
+	};
+
+	auto cur_mesh = m_engine.get_rendering_meshes()[0];
+	int ani_num = 90 * 4;
+	float total_deg = 90.0f;
+	for(int iter = 0; iter < ani_num; ++iter) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		render(iter);
+		glFlush();
+
+		std::string fname = out_folder + "/" + pd::get_prefix(iter, "%05d.png");
+		save_framebuffer(fname);
+
+		/* Animation */
+		float delta_deg = deg_ani(total_deg, iter, ani_num) - deg_ani(total_deg, iter-1, ani_num);
+		INFO("Delta: " + std::to_string(delta_deg));
+		m_engine.mesh_add_transform(cur_mesh, glm::rotate(pd::deg2rad(delta_deg),vec3(0.0f,1.0f,0.0f)));
+		INFO("Animation: " + std::to_string((float)iter/ani_num * 100.0f) + "%");
+	}
 }

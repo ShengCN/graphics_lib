@@ -51,7 +51,6 @@ namespace purdue {
 		return p.stem().string();
 	}
 
-
 	inline std::string get_file_abs_path(const std::string file) {
 		fs::path p(file);
 		if (p.is_absolute()) return p.string();
