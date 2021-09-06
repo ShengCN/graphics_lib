@@ -38,7 +38,6 @@ private:
 	static logger *m_instance;
 };
 
-logger *logger::m_instance;
 
 #ifndef INFO
 #define INFO(fmt_str, ...) logger::instance()->info(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)

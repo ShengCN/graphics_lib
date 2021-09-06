@@ -17,7 +17,9 @@ file(GLOB render_src
     "${PROJECT_SOURCE_DIR}/Utilities/*.cpp"
     "${PROJECT_SOURCE_DIR}/Dep/tinyobjloader/*.cc"
     "${PROJECT_SOURCE_DIR}/Dep/tinyxml2/*.cpp"
-    "${PROJECT_SOURCE_DIR}/*.cpp"
+    "${PROJECT_SOURCE_DIR}/asset_manager.cpp"
+    "${PROJECT_SOURCE_DIR}/render_engine.cpp"
+    "${PROJECT_SOURCE_DIR}/otb_window.cpp"
     "${PROJECT_SOURCE_DIR}/Dep/glad/glad.c"
     "${PROJECT_SOURCE_DIR}/imgui/*.cpp"
     "${PROJECT_SOURCE_DIR}/imgui/examples/imgui_impl_glfw.cpp"
@@ -30,9 +32,10 @@ find_package(Boost COMPONENTS system filesystem REQUIRED)
 target_include_directories(graphics_lib PUBLIC 
 ${PROJECT_SOURCE_DIR}/Dep/stb
 ${PROJECT_SOURCE_DIR}/Dep/fmt/include
-${PROJECT_SOURCE_DIR}/imgui
 ${PROJECT_SOURCE_DIR}/Dep/glad
+${PROJECT_SOURCE_DIR}/Dep/glfw/include
 ${PROJECT_SOURCE_DIR}/Dep/
+${PROJECT_SOURCE_DIR}/imgui
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
 
