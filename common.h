@@ -1,17 +1,18 @@
 #pragma once
 
 #include <Dep/glad/glad.h>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <Dep/glm/vec2.hpp>
+#include <Dep/glm/vec3.hpp>
+#include <Dep/glm/vec4.hpp>
+#include <Dep/glm/mat3x3.hpp>
+#include <Dep/glm/mat4x4.hpp>
+#include <Dep/glm/gtx/quaternion.hpp>
 #include <string>
 #include <sstream>
 #include <memory>
 #include <vector>
 #include "Utilities/Logger.h"
+
 namespace purdue {
 	typedef float deg;
 	typedef float rad;

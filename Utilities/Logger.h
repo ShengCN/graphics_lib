@@ -2,7 +2,8 @@
 #include <iostream>
 #include <sstream>
 
-//#include "global_variable.h"
+#define FMT_HEADER_ONLY
+#include <fmt/core.h>
 
 class logger 
 {
@@ -17,36 +18,17 @@ public:
 	}
 
 	template<typename T, typename TT, typename TTT>
-	void log(const std::string info, T file, TT line, TTT func) {
-		std::stringstream oss;
-		oss << info << std::endl;
-
-		//if (global_variable::instance()->verbose)
-			std::cerr << oss.str();
-
-		m_log_str += oss.str();
+	void info(const std::string s, T file, TT line, TTT func) {
+		std::string log_str = fmt::format("[INFO] {}. \t [{}-{}-{}]\n", s, func, line, file);
+		m_log_str += log_str;
+		std::cout << log_str;
 	}
 
-	template<typename INFO_T, typename FUNC>
-	void info(const INFO_T s, FUNC func) {
-		std::stringstream oss;
-		oss << s << std::endl;
-
-		//if (global_variable::instance()->verbose)
-			std::cout << oss.str();
-
-		m_log_str += oss.str();
-	}
-
-	template<typename INFO_T, typename FUNC>
-	void warn(const INFO_T s, FUNC func) {
-		std::stringstream oss;
-		oss << s << std::endl;
-
-		//if (global_variable::instance()->verbose)
-			std::cerr << oss.str();
-
-		m_log_str += oss.str();
+	template<typename T, typename TT, typename TTT>
+	void warn(const std::string s, T file, TT line, TTT func) {
+		std::string log_str = fmt::format("[INFO] {}. \t [{}-{}-{}]\n", s, func, line, file);
+		m_log_str += log_str;
+		std::cout << log_str;
 	}
 
 	std::string get_log() { return m_log_str; }
@@ -56,15 +38,13 @@ private:
 	static logger *m_instance;
 };
 
-#ifndef LOG
-#define LOG(s) logger::instance()->log(s, __FILE__, __LINE__, __FUNCTION__)
-#endif
+logger *logger::m_instance;
 
 #ifndef INFO
-#define INFO(s) logger::instance()->info(s, __FUNCTION__)
+#define INFO(fmt_str, ...) logger::instance()->info(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)
 #endif // !INFO
 
 
 #ifndef WARN
-#define WARN(s) logger::instance()->warn(s, __FUNCTION__)
+#define WARN(fmt_str, ...) logger::instance()->warn(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)
 #endif // !INFO

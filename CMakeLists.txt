@@ -8,6 +8,10 @@ find_package(OpenGL REQUIRED)
 # ImGui
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD=1)
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glfw)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/fmt)
+
 file(GLOB render_src
     "${PROJECT_SOURCE_DIR}/Render/*.cpp"
     "${PROJECT_SOURCE_DIR}/Utilities/*.cpp"
@@ -19,17 +23,16 @@ file(GLOB render_src
     "${PROJECT_SOURCE_DIR}/imgui/examples/imgui_impl_glfw.cpp"
     "${PROJECT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl3.cpp")
 
-find_package(Boost COMPONENTS system filesystem REQUIRED)
-
-add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
-add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glfw)
-
 add_library(graphics_lib STATIC ${render_src})
+
+find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 target_include_directories(graphics_lib PUBLIC 
 ${PROJECT_SOURCE_DIR}/Dep/stb
-${PROJECT_SOURCE_DIR}/Dep
+${PROJECT_SOURCE_DIR}/Dep/fmt/include
 ${PROJECT_SOURCE_DIR}/imgui
+${PROJECT_SOURCE_DIR}/Dep/glad
+${PROJECT_SOURCE_DIR}/Dep/
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
 
