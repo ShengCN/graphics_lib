@@ -50,6 +50,7 @@ public:
 	glm::mat4 get_mesh_world(std::shared_ptr<mesh> m);
 	void cut_mesh(std::shared_ptr<mesh> m, vec3 p, vec3 n);
 	void add_point_light(glm::vec3 lp);
+	void set_render_camera(int w, int h);
 	void set_render_camera(int w, int h, float fov);
 	void set_shader(std::shared_ptr<mesh> m, const std::string shader_name);
 	void remove_mesh(int mesh_id);

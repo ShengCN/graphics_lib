@@ -11,8 +11,8 @@ render_engine::render_engine() {
 }
 
 void render_engine::test_scene(int w, int h) {
-	// int id = load_mesh("Meshes/bunny.obj");
-	int id = load_mesh("Meshes/cylinder.obj");
+	int id = load_mesh("Meshes/bunny.obj");
+	// int id = load_mesh("Meshes/cylinder.obj");
 	INFO("finish loading mesh buny");
 
 	set_mesh_color(get_mesh(id), vec3(0.8f));
@@ -408,6 +408,17 @@ void render_engine::add_point_light(glm::vec3 lp) {
 	cur_manager.lights.push_back(lp);
 }
 
+void render_engine::set_render_camera(int w, int h) {
+	if (cur_manager.cur_camera == nullptr) {
+		cur_manager.cur_camera = std::make_shared<ppc>(w, h, 120.0f);
+		return;
+	} 
+
+	cur_manager.cur_camera->_width = w;
+	cur_manager.cur_camera->_height = h;
+	glViewport(0, 0, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height);
+}
+
 void render_engine::set_render_camera(int w, int h, float fov) {
 	if (cur_manager.cur_camera == nullptr) {
 		cur_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
@@ -416,6 +427,7 @@ void render_engine::set_render_camera(int w, int h, float fov) {
 	cur_manager.cur_camera->_width = w;
 	cur_manager.cur_camera->_height = h;
 	cur_manager.cur_camera->_fov = fov;
+	glViewport(0, 0, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height);
 }
 
 void render_engine::set_shader(std::shared_ptr<mesh> m, const std::string shader_name) {

@@ -1,8 +1,10 @@
 #include "ppc.h"
+#include <cmath>
 #include <sstream>
 #include <glm/common.hpp>
 #include <glm/gtx/transform.hpp>
 #include "Utilities/Utils.h"
+#include "glm/ext/matrix_float3x3.hpp"
 
 using namespace glm;
 using namespace purdue;
@@ -54,6 +56,11 @@ glm::mat4 ppc::GetV()
 {
 	return glm::lookAt(_position, _position + _front, _up);
 	// return glm::lookAt(_position, target, _worldUp);
+}
+
+glm::mat3 ppc::get_local_mat() {
+	vec3 x = GetRight(), y = GetUp(), z = -GetViewVec();
+	return glm::mat3(x, y, z);
 }
 
 void ppc::Rotate_Axis(glm::vec3 O, glm::vec3 axis, float angled)
@@ -146,7 +153,7 @@ void ppc::mouse_release(int x, int y) {
 
 
 void ppc::mouse_move(int x, int y) {
-	if (!m_pressed)
+	if (!m_pressed || std::isnan(x))
 		return;
 	x = pd::clamp(x, 0, _width);
 	y = pd::clamp(y, 0, _height);
@@ -160,7 +167,9 @@ void ppc::mouse_move(int x, int y) {
 	
 	float dot_ang = glm::dot(last, cur);
 	dot_ang = pd::clamp(dot_ang, -1.0f, 1.0f);
-	vec3 rot_axis = glm::cross(last, cur); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
+	INFO("Last/Cur: {},{}", pd::to_string(last), pd::to_string(cur));
+	vec3 rot_axis = glm::normalize(glm::cross(last, cur)); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
+	rot_axis = get_local_mat() * rot_axis;
 
 	if(glm::all(glm::isnan(rot_axis))) {
 		return;
@@ -176,7 +185,13 @@ void ppc::mouse_move(int x, int y) {
 	}
 	else {
 		// use trackball
-		PositionAndOrient(glm::vec3(glm::rotate(rot_ang, rot_axis) * vec4(m_last_position,0.0f)), vec3(0.0f), _up);
+		vec4 new_pos = glm::rotate(rot_ang, rot_axis) * vec4(m_last_position, 1.0f);
+		m_last_orientation = vec3(new_pos/new_pos.w);
+		PositionAndOrient(m_last_orientation, vec3(0.0f), _up);
+
+		/* DBG */
+		// INFO("Rotation Axis: {}, Rotation Angle: {}", purdue::to_string(rot_axis), rot_ang);
+		// INFO("Last Position/New Pos, {}, {}", purdue::to_string(m_last_position), purdue::to_string(m_last_orientation));
 	}
 }
 

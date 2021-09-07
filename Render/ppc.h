@@ -79,6 +79,7 @@ public:
 	void PositionAndOrient(vec3 p, vec3 lookatP, vec3 up);
 	glm::mat4 GetP();
 	glm::mat4 GetV();
+	glm::mat3 get_local_mat();
 	void Rotate_Axis(glm::vec3 O, glm::vec3 axis, float angled);	// only rotate ppc position
 	void Zoom(float delta);
 	void Keyboard(CameraMovement cm, float speed); // keyboard reactions
