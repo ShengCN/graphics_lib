@@ -52,3 +52,5 @@ using glm::mat3;
 using glm::mat4;
 using glm::quat;
 
+typedef int mesh_id;
+const std::string default_shader_name = "template";

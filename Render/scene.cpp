@@ -2,7 +2,9 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 #include <exception>
+#include <stdexcept>
 
+#include "fmt/core.h"
 #include "scene.h"
 #include "common.h"
 #include "Utilities/Logger.h"
@@ -14,6 +16,19 @@ scene::scene() {
 
 
 scene::~scene() {
+}
+
+std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {
+	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
+	if (!load_model(mesh_file, new_mesh)) {
+		throw std::invalid_argument(fmt::format("Mesh {} cannot be loaded.", mesh_file));
+		return nullptr;
+	}
+
+	int id = new_mesh->get_id();
+	m_meshes[id] = new_mesh;
+	new_mesh->set_color(color);
+	return new_mesh;
 }
 
 
@@ -30,39 +45,29 @@ vec3 scene::scene_center() {
 	vec3 center(0.0f,0.0f,0.0f);
 	float weight = (float)m_meshes.size();
 	for (auto&m : m_meshes) {
-		center += m->compute_world_center() * weight;
+		center += m.second->compute_world_center() * weight;
 	}
 
 	return center;
 }
 
-std::vector<std::shared_ptr<mesh>> scene::get_meshes() {
-	std::vector<std::shared_ptr<mesh>> ret;
-	
-	for(auto i:m_meshes){
-		ret.push_back(i);
+std::shared_ptr<mesh> scene::get_mesh(mesh_id id) {
+	if (m_meshes.find(id) == m_meshes.end()) {
+		throw std::invalid_argument(fmt::format("Cannot find mesh(ID: {}).", id));
+		return nullptr;
 	}
-
-	return ret;
+	return m_meshes.at(id);
 }
 
-std::shared_ptr<mesh> scene::get_mesh(int mesh_id) {
-	auto meshes = get_meshes();
-	for(auto m:meshes){
-		if(m->get_id() == mesh_id) {
-			return m;
-		}
-	}
-
-	std::cerr << "Cannot find the mesh \n";
-	return nullptr;
+std::unordered_map<mesh_id, std::shared_ptr<mesh>> scene::get_meshes(){
+	return m_meshes; 
 }
 
 AABB scene::scene_aabb() {
 	AABB scene_aabb(vec3(0.0f));
 
 	for (auto m : m_meshes) {
-		AABB cur_aabb = m->compute_world_aabb();
+		AABB cur_aabb = m.second->compute_world_aabb();
 		scene_aabb.add_point(cur_aabb.p0);
 		scene_aabb.add_point(cur_aabb.p1);
 	}
@@ -75,38 +80,26 @@ bool scene::save_scene(const std::string filename) {
 	// merge 
 
 	// save
+	
 	return false;
 }
 
-std::shared_ptr<mesh> scene::load_mesh(const std::string mesh_file, std::shared_ptr<shader> render_shader) {
-	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
-	load_model(mesh_file, new_mesh);
-	m_meshes.push_back(new_mesh);
-
-	return new_mesh;
-}
-
-std::shared_ptr<mesh> scene::new_mesh() {
-	std::shared_ptr<mesh> ret = std::make_shared<mesh>();
-	m_meshes.push_back(ret);
-
-	return ret;
-}
-
-void scene::remove_mesh(int mesh_id) {
-	for(auto iter = m_meshes.begin(); iter != m_meshes.end(); ++iter) {
-		if((*iter)->get_id() == mesh_id) {
-			m_meshes.erase(iter);
-			break;
-		}
+bool scene::remove_mesh(mesh_id id) {
+	if (m_meshes.find(id) == m_meshes.end()) {
+		WARN("Try to remove a not existed mesh . ID: {}", id);
+		return false;
 	}
+	
+	m_meshes.erase(id);
+	return true;
 }
 
-void scene::add_mesh(std::shared_ptr<mesh> m) {
-	if (!m)
-		WARN("Add mesh failed");
-
-	m_meshes.push_back(m);
+void scene::add_mesh(std::shared_ptr<mesh> m)  {
+	if (m == nullptr) {
+		throw std::invalid_argument(fmt::format("Try to insert a nullptr to scene"));
+		return;
+	}
+	m_meshes[m->get_id()] = m;	
 }
 
 // compute default ppc position

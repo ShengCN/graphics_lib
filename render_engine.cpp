@@ -1,8 +1,8 @@
 #include <glad/glad.h>
-#include "Render/geo.h"
+#include <common.h>
+#include <stdexcept>
+#include "fmt/core.h"
 #include "render_engine.h"
-#include "Utilities/voxelization.h"
-#include <glm/gtx/transform.hpp>
 #include "Utilities/Utils.h"
 
 render_engine::render_engine() {
@@ -11,25 +11,25 @@ render_engine::render_engine() {
 }
 
 void render_engine::test_scene(int w, int h) {
-	int id = load_mesh("Meshes/bunny.obj");
-	// int id = load_mesh("Meshes/cylinder.obj");
+	const std::string test_mesh_fpath = "Meshes/bunny.obj";
+	mesh_id id = add_mesh(test_mesh_fpath);
 	INFO("finish loading mesh buny");
 
-	set_mesh_color(get_mesh(id), vec3(0.8f));
-	recompute_normal(id);
-
+	set_mesh_color(id, vec3(0.8f));
 	auto cur_mesh = get_mesh(id);
-	if(cur_mesh) {
+	if(!cur_mesh) {
+		throw std::invalid_argument(fmt::format("Testing Scene Cannnot find {}", test_mesh_fpath)); 
+	} else {
 		cur_mesh->normalize_position_orientation();
 		cur_mesh->add_rotate(90.0f, vec3(-1.0f,0.0f,0.0f));
-	}	
+	}
 
-	cur_manager.cur_camera = std::make_shared<ppc>(w, h, 80.0f);
+	m_manager.cur_camera = std::make_shared<ppc>(w, h, 80.0f);
 	look_at(id);
 }
 
 void render_engine::init_camera(int w, int h, float fov) {
-	cur_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
+	m_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
 }
 
 void render_engine::recompute_normal(int mesh_id) {
@@ -47,26 +47,35 @@ void render_engine::stand_on_plane(int mesh_id, vec3 p, vec3 n) {
 	mesh_ptr->add_world_transate(trans_vec); 
 }
 
-int render_engine::add_visualize_line(vec3 h, vec3 t) {
+mesh_id render_engine::add_visualize_line(vec3 h, vec3 t) {
 	std::shared_ptr<mesh> vis_mesh = std::make_shared<mesh>();
+	if (vis_mesh == nullptr) {
+		throw std::invalid_argument(fmt::format("New mesh failed"));
+		return -1;
+	}
+
 	vis_mesh->add_vertex(h, vec3(0.0f), vec3(1.0f,0.0f,0.0f)); 
 	vis_mesh->add_vertex(t, vec3(0.0f), vec3(1.0f,0.0f,0.0f)); 
-
-	cur_manager.rendering_mappings[vis_mesh] = cur_manager.shaders.at("template");
-	cur_manager.visualize_scene->add_mesh(vis_mesh);	
+	
+	m_manager.rendering_mappings[vis_mesh] = m_manager.shaders.at(default_shader_name);
+	m_manager.visualize_scene->add_mesh(vis_mesh);	
 	return vis_mesh->get_id();
 }
 
+bool render_engine::remove_visualize_line(mesh_id id) {
+	return m_manager.render_scene->remove_mesh(id);	
+}
+
 void render_engine::render(int frame) {	
-	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::triangle};
+	rendering_params params = { m_manager.cur_camera, m_manager.lights, frame, draw_type::triangle};
 
 	if (m_draw_render) {
-		render_scene(cur_manager.render_scene, params);
+		render_scene(m_manager.render_scene, params);
 	}
 	if (m_draw_visualize) {
-		params = { cur_manager.cur_camera, cur_manager.lights, frame, draw_type::line_segments };
+		params = { m_manager.cur_camera, m_manager.lights, frame, draw_type::line_segments };
 		if (m_vis_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		render_scene(cur_manager.visualize_scene, params);
+		render_scene(m_manager.visualize_scene, params);
 		if (m_vis_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 }
@@ -80,21 +89,21 @@ void render_engine::init() {
 	//------- initialize Shaders --------//
 	const std::string template_vs = "Shaders/template_vs.glsl";
 	const std::string template_fs = "Shaders/template_fs.glsl";
-	cur_manager.shaders["template"] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
+	m_manager.shaders["template"] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
 
 	INFO("shader finished");
 
 	// const std::string weighted_OIT_vs = "Shaders/transparent_vs.glsl";
 	// const std::string weighted_OIT_fs = "Shaders/transparent_fs.glsl";
-	// cur_manager.shaders["weight_OIT"] = std::make_shared<shader>(weighted_OIT_vs.c_str(), weighted_OIT_fs.c_str());
+	// m_manager.shaders["weight_OIT"] = std::make_shared<shader>(weighted_OIT_vs.c_str(), weighted_OIT_fs.c_str());
 
 	// const std::string quad_vs = "Shaders/quad_vs.glsl";
 	// const std::string quad_fs = "Shaders/quad_fs.glsl";
-	// cur_manager.shaders["quad"] = std::make_shared<shader>(quad_vs.c_str(), quad_fs.c_str());
+	// m_manager.shaders["quad"] = std::make_shared<shader>(quad_vs.c_str(), quad_fs.c_str());
 
 	//------- initialize scene --------//
-	cur_manager.render_scene = std::make_shared<scene>();
-	cur_manager.visualize_scene = std::make_shared<scene>();
+	m_manager.render_scene = std::make_shared<scene>();
+	m_manager.visualize_scene = std::make_shared<scene>();
 	// m_quad_vao = create_quad();
 }
 
@@ -103,7 +112,7 @@ void render_engine::render_scene(std::shared_ptr<scene> cur_scene, rendering_par
 	auto meshes = cur_scene->get_meshes();
 
 	for(auto &m:meshes) {
-		cur_manager.rendering_mappings.at(m)->draw_mesh(m, params);
+		m_manager.rendering_mappings.at(m.second)->draw_mesh(m.second, params);
 	}
 }
 
@@ -120,7 +129,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 
 		glGenTextures(1, &accum_texture);
 		glBindTexture(GL_TEXTURE_2D, accum_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_manager.cur_camera->_width, m_manager.cur_camera->_height, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -129,7 +138,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 
 		glGenTextures(1, &reveal_texture);
 		glBindTexture(GL_TEXTURE_2D, reveal_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height, 0, GL_RED, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, m_manager.cur_camera->_width, m_manager.cur_camera->_height, 0, GL_RED, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -176,27 +185,21 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDrawBuffer(GL_BACK);
 
-	cur_manager.shaders.at("quad")->bind();
+	m_manager.shaders.at("quad")->bind();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, accum_texture);
-	glUniform1i(glGetUniformLocation(cur_manager.shaders.at("quad")->get_shader_program(), "accum_tex"), 0);
+	glUniform1i(glGetUniformLocation(m_manager.shaders.at("quad")->get_shader_program(), "accum_tex"), 0);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, reveal_texture);
-	glUniform1i(glGetUniformLocation(cur_manager.shaders.at("quad")->get_shader_program(), "weight_tex"), 1);
+	glUniform1i(glGetUniformLocation(m_manager.shaders.at("quad")->get_shader_program(), "weight_tex"), 1);
 
-	glViewport(0, 0, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height);
+	glViewport(0, 0, m_manager.cur_camera->_width, m_manager.cur_camera->_height);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
 	draw_quad();
-}
-
-std::shared_ptr<mesh> render_engine::vis_new_mesh() {
-	auto ret_mesh = cur_manager.visualize_scene->new_mesh();
-	cur_manager.rendering_mappings[ret_mesh] = cur_manager.shaders.at("template");
-	return ret_mesh;
 }
 
 GLuint render_engine::create_quad() {
@@ -226,46 +229,22 @@ GLuint render_engine::create_quad() {
 	return vao;
 }
 
-std::vector<std::shared_ptr<mesh>> render_engine::get_rendering_meshes() {
-	return cur_manager.render_scene->get_meshes();
+std::shared_ptr<mesh> render_engine::get_mesh(mesh_id id) {
+	return m_manager.render_scene->get_mesh(id);
 }
 
-std::shared_ptr<mesh> render_engine::get_mesh(int id) {
-	return cur_manager.render_scene->get_mesh(id);
-}
+int render_engine::add_mesh(const std::string model_fname, vec3 c) {
+	auto cur_mesh = m_manager.render_scene->add_mesh(model_fname, c);
 
-std::vector<std::shared_ptr<mesh>> render_engine::get_meshes(std::vector<int> ids) {
-	std::vector<std::shared_ptr<mesh>> ret;
-	for(int id : ids) {
-		ret.push_back(get_mesh(id));
-	}
-	return ret;
-}
-
-int render_engine::load_mesh(const std::string model_fname, std::string shader_name) {
-	auto cur_mesh = cur_manager.render_scene->load_mesh(model_fname, cur_manager.shaders[shader_name]);
 	if (cur_mesh) {
-		cur_manager.rendering_mappings[cur_mesh] = cur_manager.shaders[shader_name];
+		m_manager.rendering_mappings[cur_mesh] = m_manager.shaders[default_shader_name];
 		return cur_mesh->get_id();
 	}
 
 	return -1;
 }
 
-int render_engine::load_mesh(const std::string model_fname, vec3 c, std::string shader_name) {
-	auto cur_mesh = cur_manager.render_scene->load_mesh(model_fname, cur_manager.shaders[shader_name]);
-
-	if (cur_mesh) {
-		cur_manager.rendering_mappings[cur_mesh] = cur_manager.shaders[shader_name];
-
-		cur_mesh->set_color(c);
-		return cur_mesh->get_id();
-	}
-
-	return -1;
-}
-
-bool render_engine::save_mesh(std::shared_ptr<mesh> m, const std::string model_fname) {
+bool render_engine::save_mesh(mesh_id id, const std::string model_fname) {
 	return false;
 }
 
@@ -275,30 +254,26 @@ bool render_engine::load_render_scene(const std::string scene_file) {
 
 bool render_engine::reload_shaders() {
 	bool success = true;
-	for(auto &s:cur_manager.shaders) {
+	for(auto &s:m_manager.shaders) {
 		success = success && s.second->reload_shader();
 	}
 	return success;
 }
 
-void render_engine::add_mesh(std::shared_ptr<mesh> m) {
-	cur_manager.render_scene->add_mesh(m);
-}
-
 void render_engine::camera_press(int x, int y) {
-	cur_manager.cur_camera->mouse_press(x, y);
+	m_manager.cur_camera->mouse_press(x, y);
 }
 
 void render_engine::camera_release(int x, int y) {
-	cur_manager.cur_camera->mouse_release(x, y);
+	m_manager.cur_camera->mouse_release(x, y);
 }
 
 void render_engine::camera_move(int x, int y) {
-	cur_manager.cur_camera->mouse_move(x, y);
+	m_manager.cur_camera->mouse_move(x, y);
 }
 
 void render_engine::camera_scroll(int offset) {
-	cur_manager.cur_camera->scroll((double)offset);
+	m_manager.cur_camera->scroll((double)offset);
 }
 
 void render_engine::camera_keyboard(char m, bool shift) {
@@ -309,22 +284,22 @@ void render_engine::camera_keyboard(char m, bool shift) {
 	switch (m)
 	{
 	case 'w': 
-		cur_manager.cur_camera->Keyboard(CameraMovement::forward, speed);
+		m_manager.cur_camera->Keyboard(CameraMovement::forward, speed);
 		break;
 	case 'a': 
-		cur_manager.cur_camera->Keyboard(CameraMovement::left, speed);
+		m_manager.cur_camera->Keyboard(CameraMovement::left, speed);
 		break;
 	case 's': 
-		cur_manager.cur_camera->Keyboard(CameraMovement::backward, speed);
+		m_manager.cur_camera->Keyboard(CameraMovement::backward, speed);
 		break;
 	case 'd': 
-		cur_manager.cur_camera->Keyboard(CameraMovement::right, speed);
+		m_manager.cur_camera->Keyboard(CameraMovement::right, speed);
 		break;
 	case 'q': 
-		cur_manager.cur_camera->Keyboard(CameraMovement::up, speed);
+		m_manager.cur_camera->Keyboard(CameraMovement::up, speed);
 		break;
 	case 'e': 
-		cur_manager.cur_camera->Keyboard(CameraMovement::down, speed);
+		m_manager.cur_camera->Keyboard(CameraMovement::down, speed);
 		break;
 	default:
 		break;
@@ -334,7 +309,7 @@ void render_engine::camera_keyboard(char m, bool shift) {
 void render_engine::look_at(int mesh_id, vec3 relative) {
 	auto at_mesh = get_mesh(mesh_id);
 	if(at_mesh) {
-		cur_manager.render_scene->focus_at(cur_manager.cur_camera, at_mesh, relative);
+		m_manager.render_scene->focus_at(m_manager.cur_camera, at_mesh, relative);
 	} else {
 		WARN("Cannot find mesh " + std::to_string(mesh_id));
 	}
@@ -349,116 +324,92 @@ void render_engine::draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc) {
 	line_mesh->add_vertex(t, vec3(0.0f), tc);
 	line_mesh->add_vertex(h, vec3(0.0f), hc);
 	
-	rendering_params params = { cur_manager.cur_camera, cur_manager.lights, 0, draw_type::line_segments};
+	rendering_params params = { m_manager.cur_camera, m_manager.lights, 0, draw_type::line_segments};
 
 	glDisable(GL_DEPTH_TEST);
-	cur_manager.shaders.at("template") ->draw_mesh(line_mesh, params);
+	m_manager.shaders.at("template") ->draw_mesh(line_mesh, params);
 	glEnable(GL_DEPTH_TEST);
 
 	mesh::id--;
 }
 
-void render_engine::set_mesh_color(std::shared_ptr<mesh> m, vec3 c) {
-	if(m)
-		m->set_color(c);
+void render_engine::set_mesh_color(mesh_id id, vec3 c) {
+	auto mesh_ptr = m_manager.render_scene->get_mesh(id);
+	if(mesh_ptr == nullptr) {
+		WARN("Cannot find mesh ID[{}]", id);
+		return;
+	}
+	mesh_ptr->set_color(c);
 }
 
-void render_engine::mesh_add_transform(std::shared_ptr<mesh> m, glm::mat4 mat) {
+void render_engine::mesh_add_transform(mesh_id id, glm::mat4 mat) {
+	auto m = m_manager.render_scene->get_mesh(id);
 	m->m_world = mat * m->m_world;
 }
 
-void render_engine::mesh_add_transform(int id, glm::mat4 mat) {
-	std::shared_ptr<mesh> m = get_mesh(id);
-	if(m) {
-		mesh_add_transform(m, mat);
-	}
-}
-
-void render_engine::mesh_set_transform(std::shared_ptr<mesh> m, glm::mat4 mat) {
+void render_engine::mesh_set_transform(mesh_id id, glm::mat4 mat) {
+	auto m = m_manager.render_scene->get_mesh(id);
 	m->set_world_mat(mat);
 }
 
-void render_engine::mesh_apply_transform(std::shared_ptr<mesh> m, glm::mat3 mat) {
-	if(m == nullptr) {
-		return;
-	}
-
-	vec3 trans = mat[0];
-	vec3 rotate = mat[1];
-	vec3 scale = mat[2];
-
-	glm::mat4 new_scale = glm::scale(scale);
-	glm::mat4 new_rotation = glm::rotate(pd::deg2rad(rotate[0]), glm::vec3(1.0f, 0.0f, 0.0f)) *
-		glm::rotate(pd::deg2rad(rotate[1]), glm::vec3(0.0f, 1.0f, 0.0f)) *
-		glm::rotate(pd::deg2rad(rotate[2]), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 new_translate = glm::translate(trans);
-
-	glm::mat4 new_transform = new_translate * new_rotation * new_scale;
-	m->set_world_mat(new_transform);
-}
-
-glm::mat4 render_engine::get_mesh_world(std::shared_ptr<mesh> m) {
+glm::mat4 render_engine::get_mesh_world(mesh_id id) {
+	auto m = m_manager.render_scene->get_mesh(id);
 	return m->get_world_mat();
 }
 
-void render_engine::cut_mesh(std::shared_ptr<mesh> m, vec3 p, vec3 n) {
-}
-
-void render_engine::add_point_light(glm::vec3 lp) {
-	cur_manager.lights.push_back(lp);
-}
-
 void render_engine::set_render_camera(int w, int h) {
-	if (cur_manager.cur_camera == nullptr) {
-		cur_manager.cur_camera = std::make_shared<ppc>(w, h, 120.0f);
+	if (m_manager.cur_camera == nullptr) {
+		m_manager.cur_camera = std::make_shared<ppc>(w, h, 120.0f);
 		return;
 	} 
 
-	cur_manager.cur_camera->_width = w;
-	cur_manager.cur_camera->_height = h;
-	glViewport(0, 0, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height);
+	m_manager.cur_camera->_width = w;
+	m_manager.cur_camera->_height = h;
+	glViewport(0, 0, m_manager.cur_camera->_width, m_manager.cur_camera->_height);
 }
 
 void render_engine::set_render_camera(int w, int h, float fov) {
-	if (cur_manager.cur_camera == nullptr) {
-		cur_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
+	if (m_manager.cur_camera == nullptr) {
+		m_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
 		return;
 	} 
-	cur_manager.cur_camera->_width = w;
-	cur_manager.cur_camera->_height = h;
-	cur_manager.cur_camera->_fov = fov;
-	glViewport(0, 0, cur_manager.cur_camera->_width, cur_manager.cur_camera->_height);
+	m_manager.cur_camera->_width = w;
+	m_manager.cur_camera->_height = h;
+	m_manager.cur_camera->_fov = fov;
+	glViewport(0, 0, m_manager.cur_camera->_width, m_manager.cur_camera->_height);
 }
 
-void render_engine::set_shader(std::shared_ptr<mesh> m, const std::string shader_name) {
-	cur_manager.rendering_mappings[m] = cur_manager.shaders.at(shader_name);
+void render_engine::set_shader(mesh_id id, const std::string shader_name) {
+	auto m = m_manager.render_scene->get_mesh(id);
+	m_manager.rendering_mappings[m] = m_manager.shaders.at(shader_name);
 }
 
 void render_engine::remove_mesh(int mesh_id) {
-	cur_manager.render_scene->remove_mesh(mesh_id);
+	m_manager.render_scene->remove_mesh(mesh_id);
 }
 
 void render_engine::draw_visualize_voxels(std::vector<AABB> voxels) {
-	auto vis_mesh = vis_new_mesh();
-	if (vis_mesh) {
-		for(auto& cur_bb : voxels) {
-			auto tri_meshes = cur_bb.to_tri_mesh();
-			vis_mesh->add_vertices(tri_meshes);
-		}
-	}
-	vis_mesh->set_color(vec3(0.0f, 0.0f, 0.8f));
+	// auto vis_mesh = vis_new_mesh();
+	// if (vis_mesh) {
+	// 	for(auto& cur_bb : voxels) {
+	// 		auto tri_meshes = cur_bb.to_tri_mesh();
+	// 		vis_mesh->add_vertices(tri_meshes);
+	// 	}
+	// }
+	// vis_mesh->set_color(vec3(0.0f, 0.0f, 0.8f));
 }
 
-void render_engine::voxel_vis(int mesh_id) {
-	auto mesh_ptr = get_mesh(mesh_id);
+void render_engine::voxel_vis(mesh_id id) {
+	auto mesh_ptr = m_manager.render_scene->get_mesh(id);
 	if (mesh_ptr) {
-		std::vector<AABB> voxels; voxelizater::voxelize(mesh_ptr, 10, voxels);
+		std::vector<AABB> voxels; 
+		voxelizater::voxelize(mesh_ptr, 10, voxels);
 		draw_visualize_voxels(voxels);
 	}
 }
 
 std::shared_ptr<ppc> render_engine::get_render_ppc() {
-	return cur_manager.cur_camera;
+	return m_manager.cur_camera;
 }
 
 void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
@@ -470,10 +421,10 @@ void render_engine::draw_quad() {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void render_engine::draw_sihouette(int mesh_id, vec3 light_pos) {
-	auto mesh_ptr = get_mesh(mesh_id);
+void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {
+	auto mesh_ptr = m_manager.render_scene->get_mesh(id);
 	if (!mesh_ptr) {
-		INFO("Cannot find the mesh" + std::to_string(mesh_id));
+		INFO("Cannot find the mesh" + std::to_string(id));
 		return;
 	}
 
@@ -486,11 +437,11 @@ void render_engine::draw_sihouette(int mesh_id, vec3 light_pos) {
 	}
 }
 
-void render_engine::draw_shadow_volume(int mesh_id, vec3 light_pos) {
+void render_engine::draw_shadow_volume(mesh_id id, vec3 light_pos) {
 	// compute sihouette edges
-	auto mesh_ptr = get_mesh(mesh_id);
+	auto mesh_ptr = m_manager.render_scene->get_mesh(id);
 	if (!mesh_ptr) {
-		INFO("Cannot find the mesh" + std::to_string(mesh_id));
+		INFO("Cannot find the mesh" + std::to_string(id));
 		return;
 	}
 
@@ -500,11 +451,11 @@ void render_engine::draw_shadow_volume(int mesh_id, vec3 light_pos) {
 	shadow_volume->add_vertices(shadow_verts);
 	shadow_volume->set_color(vec3(1.0f));
 	
-	cur_manager.rendering_mappings[shadow_volume] = cur_manager.shaders["template"];
+	m_manager.rendering_mappings[shadow_volume] = m_manager.shaders["template"];
 	clear_visualize();
-	cur_manager.visualize_scene->add_mesh(shadow_volume);
+	m_manager.visualize_scene->add_mesh(shadow_volume);
 }
 
 void render_engine::clear_visualize() {
-	cur_manager.visualize_scene->clean_up();
+	m_manager.visualize_scene->clean_up();
 }

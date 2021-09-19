@@ -1,10 +1,12 @@
 #pragma once
+#include "Render/geo.h"
+#include "Render/mesh.h"
 #include "Render/shader.h"
 #include "Render/scene.h"
 #include "Render/ppc.h"
+#include "Utilities/voxelization.h"
 #include "asset_manager.h"
 
-// rendering related assets
 class render_engine {
 	//-------  APIs --------//
 public:
@@ -17,19 +19,19 @@ public:
 	//------- Render --------//
 	void render(int frame);
 
-	//------- Queries --------//
-	std::vector<std::shared_ptr<mesh>> get_rendering_meshes();
-	std::shared_ptr<mesh> get_mesh(int id);
-	std::vector<std::shared_ptr<mesh>> get_meshes(std::vector<int> ids);
+	//------- Query --------//
 	std::shared_ptr<ppc> get_render_ppc();
 
+	//------- Modify Scene --------//
+	mesh_id add_mesh(const std::string model_fname, vec3 color=vec3(0.8f));
+	mesh_id add_infinty_plane(vec3 p, vec3 n); 
+	void remove_mesh(mesh_id id);
+	void stand_on_plane(mesh_id id, vec3 p, vec3 n);
+	void set_point_light(glm::vec3 lp);
+
 	//------- IO --------//
-	int load_mesh(const std::string model_fname, std::string shader_name="template");
-	int load_mesh(const std::string model_fname, vec3 c, std::string shader_name = "template");
-	bool save_mesh(std::shared_ptr<mesh> m, const std::string model_fname);
+	bool save_mesh(mesh_id id, const std::string model_fname);
 	bool load_render_scene(const std::string scene_file);
-	bool reload_shaders();
-	void add_mesh(std::shared_ptr<mesh> m);
 
 	//------- UI --------//
 	void camera_press(int x, int y);
@@ -39,26 +41,19 @@ public:
 	void camera_keyboard(char m, bool shift);
 
 	//------- Modify --------//
-	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));
 	void norm_render_scene();
 	void draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc);
-	void set_mesh_color(std::shared_ptr<mesh> m, vec3 c);
-	void mesh_add_transform(std::shared_ptr<mesh> m, glm::mat4 mat);
-	void mesh_add_transform(int id, glm::mat4 mat);
-	void mesh_set_transform(std::shared_ptr<mesh> m, glm::mat4 mat);
-	void mesh_apply_transform(std::shared_ptr<mesh> m, glm::mat3 mat);
-	glm::mat4 get_mesh_world(std::shared_ptr<mesh> m);
-	void cut_mesh(std::shared_ptr<mesh> m, vec3 p, vec3 n);
-	void add_point_light(glm::vec3 lp);
+	void set_mesh_color(mesh_id id, vec3 c);
+	void mesh_add_transform(mesh_id id, glm::mat4 mat);
+	void mesh_set_transform(mesh_id id, glm::mat4 mat);
+	glm::mat4 get_mesh_world(mesh_id m);
 	void set_render_camera(int w, int h);
 	void set_render_camera(int w, int h, float fov);
-	void set_shader(std::shared_ptr<mesh> m, const std::string shader_name);
-	void remove_mesh(int mesh_id);
+	void set_shader(mesh_id m, const std::string shader_name);
 	void recompute_normal(int mesh_id);
-	void stand_on_plane(int mesh_id, vec3 p, vec3 n);
-	int add_visualize_line(vec3 h, vec3 t);
 
 	//------- Rendering --------//
+	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));
 	void draw_render(bool trigger) { m_draw_render = trigger; }
 	void draw_visualize(bool trigger) { m_draw_visualize = trigger; }
 	void draw_visualize_voxels(std::vector<AABB> voxels);
@@ -68,17 +63,22 @@ public:
 	void draw_quad();
 	void draw_sihouette(int mesh_id, vec3 light_pos);
 	void draw_shadow_volume(int mesh_id, vec3 light_pos);
+	bool reload_shaders();
 
+	//------- Visualization --------//
+	mesh_id add_visualize_line(vec3 h, vec3 t);
+	bool remove_visualize_line(mesh_id id);
 	void clear_visualize();
 
 private:
+	std::shared_ptr<mesh> get_mesh(int id);
 	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);
 	void render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params);
 	std::shared_ptr<mesh> vis_new_mesh();
 
 	GLuint create_quad();
 private:
-	asset_manager cur_manager;
+	asset_manager m_manager;
 	bool m_draw_render, m_draw_visualize;
 	bool m_vis_frame_mode;
 	GLuint m_quad_vao;

@@ -5,7 +5,6 @@
 
 // rendering related assets
 struct asset_manager {
-
 public:
 	asset_manager();
 

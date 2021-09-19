@@ -262,9 +262,7 @@ void otb_window::render_mask() {
 }
 
 void otb_window::dbg() {
-	// draw sihouette 
-	vec3 light_pos = vec3(1000.0f);
-	
-	int cur_mesh = m_engine.get_rendering_meshes()[0]->get_id();
-	m_engine.draw_shadow_volume(cur_mesh, light_pos);
+	INFO("Begin DBG");
+
+	INFO("End DBG");
 }

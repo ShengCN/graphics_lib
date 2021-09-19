@@ -88,6 +88,7 @@ bool shader::reload_shader() {
 		return false;
 		break;
 	}
+	return true;
 }
 
 void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {

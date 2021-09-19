@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <string>
 #include <glm/gtx/transform.hpp>
 
@@ -551,7 +552,7 @@ bool load_model(const std::string mesh_file, std::shared_ptr<mesh>& m) {
 			return true;
 		}
 		else {
-			WARN("Loading file " + mesh_file + " failed");
+			throw std::invalid_argument(fmt::format("Loading file {} failed.", mesh_file));
 			return false;
 		}
 	}
