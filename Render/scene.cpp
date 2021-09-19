@@ -20,14 +20,14 @@ scene::~scene() {
 
 std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
-	if (!load_model(mesh_file, new_mesh)) {
+	if ( new_mesh == nullptr || !load_model(mesh_file, new_mesh)) {
 		throw std::invalid_argument(fmt::format("Mesh {} cannot be loaded.", mesh_file));
 		return nullptr;
 	}
 
+	new_mesh->set_color(color);
 	int id = new_mesh->get_id();
 	m_meshes[id] = new_mesh;
-	new_mesh->set_color(color);
 	return new_mesh;
 }
 
@@ -45,7 +45,11 @@ vec3 scene::scene_center() {
 	vec3 center(0.0f,0.0f,0.0f);
 	float weight = (float)m_meshes.size();
 	for (auto&m : m_meshes) {
-		center += m.second->compute_world_center() * weight;
+		if (m.second != nullptr) {
+			center += m.second->compute_world_center() * weight;
+		} else {
+			WARN("There is a nullptr in the scene meshes");
+		}
 	}
 
 	return center;
@@ -86,7 +90,7 @@ bool scene::save_scene(const std::string filename) {
 
 bool scene::remove_mesh(mesh_id id) {
 	if (m_meshes.find(id) == m_meshes.end()) {
-		WARN("Try to remove a not existed mesh . ID: {}", id);
+		WARN("Try to remove a not existed mesh ID[{}]", id);
 		return false;
 	}
 	

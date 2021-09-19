@@ -99,6 +99,7 @@ int otb_window::create_window(int w, int h, const std::string title) {
 		return -1;
 	}
 
+
 	// callbacks
 	glfwSetErrorCallback(error_callback);
 	glfwSetKeyCallback(_window, key_callback);
@@ -109,6 +110,7 @@ int otb_window::create_window(int w, int h, const std::string title) {
 	// set up environment
 	glfwMakeContextCurrent(_window);
 	glfwSwapInterval(1);
+	glfwSetWindowPos(_window, 0,0);
 
 	if (gladLoadGL() == 0) {
 		std::cout << "Failed to initialize OpenGL context" << std::endl;

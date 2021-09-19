@@ -167,7 +167,7 @@ void ppc::mouse_move(int x, int y) {
 	
 	float dot_ang = glm::dot(last, cur);
 	dot_ang = pd::clamp(dot_ang, -1.0f, 1.0f);
-	INFO("Last/Cur: {},{}", pd::to_string(last), pd::to_string(cur));
+	// INFO("Last/Cur: {},{}", pd::to_string(last), pd::to_string(cur));
 	vec3 rot_axis = glm::normalize(glm::cross(last, cur)); rad rot_ang = std::acos(std::min(dot_ang,1.0f));
 	rot_axis = get_local_mat() * rot_axis;
 
