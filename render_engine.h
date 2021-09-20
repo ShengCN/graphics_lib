@@ -1,4 +1,5 @@
 #pragma once
+#include <common.h>
 #include "Render/geo.h"
 #include "Render/mesh.h"
 #include "Render/shader.h"
@@ -32,6 +33,7 @@ public:
 	//------- IO --------//
 	bool save_mesh(mesh_id id, const std::string model_fname);
 	bool load_render_scene(const std::string scene_file);
+	bool save_framebuffer(const std::string ofname);
 
 	//------- UI --------//
 	void camera_press(int x, int y);
@@ -61,6 +63,7 @@ public:
 	void voxel_vis(int mesh_id);
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);
 	void draw_quad();
+	void draw_image(std::shared_ptr<Image> img); 
 	void draw_sihouette(int mesh_id, vec3 light_pos);
 	void draw_shadow_volume(int mesh_id, vec3 light_pos);
 	bool reload_shaders();
@@ -76,10 +79,8 @@ private:
 	void render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params);
 	std::shared_ptr<mesh> vis_new_mesh();
 
-	GLuint create_quad();
 private:
 	asset_manager m_manager;
 	bool m_draw_render, m_draw_visualize;
 	bool m_vis_frame_mode;
-	GLuint m_quad_vao;
 };

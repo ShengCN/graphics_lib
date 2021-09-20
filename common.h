@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include "Utilities/Logger.h"
+#include "Utilities/Image.h"
 
 namespace purdue {
 	typedef float deg;

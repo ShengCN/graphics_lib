@@ -9,13 +9,15 @@
 using std::ifstream;
 using std::ios;
 
-#define BUFFER_OFFSET(i) ((char*)NULL + (i))
+GLuint shader::m_texids[16];
 
+#define BUFFER_OFFSET(i) ((char*)NULL + (i))
 shader::shader(const char* computeShaderFile) {
 	m_cs = computeShaderFile;
 	m_type = shader_type::compute_shader;
 
 	reload_shader();
+	init_textures();
 }
 
 shader::shader(const char* vertexShaderFile, const char* fragmentShaderFile) {
@@ -23,6 +25,7 @@ shader::shader(const char* vertexShaderFile, const char* fragmentShaderFile) {
 	m_type = shader_type::template_shader;
 
 	reload_shader();
+	init_textures();
 }
 
 shader::shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile) {
@@ -30,6 +33,7 @@ shader::shader(const char* vertexShaderFile, const char* geometryShader, const c
 	m_type = shader_type::geometry_shader;
 
 	reload_shader();
+	init_textures();
 }
 
 // Create a NULL-terminated string by reading the provided file
@@ -64,8 +68,6 @@ void printProgramLinkError(GLuint program) {
 	std::cerr << logMsg << std::endl;
 	delete[] logMsg;
 }
-
-
 
 bool shader::reload_shader() {
 	if(m_program != -1)
@@ -171,6 +173,31 @@ void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 	glDrawArrays(ogl_draw_type, 0, (GLsizei)m->m_verts.size());
 	glBindVertexArray(0);
 }
+
+void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& params){
+	if (descriptor.m == nullptr) {
+		WARN("Shader input mesh is nullptr");
+		return;
+	}
+
+	for (int i = 0; i < descriptor.texs.size(); ++i) {
+		if (descriptor.texs[i] == nullptr) {
+			WARN("{} texture is nullptr", i);
+			continue;
+		}
+		
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, m_texids[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, descriptor.texs[i]->width(), descriptor.texs[i]->height(), 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	draw_mesh(descriptor.m, params);
+}
+
+
 GLuint shader::init_compute_shader() {
 	bool error = false;
 	struct Shader
@@ -277,8 +304,7 @@ GLuint shader::init_template_shader() {
 		error = true;
 	}
 
-	return program;
-}
+	return program; }
 
 GLuint shader::init_geometry_shader() {
 	bool error = false;
@@ -334,4 +360,67 @@ GLuint shader::init_geometry_shader() {
 	}
 
 	return program;
+}
+
+void shader::init_textures() {
+	glGenTextures(sizeof(m_texids), m_texids);
+	for(int i = 0; i < sizeof(m_texids); ++i) {
+		if (m_texids[i] == -1) {
+			WARN("Texture Initialization failed");
+		}
+	}
+}
+
+quad_shader::quad_shader(const char* computeShaderFile):shader(computeShaderFile) {
+	init_vao();
+}
+
+quad_shader::quad_shader(const char* vertexShaderFile, const char* fragmentShaderFile):shader(vertexShaderFile, fragmentShaderFile) {
+	init_vao();
+}
+
+quad_shader::quad_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile):shader(vertexShaderFile, geometryShader, fragmentShaderFile) {	
+	init_vao();
+}
+
+void quad_shader::init_vao() {
+	const float quad_verts[] = { -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f };
+
+	glGenVertexArrays(1, &m_quad_vao);
+	glBindVertexArray(m_quad_vao);
+
+	glGenBuffers(1, &m_quad_vbo); 
+	glBindBuffer(GL_ARRAY_BUFFER, m_quad_vbo); 
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_verts), &quad_verts[0], GL_STATIC_DRAW);
+
+	const GLint pos_loc = 0;
+	glEnableVertexAttribArray(pos_loc); 
+	glVertexAttribPointer(pos_loc, 3, GL_FLOAT, false, 0, 0);
+	glBindVertexArray(0); //unbind the vao
+}
+
+void quad_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params) {
+	glUseProgram(m_program);
+
+	/* Bind Texture If Have */
+	for (int i = 0; i < descriptor.texs.size(); ++i) {
+		if (descriptor.texs[i] == nullptr) {
+			WARN("{} texture is nullptr", i);
+			continue;
+		}
+		
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, m_texids[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, descriptor.texs[i]->width(), descriptor.texs[i]->height(), 0, GL_RGBA, GL_FLOAT, descriptor.texs[i]->data());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+
+	glDepthMask(GL_FALSE);  
+	glBindVertexArray(m_quad_vao);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+	glDepthMask(GL_FALSE);  
 }

@@ -77,6 +77,7 @@ namespace purdue {
 		return buffAsStdStr;
 	}
 
+	bool read_image(const std::string fname, int &w, int &h, int &c, std::vector<unsigned char> &buf);
 	bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
 
 	/*!

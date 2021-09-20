@@ -96,6 +96,8 @@ public:
 	bool mouse_inside_frame(int x, int y);
 	void set_trackball(bool trackball);
 	void camera_resize(int w, int h);
+	int width() { return _width; }
+	int height() { return _height; }
 
 	std::string to_string();
 

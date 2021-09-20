@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <common.h>
+#include <memory>
 #include <stdexcept>
 #include "fmt/core.h"
 #include "render_engine.h"
@@ -91,20 +92,18 @@ void render_engine::init() {
 	const std::string template_fs = "Shaders/template_fs.glsl";
 	m_manager.shaders["template"] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
 
-	INFO("shader finished");
+	const std::string quad_vs = "Shaders/quad_vs.glsl";
+	const std::string quad_fs = "Shaders/quad_fs.glsl";
+	m_manager.shaders["quad"] = std::make_shared<quad_shader>(quad_vs.c_str(), quad_fs.c_str());
+	INFO("{} shaders finished", (int)m_manager.shaders.size());
 
 	// const std::string weighted_OIT_vs = "Shaders/transparent_vs.glsl";
 	// const std::string weighted_OIT_fs = "Shaders/transparent_fs.glsl";
 	// m_manager.shaders["weight_OIT"] = std::make_shared<shader>(weighted_OIT_vs.c_str(), weighted_OIT_fs.c_str());
 
-	// const std::string quad_vs = "Shaders/quad_vs.glsl";
-	// const std::string quad_fs = "Shaders/quad_fs.glsl";
-	// m_manager.shaders["quad"] = std::make_shared<shader>(quad_vs.c_str(), quad_fs.c_str());
-
 	//------- initialize scene --------//
 	m_manager.render_scene = std::make_shared<scene>();
 	m_manager.visualize_scene = std::make_shared<scene>();
-	// m_quad_vao = create_quad();
 }
 
 void render_engine::render_scene(std::shared_ptr<scene> cur_scene, rendering_params params) {
@@ -199,34 +198,7 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
-	draw_quad();
-}
-
-GLuint render_engine::create_quad() {
-	GLuint vao, vbo;
-	//quad is in z=0 plane, and goes from -1.0 to +1.0 in x,y directions.
-	const float quad_verts[] = { -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f };
-
-	//generate vao id to hold the mapping from attrib variables in shader to memory locations in vbo
-	glGenVertexArrays(1, &vao);
-	//binding vao means that bindbuffer, enablevertexattribarray and vertexattribpointer 
-	// state will be remembered by vao
-	glBindVertexArray(vao);
-
-	glGenBuffers(1, &vbo); // Generate vbo to hold vertex attributes for triangle
-	glBindBuffer(GL_ARRAY_BUFFER, vbo); //specify the buffer where vertex attribute data is stored
-	//upload from main memory to gpu memory
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_verts), &quad_verts[0], GL_STATIC_DRAW);
-
-	//get a reference to an attrib variable name in a shader
-	const GLint pos_loc = 0;
-	glEnableVertexAttribArray(pos_loc); //enable this attribute
-
-	//tell opengl how to get the attribute values out of the vbo (stride and offset)
-	glVertexAttribPointer(pos_loc, 3, GL_FLOAT, false, 0, 0);
-	glBindVertexArray(0); //unbind the vao
-
-	return vao;
+	// draw_quad();
 }
 
 std::shared_ptr<mesh> render_engine::get_mesh(mesh_id id) {
@@ -250,6 +222,26 @@ bool render_engine::save_mesh(mesh_id id, const std::string model_fname) {
 
 bool render_engine::load_render_scene(const std::string scene_file) {
 	return false;
+}
+
+bool render_engine::save_framebuffer(const std::string ofname) {
+	unsigned int *pixels;
+	int w = m_manager.cur_camera->width(), h = m_manager.cur_camera->height();
+	pixels = new unsigned int[w * h * 4];
+	for (int i = 0; i < (w * h * 4); i++) {
+		pixels[i] = 0;
+	}
+
+	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	// flip pixels
+	for (int j = 0; j < h / 2; ++j) for (int i = 0; i < w; ++i) {
+		std::swap(pixels[w * j + i], pixels[w * (h-1-j) + i]);
+	}
+
+	bool ret = purdue::save_image(ofname, pixels, w, h, 4);
+	delete[] pixels;
+	return ret;
 }
 
 bool render_engine::reload_shaders() {
@@ -415,10 +407,10 @@ std::shared_ptr<ppc> render_engine::get_render_ppc() {
 void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
 }
 
-
-void render_engine::draw_quad() {
-	glBindVertexArray(m_quad_vao);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+void render_engine::draw_image(std::shared_ptr<Image> img) {
+	Mesh_Descriptor image_descriptor = {nullptr, {img}};
+	auto param = rendering_params();
+	m_manager.shaders.at("quad")->draw_mesh(image_descriptor, param);
 }
 
 void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {
