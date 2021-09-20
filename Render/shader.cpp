@@ -418,9 +418,7 @@ void quad_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params&
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 
-	glDepthMask(GL_FALSE);  
 	glBindVertexArray(m_quad_vao);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
-	glDepthMask(GL_FALSE);  
 }
