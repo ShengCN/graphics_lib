@@ -73,6 +73,9 @@ public:
 	bool remove_visualize_line(mesh_id id);
 	void clear_visualize();
 
+	//------- Others --------//
+	std::shared_ptr<Image> get_frame_buffer();
+
 private:
 	std::shared_ptr<mesh> get_mesh(int id);
 	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);

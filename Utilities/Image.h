@@ -41,7 +41,8 @@ public:
     std::vector<glm::vec4>& get_buffer() { return m_buffer; }
     std::vector<unsigned int> to_unsigned_data();
     void from_unsigned_data(const std::vector<unsigned int> &data, int w, int h);
-    void from_unsigned_data(const std::vector<unsigned char> &data, int w, int h);
+    void from_unsigned_data(unsigned char *data, int w, int h);
+    void from_unsigned_data(unsigned int *data, int w, int h);
 
     void padding(int i, int j, int w, int h, int &outi, int &outj) const;
     static unsigned int vec3_uint(glm::vec3 v);

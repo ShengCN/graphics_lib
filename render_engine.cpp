@@ -451,3 +451,30 @@ void render_engine::draw_shadow_volume(mesh_id id, vec3 light_pos) {
 void render_engine::clear_visualize() {
 	m_manager.visualize_scene->clean_up();
 }
+
+std::shared_ptr<Image> render_engine::get_frame_buffer() {
+	unsigned int *pixels;
+	int w = m_manager.cur_camera->width(), h = m_manager.cur_camera->height();
+	pixels = new unsigned int[w * h * 4];
+	if (!pixels) {
+		throw std::invalid_argument("Not enough memory for saveing frame buffer");
+		return nullptr;
+	}
+
+	for (int i = 0; i < (w * h * 4); i++) {
+		pixels[i] = 0;
+	}
+
+	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	// flip pixels
+	for (int j = 0; j < h / 2; ++j) for (int i = 0; i < w; ++i) {
+		std::swap(pixels[w * j + i], pixels[w * (h-1-j) + i]);
+	}
+
+	std::shared_ptr<Image> ret = std::make_shared<Image>(w, h); 
+	ret->from_unsigned_data(pixels, w, h);
+
+	delete[] pixels;
+	return ret;
+}

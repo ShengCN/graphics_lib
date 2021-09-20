@@ -152,21 +152,12 @@ std::vector<unsigned int> Image::to_unsigned_data() {
     return ret;
 }
 
-void Image::from_unsigned_data(const std::vector<unsigned int> &data, int w, int h) {
-    set_dim(w, h);
-    m_buffer.resize(data.size());
-    for(int i = 0; i < data.size(); ++i) {
-        m_buffer[i] = uint_vec4(data[i]);
-    }
-}
-
-void Image::from_unsigned_data(const std::vector<unsigned char> &data, int w, int h) {
-    if (data.size() != w * h * 4) {
-        throw std::invalid_argument(fmt::format("Please check input Image. {}/{}, {}{}", data.size(), w * h * 4,w, h));
+void Image::from_unsigned_data(unsigned char *data, int w, int h) {
+    if (!data) {
+        throw std::invalid_argument("Reading Image failed!");
         return;
     }
 
-    INFO("Data size: {}", data.size());
     set_dim(w, h);
     m_buffer.resize(w * h);
     for(int i = 0; i < w; ++i) for(int j = 0; j < h; ++j) {
@@ -176,6 +167,20 @@ void Image::from_unsigned_data(const std::vector<unsigned char> &data, int w, in
             data[4 * ind + 1]/255.0f,
             data[4 * ind + 2]/255.0f,
             data[4 * ind + 3]/255.0f);
+    }
+}
+
+void Image::from_unsigned_data(unsigned int *data, int w, int h) {
+    if (!data) {
+        throw std::invalid_argument("Reading Image failed!");
+        return;
+    }
+
+    size_t num = w * h;
+    set_dim(w, h);
+    m_buffer.resize(num);
+    for(int i = 0; i < num; ++i) {
+        m_buffer[i] = uint_vec4(data[i]);
     }
 }
 
@@ -201,7 +206,7 @@ bool Image::load(const std::string fname) {
     if (purdue::read_image(fname, m_w, m_h, c, buf)) {
         INFO("Loading " + fname);
         INFO(fmt::format("W: {}, H: {}, C: {} \n", m_w, m_h, c));
-        from_unsigned_data(buf, m_w, m_h);    
+        from_unsigned_data(buf.data(), m_w, m_h);    
         INFO("Loading Success");
         return true;
     }
