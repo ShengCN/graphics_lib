@@ -5,14 +5,7 @@ in vec3 vs_color;
 in vec3 vs_norm;
 in vec2 vs_uvs;
 
-uniform float slider;
-uniform int cur_selected_id;
-uniform sampler2D map_kd;
 out vec4 frag_color;
-
-float lerp(float t1, float t2, float fract){
-    return (1.0 - fract) * t1 + fract * t2;
-}
 
 void main(){
     // float z1 = -100.0, z2 = 100.0;
@@ -25,6 +18,9 @@ void main(){
     // // if(length(col_kd) < 0.1f)
     // //     col_kd = vs_color;
     // vec3 col = (ka + (1.0 - ka) * kd) * vs_color;
-    vec3 col = vec3(0.1);
+    float frequency = 50.0;
+    float x = sin(vs_pos.x * frequency), y = sin(vs_pos.z * frequency);
+    float width = 0.9;
+    vec3 col = vec3(1.0-clamp(step(width, x) + step(width, y), 0.0, 1.0));
     frag_color = vec4(col, 0.3);
 }

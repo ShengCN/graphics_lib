@@ -1,5 +1,6 @@
 #pragma once
 #include <common.h>
+#include <memory>
 #include "Render/geo.h"
 #include "Render/mesh.h"
 #include "Render/shader.h"
@@ -25,7 +26,7 @@ public:
 
 	//------- Modify Scene --------//
 	mesh_id add_mesh(const std::string model_fname, vec3 color=vec3(0.8f));
-	mesh_id add_infinty_plane(vec3 p, vec3 n); 
+	mesh_id add_plane_mesh(vec3 p, vec3 n); 
 	void remove_mesh(mesh_id id);
 	void stand_on_plane(mesh_id id, vec3 p, vec3 n);
 	void set_point_light(glm::vec3 lp);
@@ -48,6 +49,7 @@ public:
 	void set_mesh_color(mesh_id id, vec3 c);
 	void mesh_add_transform(mesh_id id, glm::mat4 mat);
 	void mesh_set_transform(mesh_id id, glm::mat4 mat);
+	void add_rotate(mesh_id id, purdue::deg angle, vec3 axis);
 	glm::mat4 get_mesh_world(mesh_id m);
 	void set_render_camera(int w, int h);
 	void set_render_camera(int w, int h, float fov);
@@ -78,9 +80,10 @@ public:
 
 private:
 	std::shared_ptr<mesh> get_mesh(int id);
+	std::shared_ptr<mesh> vis_new_mesh();
+	std::shared_ptr<mesh> add_empty_mesh();
 	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);
 	void render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params);
-	std::shared_ptr<mesh> vis_new_mesh();
 
 private:
 	asset_manager m_manager;

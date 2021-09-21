@@ -55,3 +55,5 @@ using glm::quat;
 
 typedef int mesh_id;
 const std::string default_shader_name = "template";
+const std::string quad_shader_name = "quad";
+const std::string plane_shader_name = "plane";

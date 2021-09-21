@@ -3,6 +3,7 @@
 #include <memory>
 #include <stdexcept>
 #include "fmt/core.h"
+#include "glm/gtx/transform.hpp"
 #include "render_engine.h"
 #include "Utilities/Utils.h"
 
@@ -27,6 +28,11 @@ void render_engine::test_scene(int w, int h) {
 
 	m_manager.cur_camera = std::make_shared<ppc>(w, h, 80.0f);
 	look_at(id);
+}
+
+void render_engine::add_rotate(mesh_id id, purdue::deg angle, vec3 axis) {
+	glm::mat4 rot_mat = glm::rotate(angle, axis);
+	mesh_add_transform(id, rot_mat);
 }
 
 void render_engine::init_camera(int w, int h, float fov) {
@@ -90,11 +96,15 @@ void render_engine::init() {
 	//------- initialize Shaders --------//
 	const std::string template_vs = "Shaders/template_vs.glsl";
 	const std::string template_fs = "Shaders/template_fs.glsl";
-	m_manager.shaders["template"] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
+	m_manager.shaders[default_shader_name] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
 
 	const std::string quad_vs = "Shaders/quad_vs.glsl";
 	const std::string quad_fs = "Shaders/quad_fs.glsl";
-	m_manager.shaders["quad"] = std::make_shared<quad_shader>(quad_vs.c_str(), quad_fs.c_str());
+	m_manager.shaders[quad_shader_name] = std::make_shared<quad_shader>(quad_vs.c_str(), quad_fs.c_str());
+
+	const std::string ground_vs = "Shaders/ground_vs.glsl";
+	const std::string ground_fs = "Shaders/ground_fs.glsl";
+	m_manager.shaders[plane_shader_name] = std::make_shared<shader>(ground_vs.c_str(), ground_fs.c_str());
 	INFO("{} shaders finished", (int)m_manager.shaders.size());
 
 	// const std::string weighted_OIT_vs = "Shaders/transparent_vs.glsl";
@@ -404,6 +414,38 @@ std::shared_ptr<ppc> render_engine::get_render_ppc() {
 	return m_manager.cur_camera;
 }
 
+mesh_id render_engine::add_plane_mesh(vec3 p, vec3 n)  {
+	vec3 x(1.0f,0.0f,0.0f), y(0.0f,1.0f,0.0f);
+
+	std::shared_ptr<mesh> plane = add_empty_mesh();
+	if (plane == nullptr) {
+		throw std::invalid_argument("Cannot make memory");
+		return -1;
+	}
+
+	// avoid same line
+	if (glm::dot(x, n) > glm::dot(y, n)) {
+		x = glm::cross(n, y);
+		y = glm::cross(n, x);
+	} else {
+		y = glm::cross(n, x);
+		x = glm::cross(n, y);
+	}
+
+	float big_scale = 10000.0f;
+	plane->add_vertex(p + big_scale * (-x + y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (-x - y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (x - y), n, vec3(1.0f));
+
+	plane->add_vertex(p + big_scale * (x - y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (x + y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (-x + y), n, vec3(1.0f));
+
+	int plane_id = plane->get_id();
+	set_shader(plane_id, plane_shader_name);
+	return plane_id;
+}
+
 void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
 }
 
@@ -476,5 +518,12 @@ std::shared_ptr<Image> render_engine::get_frame_buffer() {
 	ret->from_unsigned_data(pixels, w, h);
 
 	delete[] pixels;
+	return ret;
+}
+
+std::shared_ptr<mesh> render_engine::add_empty_mesh() {
+	std::shared_ptr<mesh> ret = std::make_shared<mesh>();
+	m_manager.render_scene->add_mesh(ret);
+	m_manager.rendering_mappings[ret] = m_manager.shaders.at(default_shader_name);
 	return ret;
 }
