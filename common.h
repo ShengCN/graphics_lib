@@ -57,3 +57,6 @@ typedef int mesh_id;
 const std::string default_shader_name = "template";
 const std::string quad_shader_name = "quad";
 const std::string plane_shader_name = "plane";
+const std::string mask_shader_name = "mask";
+const std::string sm_shader_name = "shadow_map";
+const std::string shadow_caster_name = "shadow_cast";

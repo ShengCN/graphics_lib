@@ -8,19 +8,11 @@ in vec2 vs_uvs;
 out vec4 frag_color;
 
 void main(){
-    // float z1 = -100.0, z2 = 100.0;
-    // float z = lerp(z1, z2, slider);
-
-    // vec3 light = vec3(0.0, 100.0, 80.0);
-    // float ka = 0.3;
-    // float kd = clamp(dot(normalize(light - vs_pos),vs_norm), 0.0f, 1.0f);
-    // // vec3 col_kd = texture(map_kd, vs_uvs).rgb;
-    // // if(length(col_kd) < 0.1f)
-    // //     col_kd = vs_color;
-    // vec3 col = (ka + (1.0 - ka) * kd) * vs_color;
     float frequency = 50.0;
     float x = sin(vs_pos.x * frequency), y = sin(vs_pos.z * frequency);
     float width = 0.9;
-    vec3 col = vec3(1.0-clamp(step(width, x) + step(width, y), 0.0, 1.0));
-    frag_color = vec4(col, 0.3);
+    float ori_z = gl_FragCoord.z / gl_FragCoord.w;
+    float fadding = 1.0/exp(ori_z * 0.5); 
+    vec3 col = vec3(1.0-clamp(step(width, x) + step(width, y), 0.0, 1.0) * fadding);
+    frag_color = vec4(col, 1.0);
 }

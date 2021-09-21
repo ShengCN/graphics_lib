@@ -14,7 +14,6 @@
 scene::scene() {
 }
 
-
 scene::~scene() {
 }
 

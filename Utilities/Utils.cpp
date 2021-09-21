@@ -14,6 +14,8 @@ namespace purdue
 			return false;
 		}
 
+		stbi_set_flip_vertically_on_load(true);
+
 		/* Make a copy */
 		INFO("Image dimension: {}, {}, {}", w, h, c);
 		buffer = std::vector<unsigned char>(img, img + w*h*4);

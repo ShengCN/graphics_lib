@@ -6,6 +6,7 @@
 #include "mesh.h"
 #include "ppc.h"
 #include <memory>
+
 enum class draw_type {
 	triangle,
 	line_segments
@@ -18,10 +19,16 @@ enum class shader_type {
 };
 
 struct rendering_params {
+	int frame;
 	std::shared_ptr<ppc> cur_camera;
 	std::vector<vec3> p_lights;
-	int frame;
 	draw_type dtype;
+
+	vec3 sm_target_center;
+	GLuint sm_texture;
+
+	rendering_params():frame(-1), dtype(draw_type::triangle), sm_texture(-1) {
+	}
 };
 
 /* For complex object with different materials, Use this descriptor */
@@ -67,4 +74,21 @@ public:
 private:
 	GLuint m_quad_vao, m_quad_vbo;
 	void init_vao();
+};
+
+class shadow_shader: public shader {
+public:
+	shadow_shader(const char* computeShaderFile);
+	shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile);
+	shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile);
+	virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
+	Gluint get_sm_texture();
+
+private:
+	void init();
+
+private:
+	GLuint m_depth_fbo=-1, m_depth_texture_id=-1;
+	int light_w = 2048, light_h = 2048;
+	float m_shadow_fov = 120.0f;
 };

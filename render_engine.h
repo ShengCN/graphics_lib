@@ -66,6 +66,8 @@ public:
 	void draw_visualize_line(glm::vec3 t, glm::vec3 h);
 	void draw_quad();
 	void draw_image(std::shared_ptr<Image> img); 
+	void draw_mesh(mesh_id id);
+	void draw_shadow(mesh_id shadow_receiver);
 	void draw_sihouette(int mesh_id, vec3 light_pos);
 	void draw_shadow_volume(int mesh_id, vec3 light_pos);
 	bool reload_shaders();

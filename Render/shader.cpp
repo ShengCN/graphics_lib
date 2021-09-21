@@ -2,6 +2,7 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <stdexcept>
 
 #include "shader.h"
 #include "asset_manager.h"
@@ -160,6 +161,16 @@ void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 		//#todo_multiple_lights
 		glUniform3f(uniform_loc, params.p_lights[0].x, params.p_lights[0].y, params.p_lights[0].z);
 	}
+
+	if (params.sm_texture != -1) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, params.sm_texture);
+		auto uniform_loc = glGetUniformLocation(m_program, "shadow_map");
+		if(uniform_loc != -1) {
+			glUniform1i(uniform_loc, 0);
+		}
+	}
+
 	int ogl_draw_type = 0;
 	if (params.dtype == draw_type::triangle) {
 		ogl_draw_type = GL_TRIANGLES;
@@ -421,4 +432,107 @@ void quad_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params&
 	glBindVertexArray(m_quad_vao);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
+}
+
+shadow_shader::shadow_shader(const char* computeShaderFile):shader(computeShaderFile) {
+}
+
+shadow_shader::shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile):shader(vertexShaderFile, fragmentShaderFile) {
+}
+
+shadow_shader::shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile):shader(vertexShaderFile, geometryShader, fragmentShaderFile) {
+}
+
+void shadow_shader::init() {
+	glUseProgram(m_program);
+	//------- Init Buffers --------//
+	if (m_depth_fbo == -1) {
+		glGenTextures(1, &m_depth_texture_id);
+		glBindTexture(GL_TEXTURE_2D, m_depth_texture_id);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, light_w, light_h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+		glGenFramebuffers(1, &m_depth_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_texture_id, 0);
+
+		auto check = [&]() {
+			GLenum status;
+			status = (GLenum)glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			switch (status) {
+			case GL_FRAMEBUFFER_COMPLETE:
+				return true;
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				printf("Framebuffer incomplete, incomplete attachment\n");
+				return false;
+			case GL_FRAMEBUFFER_UNSUPPORTED:
+				printf("Unsupported framebuffer format\n");
+				return false;
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+				printf("Framebuffer incomplete, missing attachment\n");
+				return false;
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+				printf("Framebuffer incomplete, missing draw buffer\n");
+				return false;
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+				printf("Framebuffer incomplete, missing read buffer\n");
+				return false;
+			}
+			return false;
+		};
+
+		if (check()) {
+			INFO("Framebuffer safe");
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	} else {
+		WARN("Shadow Shader has been initialized");
+	}
+}
+
+void shadow_shader::draw_caster(std::shared_ptr<mesh> m, rendering_params &params)  {
+	if (m == nullptr) {
+		throw std::invalid_argument("Input pointer is null");
+		return;
+	}
+
+	glViewport(0, 0, light_w, light_h);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
+	glDrawBuffer(GL_NONE);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glUseProgram(m_program);
+
+	//------- Begin Drawing SM --------//
+	std::shared_ptr<ppc> shadow_map_ppc = std::make_shared<ppc>(light_w, light_h, m_shadow_fov);
+	auto tmp_ppc = params.cur_camera;
+	params.cur_camera = shadow_map_ppc;
+	shader::draw_mesh(m, params);
+	params.cur_camera = tmp_ppc;
+	glViewport(0, 0, params.cur_camera->width(), params.cur_camera->height());
+}
+
+void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
+	switch (params.sm_type) {
+		case smap_type::shadow_caster:
+		draw_caster(m, params);
+		break;
+	
+		case smap_type::shadow_receiver:
+		draw_recevier(m, params);
+		break;
+
+	default:
+		throw std::invalid_argument("shadow type is not implemented");
+		break;
+	}
+}
+
+Gluint shadow_shader::get_sm_texture() {
+	return m_depth_texture_id;	
 }
