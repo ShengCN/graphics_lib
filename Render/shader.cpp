@@ -435,12 +435,15 @@ void quad_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params&
 }
 
 shadow_shader::shadow_shader(const char* computeShaderFile):shader(computeShaderFile) {
+	init();
 }
 
 shadow_shader::shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile):shader(vertexShaderFile, fragmentShaderFile) {
+	init();
 }
 
 shadow_shader::shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile):shader(vertexShaderFile, geometryShader, fragmentShaderFile) {
+	init();
 }
 
 void shadow_shader::init() {
@@ -450,8 +453,8 @@ void shadow_shader::init() {
 		glGenTextures(1, &m_depth_texture_id);
 		glBindTexture(GL_TEXTURE_2D, m_depth_texture_id);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, light_w, light_h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -495,15 +498,17 @@ void shadow_shader::init() {
 	}
 }
 
-void shadow_shader::draw_caster(std::shared_ptr<mesh> m, rendering_params &params)  {
+float shadow_shader::m_shadow_fov=60.0f;
+
+void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 	if (m == nullptr) {
 		throw std::invalid_argument("Input pointer is null");
 		return;
 	}
 
-	glViewport(0, 0, light_w, light_h);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
-	glDrawBuffer(GL_NONE);
+	// glViewport(0, 0, light_w, light_h);
+	// glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
+	// glDrawBuffer(GL_NONE);
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glUseProgram(m_program);
@@ -512,27 +517,12 @@ void shadow_shader::draw_caster(std::shared_ptr<mesh> m, rendering_params &param
 	std::shared_ptr<ppc> shadow_map_ppc = std::make_shared<ppc>(light_w, light_h, m_shadow_fov);
 	auto tmp_ppc = params.cur_camera;
 	params.cur_camera = shadow_map_ppc;
+	shadow_map_ppc->PositionAndOrient(params.p_lights[0], params.sm_target_center, vec3(0.0f, 1.0f, 0.0f));
 	shader::draw_mesh(m, params);
 	params.cur_camera = tmp_ppc;
 	glViewport(0, 0, params.cur_camera->width(), params.cur_camera->height());
 }
 
-void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
-	switch (params.sm_type) {
-		case smap_type::shadow_caster:
-		draw_caster(m, params);
-		break;
-	
-		case smap_type::shadow_receiver:
-		draw_recevier(m, params);
-		break;
-
-	default:
-		throw std::invalid_argument("shadow type is not implemented");
-		break;
-	}
-}
-
-Gluint shadow_shader::get_sm_texture() {
+GLuint shadow_shader::get_sm_texture() {
 	return m_depth_texture_id;	
 }

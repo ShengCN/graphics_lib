@@ -58,8 +58,8 @@ public:
 
 	//------- Rendering --------//
 	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));
-	void draw_render(bool trigger) { m_draw_render = trigger; }
-	void draw_visualize(bool trigger) { m_draw_visualize = trigger; }
+	// void draw_render(bool trigger) { m_draw_render = trigger; }
+	// void draw_visualize(bool trigger) { m_draw_visualize = trigger; }
 	void draw_visualize_voxels(std::vector<AABB> voxels);
 	void set_vis_frame(bool trigger) { m_vis_frame_mode = trigger; }
 	void voxel_vis(int mesh_id);
@@ -81,6 +81,8 @@ public:
 	std::shared_ptr<Image> get_frame_buffer();
 
 private:
+	bool init_shaders();
+	bool init_scenes();
 	std::shared_ptr<mesh> get_mesh(int id);
 	std::shared_ptr<mesh> vis_new_mesh();
 	std::shared_ptr<mesh> add_empty_mesh();
@@ -89,6 +91,5 @@ private:
 
 private:
 	asset_manager m_manager;
-	bool m_draw_render, m_draw_visualize;
 	bool m_vis_frame_mode;
 };

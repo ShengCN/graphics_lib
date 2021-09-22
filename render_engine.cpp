@@ -1,4 +1,3 @@
-#include <glad/glad.h>
 #include <common.h>
 #include <memory>
 #include <stdexcept>
@@ -8,8 +7,6 @@
 #include "Utilities/Utils.h"
 
 render_engine::render_engine() {
-	m_draw_render = true;
-	m_draw_visualize = false;
 }
 
 void render_engine::init() {
@@ -18,42 +15,59 @@ void render_engine::init() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 
-	//------- initialize Shaders --------//
+	init_shaders();
+	init_scenes();
+}
+
+bool render_engine::init_scenes() {
+	m_manager.render_scene = std::make_shared<scene>();
+	m_manager.visualize_scene = std::make_shared<scene>();
+
+	/* Lightings */
+	m_manager.lights = { glm::vec3(0.75f) };
+	return true;
+}
+
+bool render_engine::init_shaders() {
 	const std::string template_vs = "Shaders/template_vs.glsl";
 	const std::string template_fs = "Shaders/template_fs.glsl";
-	m_manager.shaders[default_shader_name] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
 
 	const std::string quad_vs = "Shaders/quad_vs.glsl";
 	const std::string quad_fs = "Shaders/quad_fs.glsl";
-	m_manager.shaders[quad_shader_name] = std::make_shared<quad_shader>(quad_vs.c_str(), quad_fs.c_str());
 
 	const std::string ground_vs = "Shaders/ground_vs.glsl";
 	const std::string ground_fs = "Shaders/ground_fs.glsl";
-	m_manager.shaders[plane_shader_name] = std::make_shared<shader>(ground_vs.c_str(), ground_fs.c_str());
-
 
 	const std::string mask_vs = "Shaders/mask_vs.glsl";
 	const std::string mask_fs = "Shaders/mask_fs.glsl";
-	m_manager.shaders[mask_shader_name] = std::make_shared<shader>(mask_vs.c_str(), mask_fs.c_str());
 
 	const std::string shmap_vs = "Shaders/shadow_map_vs.glsl";
 	const std::string shmap_fs = "Shaders/shadow_map_fs.glsl";
-	m_manager.shaders[sm_shader_name] = std::make_shared<shadow_shader>(shmap_vs.c_str(), shmap_fs.c_str());
 
 	const std::string shadow_vs = "Shaders/draw_shadow_vs.glsl";
 	const std::string shadow_fs = "Shaders/draw_shadow_fs.glsl";
-	m_manager.shaders[shadow_caster_name] = std::make_shared<shader>(shadow_vs.c_str(), shadow_fs.c_str());
-	INFO("{} shaders finished", (int)m_manager.shaders.size());
 
+	m_manager.shaders[default_shader_name] = std::make_shared<shader>(template_vs.c_str(), template_fs.c_str());
+	m_manager.shaders[quad_shader_name] = std::make_shared<quad_shader>(quad_vs.c_str(), quad_fs.c_str());
+	m_manager.shaders[plane_shader_name] = std::make_shared<shader>(ground_vs.c_str(), ground_fs.c_str());
+	m_manager.shaders[mask_shader_name] = std::make_shared<shader>(mask_vs.c_str(), mask_fs.c_str());
+	m_manager.shaders[sm_shader_name] = std::make_shared<shadow_shader>(shmap_vs.c_str(), shmap_fs.c_str());
+	m_manager.shaders[shadow_caster_name] = std::make_shared<shader>(shadow_vs.c_str(), shadow_fs.c_str());
+
+	bool ret = true;
+	for(auto shader_mapping:m_manager.shaders) {
+		if (shader_mapping.second == nullptr) {
+			ret = false;
+			WARN("Shader {} initialization failed", shader_mapping.first);
+		}
+	}
+
+	INFO("{} shaders finished", (int)m_manager.shaders.size());
+	return ret;
 	// const std::string weighted_OIT_vs = "Shaders/transparent_vs.glsl";
 	// const std::string weighted_OIT_fs = "Shaders/transparent_fs.glsl";
 	// m_manager.shaders["weight_OIT"] = std::make_shared<shader>(weighted_OIT_vs.c_str(), weighted_OIT_fs.c_str());
-
-	//------- initialize scene --------//
-	m_manager.render_scene = std::make_shared<scene>();
-	m_manager.visualize_scene = std::make_shared<scene>();
 }
-
 
 void render_engine::test_scene(int w, int h) {
 	const std::string test_mesh_fpath = "Meshes/bunny.obj";
@@ -117,17 +131,13 @@ bool render_engine::remove_visualize_line(mesh_id id) {
 }
 
 void render_engine::render(int frame) {	
-	rendering_params params = { m_manager.cur_camera, m_manager.lights, frame, draw_type::triangle};
+	rendering_params params;
+	params.frame = frame;
+	params.cur_camera = m_manager.cur_camera;
+	params.p_lights = m_manager.lights;
+	params.dtype = draw_type::triangle;
 
-	if (m_draw_render) {
-		render_scene(m_manager.render_scene, params);
-	}
-	if (m_draw_visualize) {
-		params = { m_manager.cur_camera, m_manager.lights, frame, draw_type::line_segments };
-		if (m_vis_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		render_scene(m_manager.visualize_scene, params);
-		if (m_vis_frame_mode) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
+	render_scene(m_manager.render_scene, params);
 }
 
 void render_engine::render_scene(std::shared_ptr<scene> cur_scene, rendering_params params) {
@@ -340,7 +350,11 @@ void render_engine::draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc) {
 	line_mesh->add_vertex(t, vec3(0.0f), tc);
 	line_mesh->add_vertex(h, vec3(0.0f), hc);
 	
-	rendering_params params = { m_manager.cur_camera, m_manager.lights, 0, draw_type::line_segments};
+	rendering_params params;
+	params.frame = 0;
+	params.cur_camera = m_manager.cur_camera;
+	params.p_lights = m_manager.lights;
+	params.dtype = draw_type::line_segments;
 
 	glDisable(GL_DEPTH_TEST);
 	m_manager.shaders.at("template") ->draw_mesh(line_mesh, params);
@@ -465,7 +479,7 @@ void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
 
 void render_engine::draw_image(std::shared_ptr<Image> img) {
 	Mesh_Descriptor image_descriptor = {nullptr, {img}};
-	auto param = rendering_params();
+	rendering_params param;
 	m_manager.shaders.at("quad")->draw_mesh(image_descriptor, param);
 }
 
@@ -476,21 +490,32 @@ void render_engine::draw_mesh(mesh_id id) {
 		return;
 	}
 
-	rendering_params params = { m_manager.cur_camera, m_manager.lights, 0, draw_type::triangle};
+	rendering_params params;
+	params.cur_camera = m_manager.cur_camera;
+	params.p_lights = m_manager.lights;
+	params.frame = 0;
+	params.dtype = draw_type::triangle;
 	m_manager.rendering_mappings.at(meshptr)->draw_mesh(meshptr, params);
 }
 
 void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 	/* Draw Shadow Map First */
-	rendering_params params = { m_manager.cur_camera, m_manager.lights, 0, draw_type::triangle};
+	rendering_params params;
+	params.frame = 0;
+	params.cur_camera = m_manager.cur_camera;
+	params.p_lights = m_manager.lights;
+	params.dtype = draw_type::triangle;
 	auto meshes = m_manager.render_scene->get_meshes();
 	for(auto m:meshes) {
+		if (m.second->get_id() == rec_mesh_id)
+			continue;
+		INFO("mesh: {}", m.second->get_id());
 		m_manager.shaders.at(sm_shader_name)->draw_mesh(m.second, params);
 	}
 
-	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
-	/* Draw Shadow Receiver First */
-	m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
+	/* Draw Shadow Receiver */
+	// params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
+	// m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
 }
 
 void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {

@@ -219,16 +219,6 @@ void otb_window::draw_gui() {
 
 	//// ------------------------ Window ------------------------ //
 	ImGui::Begin("PC control");
-	static bool draw_vis = true;
-	ImGui::Checkbox("visualize", &draw_vis);
-	m_engine.draw_visualize(draw_vis);
-	
-	static bool draw_render = true;
-	ImGui::SameLine();
-	ImGui::Checkbox("render", &draw_render);
-	m_engine.draw_render(draw_render);
-
-	// ImGui::SliderFloat("fov", &asset_manager::instance).cur_camera->_fov, 30.0f, 120.0f);
 	ImGui::SliderFloat("fov", &m_engine.get_render_ppc()->_fov, 5.0f, 120.0f);
 
 	if(ImGui::Button("reload shader")) {

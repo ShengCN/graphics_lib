@@ -27,7 +27,7 @@ struct rendering_params {
 	vec3 sm_target_center;
 	GLuint sm_texture;
 
-	rendering_params():frame(-1), dtype(draw_type::triangle), sm_texture(-1) {
+	rendering_params():frame(-1), dtype(draw_type::triangle), sm_texture(-1), sm_target_center(0.0f) {
 	}
 };
 
@@ -82,13 +82,13 @@ public:
 	shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile);
 	shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile);
 	virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
-	Gluint get_sm_texture();
+	GLuint get_sm_texture();
 
+	static float m_shadow_fov;
 private:
 	void init();
 
 private:
 	GLuint m_depth_fbo=-1, m_depth_texture_id=-1;
 	int light_w = 2048, light_h = 2048;
-	float m_shadow_fov = 120.0f;
 };
