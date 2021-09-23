@@ -521,10 +521,10 @@ void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 
 	/* Draw Shadow Receiver */
 	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
-	shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
-	// auto rgb_img = from_GPU_texture(shadow_texid, 2048, 2048);
-	// rgb_img->save("test_rgb.png");
-	// m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
+	m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
+	shadow_texid = params.sm_texture;
+
+	// shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
 }
 
 void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {

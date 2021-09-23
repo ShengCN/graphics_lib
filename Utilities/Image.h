@@ -53,9 +53,7 @@ public:
     float sum();
 
     Image operator-(Image &rhs);
-
     Image operator/(float v);
-
     Image operator*(float v);
     Image operator*(Image &rhs);
 

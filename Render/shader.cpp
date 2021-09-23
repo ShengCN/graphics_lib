@@ -164,7 +164,8 @@ void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 
 	uniform_loc = glGetUniformLocation(m_program, "light_pv");
 	if (uniform_loc != -1) {
-		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(v));
+		glm::mat4 pv = params.light_camera->GetP() * params.light_camera->GetV();
+		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(pv));
 	}
 
 
@@ -539,7 +540,7 @@ void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params)
 	shader::draw_mesh(m, params);
 	params.cur_camera = tmp_ppc;
 
-	// glViewport(0, 0, params.cur_camera->width(), params.cur_camera->height());
+	glViewport(0, 0, params.cur_camera->width(), params.cur_camera->height());
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDrawBuffer(GL_BACK);
 }
