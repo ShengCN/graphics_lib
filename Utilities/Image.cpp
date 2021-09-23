@@ -68,6 +68,15 @@ glm::vec4& Image::at(int i, int j) {
     return m_buffer[ind];
 }
 
+glm::vec4 Image::get(int i, int j) const  {
+    size_t ind = get_ind(i, j, width(), height());
+    if (!(ind < height() * width() && ind >=0)) {
+        throw std::invalid_argument(fmt::format("Index out of range. Ind: {}, ({},{}),h: {}, w: {}", ind, i, j, height(), width()));
+        return glm::vec4(0.0f);
+    }
+    return m_buffer[ind];
+}
+
 bool Image::ind_check(int i, int j) {
     return j * m_w + i < m_h * m_w;
 }
@@ -229,16 +238,32 @@ void Image::set_color(glm::vec4 c) {
     }
 }
 
-Image Image::operator-(Image &rhs) {
+Image Image::operator-(const Image &rhs) const {
     if (width() != rhs.width() || height() != rhs.height()) {
         throw std::invalid_argument(fmt::format("Image operator -, dim does not match! {},{} but rhs {},{}", width(), height(), rhs.width(), rhs.height()));
     }
 
     Image ret(width(), height());
     for(int i = 0; i < m_w; ++i) for(int j = 0; j < m_h; ++j) {
-        vec4 c = at(i,j);
-        ret.at(i,j) = c - rhs.at(i,j);
+        vec4 c = get(i,j);
+        ret.at(i,j) = c - rhs.get(i,j);
         ret.at(i,j).a = c.a;
+    }
+    return ret;
+}
+
+Image Image::operator*(const Image &rhs) const {
+    Image ret(width(), height());
+    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
+        ret.at(i,j) = get(i,j) * rhs.get(i,j);
+    }
+    return ret;
+}
+
+Image Image::operator*(float v) {
+    Image ret(width(), height());
+    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
+        ret.at(i,j) = at(i,j) * v;
     }
     return ret;
 }
@@ -255,22 +280,6 @@ Image Image::operator/(float v) {
     Image ret(width(), height());
     for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
         ret.at(i,j) = at(i,j)/v;
-    }
-    return ret;
-}
-
-Image Image::operator*(float v) {
-    Image ret(width(), height());
-    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
-        ret.at(i,j) = at(i,j) * v;
-    }
-    return ret;
-}
-
-Image Image::operator*(Image &rhs) {
-    Image ret(width(), height());
-    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
-        ret.at(i,j) = at(i,j) * rhs.at(i,j);
     }
     return ret;
 }

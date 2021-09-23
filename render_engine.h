@@ -82,6 +82,7 @@ public:
 	std::shared_ptr<Image> get_frame_buffer();
 	GLuint to_GPU_texture(std::shared_ptr<Image> img);
 	std::shared_ptr<Image> from_GPU_texture(GLuint texid, int w, int h);
+	std::shared_ptr<Image> composite(const Image &bg, const Image &fg);
 
 private:
 	bool init_shaders();

@@ -521,10 +521,9 @@ void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 
 	/* Draw Shadow Receiver */
 	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
+	// shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
 	m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
 	shadow_texid = params.sm_texture;
-
-	// shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
 }
 
 void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {
@@ -622,7 +621,10 @@ GLuint render_engine::to_GPU_texture(std::shared_ptr<Image> img) {
 
 
 std::shared_ptr<Image> render_engine::from_GPU_texture(GLuint texid, int w, int h) {
-	/* TODO, Support more types */
+	/* TODO, Delve into the opengl type
+	 * Can OpenGL change the internal type? 
+	 * If not, can we query the texture type somehow?
+	 */
 	if (texid == -1) {
 		WARN("Input texture ID has not been created");
 		return nullptr;
@@ -636,4 +638,15 @@ std::shared_ptr<Image> render_engine::from_GPU_texture(GLuint texid, int w, int 
 	ret->from_unsigned_data(buffer, w, h);
 	delete [] buffer;
 	return ret;
+}
+
+std::shared_ptr<Image> render_engine::composite(const Image &bg, const Image &fg) {
+	if (bg.width() != fg.width() || bg.height() != fg.height()) {
+		throw std::invalid_argument("Compostion input image does not have the same size");
+		return nullptr;
+	}
+
+	std::shared_ptr<Image> ret = std::make_shared<Image>(fg.width(), fg.height());
+	*ret = bg * fg;
+	return ret; 
 }

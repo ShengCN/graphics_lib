@@ -38,6 +38,7 @@ public:
 
     glm::vec4* data() { return m_buffer.data();}
     glm::vec4& at(int i, int j);
+    glm::vec4 get(int i, int j) const;
     std::vector<glm::vec4>& get_buffer() { return m_buffer; }
     std::vector<unsigned int> to_unsigned_data();
     void from_unsigned_data(const std::vector<unsigned int> &data, int w, int h);
@@ -52,10 +53,10 @@ public:
     static size_t get_ind(size_t i, size_t j, size_t w, size_t h);
     float sum();
 
-    Image operator-(Image &rhs);
+    Image operator-(const Image &rhs) const;
     Image operator/(float v);
     Image operator*(float v);
-    Image operator*(Image &rhs);
+    Image operator*(const Image &rhs) const;
 
     Image resize(int size) const;
 
