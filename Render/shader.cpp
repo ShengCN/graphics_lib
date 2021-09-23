@@ -162,6 +162,12 @@ void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 		glUniform3f(uniform_loc, params.p_lights[0].x, params.p_lights[0].y, params.p_lights[0].z);
 	}
 
+	uniform_loc = glGetUniformLocation(m_program, "light_pv");
+	if (uniform_loc != -1) {
+		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(v));
+	}
+
+
 	if (params.sm_texture != -1) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, params.sm_texture);
@@ -459,9 +465,20 @@ void shadow_shader::init() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
+		glGenTextures(1, &m_rgb_texture);
+		glBindTexture(GL_TEXTURE_2D, m_rgb_texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, light_w, light_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		
 		glGenFramebuffers(1, &m_depth_fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_rgb_texture, 0);  
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_texture_id, 0);
 
 		auto check = [&]() {
@@ -499,30 +516,38 @@ void shadow_shader::init() {
 }
 
 float shadow_shader::m_shadow_fov=60.0f;
-
 void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 	if (m == nullptr) {
 		throw std::invalid_argument("Input pointer is null");
 		return;
 	}
+	
+	if (params.cur_camera == nullptr || params.light_camera == nullptr) {
+		throw std::invalid_argument("Rendering Camera or light camera is null");
+		return;
+	}
 
-	// glViewport(0, 0, light_w, light_h);
-	// glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
-	// glDrawBuffer(GL_NONE);
-
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, params.light_camera->width(), params.light_camera->height());
+	glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
+	// glDrawBuffer(GL_BACK);
 	glUseProgram(m_program);
 
 	//------- Begin Drawing SM --------//
-	std::shared_ptr<ppc> shadow_map_ppc = std::make_shared<ppc>(light_w, light_h, m_shadow_fov);
 	auto tmp_ppc = params.cur_camera;
-	params.cur_camera = shadow_map_ppc;
-	shadow_map_ppc->PositionAndOrient(params.p_lights[0], params.sm_target_center, vec3(0.0f, 1.0f, 0.0f));
+	params.light_camera->PositionAndOrient(params.p_lights[0], params.sm_target_center, vec3(0.0f, 1.0f, 0.0f));
+	params.cur_camera = params.light_camera;
 	shader::draw_mesh(m, params);
 	params.cur_camera = tmp_ppc;
-	glViewport(0, 0, params.cur_camera->width(), params.cur_camera->height());
+
+	// glViewport(0, 0, params.cur_camera->width(), params.cur_camera->height());
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDrawBuffer(GL_BACK);
 }
 
 GLuint shadow_shader::get_sm_texture() {
 	return m_depth_texture_id;	
+}
+
+GLuint shadow_shader::get_sm_rgb_texture() {
+	return m_rgb_texture;	
 }

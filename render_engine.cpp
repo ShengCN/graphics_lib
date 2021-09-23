@@ -93,7 +93,11 @@ void render_engine::add_rotate(mesh_id id, purdue::deg angle, vec3 axis) {
 }
 
 void render_engine::init_camera(int w, int h, float fov) {
+	/*
+	 * Initialize camera and light camera
+	 */
 	m_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
+	m_manager.light_camera = std::make_shared<ppc>(2048, 2048, 60.0f);
 }
 
 void render_engine::recompute_normal(int mesh_id) {
@@ -283,6 +287,7 @@ bool render_engine::reload_shaders() {
 	for(auto &s:m_manager.shaders) {
 		success = success && s.second->reload_shader();
 	}
+	INFO("Reloading: {}", success);
 	return success;
 }
 
@@ -478,7 +483,7 @@ void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
 }
 
 void render_engine::draw_image(std::shared_ptr<Image> img) {
-	Mesh_Descriptor image_descriptor = {nullptr, {img}};
+	Mesh_Descriptor image_descriptor = {nullptr, std::vector<std::shared_ptr<Image>>{img}};
 	rendering_params param;
 	m_manager.shaders.at("quad")->draw_mesh(image_descriptor, param);
 }
@@ -498,23 +503,27 @@ void render_engine::draw_mesh(mesh_id id) {
 	m_manager.rendering_mappings.at(meshptr)->draw_mesh(meshptr, params);
 }
 
+GLuint shadow_texid=-1; 
 void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 	/* Draw Shadow Map First */
 	rendering_params params;
 	params.frame = 0;
 	params.cur_camera = m_manager.cur_camera;
 	params.p_lights = m_manager.lights;
+	params.light_camera = m_manager.light_camera; 
 	params.dtype = draw_type::triangle;
 	auto meshes = m_manager.render_scene->get_meshes();
 	for(auto m:meshes) {
 		if (m.second->get_id() == rec_mesh_id)
 			continue;
-		INFO("mesh: {}", m.second->get_id());
 		m_manager.shaders.at(sm_shader_name)->draw_mesh(m.second, params);
 	}
 
 	/* Draw Shadow Receiver */
-	// params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
+	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
+	shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
+	// auto rgb_img = from_GPU_texture(shadow_texid, 2048, 2048);
+	// rgb_img->save("test_rgb.png");
 	// m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
 }
 
@@ -588,5 +597,43 @@ std::shared_ptr<mesh> render_engine::add_empty_mesh() {
 	std::shared_ptr<mesh> ret = std::make_shared<mesh>();
 	m_manager.render_scene->add_mesh(ret);
 	m_manager.rendering_mappings[ret] = m_manager.shaders.at(default_shader_name);
+	return ret;
+}
+
+GLuint render_engine::to_GPU_texture(std::shared_ptr<Image> img) {
+	// Image test("test.jpg");
+	if (img == nullptr) {
+		WARN("Cannot transfer the image to GPU. Nullptr");
+		return -1;
+	}
+
+	GLuint ret;
+    glGenTextures(1, &ret);
+    glBindTexture(GL_TEXTURE_2D, ret);
+
+    // Setup filtering parameters for display
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->width(), img->height(), 0, GL_RGBA, GL_FLOAT, img->data());
+	return ret;
+}
+
+
+std::shared_ptr<Image> render_engine::from_GPU_texture(GLuint texid, int w, int h) {
+	/* TODO, Support more types */
+	if (texid == -1) {
+		WARN("Input texture ID has not been created");
+		return nullptr;
+	}
+
+	const unsigned int size = w * h * 4;
+	unsigned char *buffer = new unsigned char[size];
+	std::shared_ptr<Image> ret = std::make_shared<Image>();
+	glGetTextureImage(texid, 0, GL_RGBA, GL_UNSIGNED_BYTE, size, buffer);
+
+	ret->from_unsigned_data(buffer, w, h);
+	delete [] buffer;
 	return ret;
 }
