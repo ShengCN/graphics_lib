@@ -83,11 +83,11 @@ public:
 	GLuint to_GPU_texture(std::shared_ptr<Image> img);
 	std::shared_ptr<Image> from_GPU_texture(GLuint texid, int w, int h);
 	std::shared_ptr<Image> composite(const Image &bg, const Image &fg);
+	std::shared_ptr<mesh> get_mesh(int id);
 
 private:
 	bool init_shaders();
 	bool init_scenes();
-	std::shared_ptr<mesh> get_mesh(int id);
 	std::shared_ptr<mesh> vis_new_mesh();
 	std::shared_ptr<mesh> add_empty_mesh();
 	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);

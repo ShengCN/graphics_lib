@@ -11,14 +11,11 @@
 #include <sstream>
 #include <memory>
 #include <vector>
+#include "Utilities/Utils.h"
 #include "Utilities/Logger.h"
 #include "Utilities/Image.h"
 
 namespace purdue {
-	typedef float deg;
-	typedef float rad;
-	constexpr float pi = 3.14159265f;
-
 	inline std::string to_string(glm::vec3 v) {
 		std::stringstream out;
 		out << v.x << "," << v.y << "," << v.z;
@@ -40,9 +37,6 @@ namespace purdue {
 		return out.str();
 	}
 
-	inline bool same_point(const glm::vec3 &a, const glm::vec3 &b) {
-		return glm::distance(a, b) < 1e-3;
-	}
 };
 
 namespace pd = purdue;

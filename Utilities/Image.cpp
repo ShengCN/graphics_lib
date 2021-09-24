@@ -1,3 +1,4 @@
+#include <cfloat>
 #include <common.h>
 #include <cstddef>
 #include <stdexcept>
@@ -161,6 +162,10 @@ std::vector<unsigned int> Image::to_unsigned_data() {
     return ret;
 }
 
+void Image::clear() {
+    m_buffer.clear();
+}
+
 void Image::from_unsigned_data(unsigned char *data, int w, int h) {
     if (!data) {
         throw std::invalid_argument("Reading Image failed!");
@@ -238,6 +243,20 @@ void Image::set_color(glm::vec4 c) {
     }
 }
 
+Image Image::operator+(const Image &rhs) const {
+    if (width() != rhs.width() || height() != rhs.height()) {
+        throw std::invalid_argument(fmt::format("Image operator -, dim does not match! {},{} but rhs {},{}", width(), height(), rhs.width(), rhs.height()));
+    }
+
+    Image ret(width(), height());
+    for(int i = 0; i < m_w; ++i) for(int j = 0; j < m_h; ++j) {
+        vec4 c = get(i,j);
+        ret.at(i,j) = c + rhs.get(i,j);
+        ret.at(i,j).a = c.a;
+    }
+    return ret;
+}
+
 Image Image::operator-(const Image &rhs) const {
     if (width() != rhs.width() || height() != rhs.height()) {
         throw std::invalid_argument(fmt::format("Image operator -, dim does not match! {},{} but rhs {},{}", width(), height(), rhs.width(), rhs.height()));
@@ -274,6 +293,40 @@ float Image::sum() {
         ret += vec3(at(i,j));
     }
     return ret.r + ret.g + ret.b;
+}
+
+vec3 Image::min() {
+    if (m_h == 0 || m_w == 0) {
+        WARN("Image has not been initialized yet");
+        return vec3(0.0f);
+    }
+
+    vec3 ret(FLT_MAX);
+    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
+        vec3 cp = get(i,j);
+        ret.x = std::min(cp.x, ret.x);
+        ret.y = std::min(cp.y, ret.y);
+        ret.z = std::min(cp.z, ret.z);
+    }
+
+    return ret;
+}
+
+vec3 Image::max() {
+    if (m_h == 0 || m_w == 0) {
+        WARN("Image has not been initialized yet");
+        return vec3(0.0f);
+    }
+
+    vec3 ret(-FLT_MAX);
+    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
+        vec3 cp = get(i,j);
+        ret.x = std::max(cp.x, ret.x);
+        ret.y = std::max(cp.y, ret.y);
+        ret.z = std::max(cp.z, ret.z);
+    }
+
+    return ret;
 }
 
 Image Image::operator/(float v) {

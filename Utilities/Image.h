@@ -21,6 +21,7 @@ public:
     int height() const{ return m_h; }
     void set_dim(int w, int h) {m_w = w; m_h = h;}
     void set_color(glm::vec4 c);
+    void clear();
 
     /* Processing */
     Image normalize();
@@ -52,8 +53,11 @@ public:
     static glm::vec3 uint_vec3(unsigned int v);
     static size_t get_ind(size_t i, size_t j, size_t w, size_t h);
     float sum();
+    glm::vec3 min();
+    glm::vec3 max();
 
     Image operator-(const Image &rhs) const;
+    Image operator+(const Image &rhs) const;
     Image operator/(float v);
     Image operator*(float v);
     Image operator*(const Image &rhs) const;

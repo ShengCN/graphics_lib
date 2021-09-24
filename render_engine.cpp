@@ -647,6 +647,9 @@ std::shared_ptr<Image> render_engine::composite(const Image &bg, const Image &fg
 	}
 
 	std::shared_ptr<Image> ret = std::make_shared<Image>(fg.width(), fg.height());
-	*ret = bg * fg;
+	int w = bg.width(), h = bg.height();
+	for(int wi = 0; wi < w; ++wi) for (int hi = 0; hi < h; ++hi) {
+		ret->at(wi, hi) = vec4(vec3(bg.get(wi, hi)) * (1.0f-fg.get_a(wi, hi)) + vec3(fg.get(wi, hi)) * fg.get_a(wi, hi), 1.0f);
+	}
 	return ret; 
 }

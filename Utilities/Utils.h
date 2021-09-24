@@ -1,6 +1,7 @@
 #pragma once
-#include <random>
+#include "common.h"
 
+#include <random>
 #include <sstream>
 #include <iostream>
 
@@ -9,7 +10,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include "common.h"
 #include "Logger.h"
 #include <cstdarg>
 #include <chrono>
@@ -17,6 +17,10 @@ typedef std::chrono::high_resolution_clock Clock;
 namespace fs = boost::filesystem;
 
 namespace purdue {
+	typedef float deg;
+	typedef float rad;
+	constexpr float pi = 3.14159265f;
+
 	inline bool file_exists(const std::string file) {
 		return fs::exists(file);
 	}
@@ -87,15 +91,15 @@ namespace purdue {
 	 * \author YichenSheng
 	 * \date August 2019
 	 */
-	inline pd::rad deg2rad(pd::deg d) {
-		return d / 180.0f * pd::pi;
+	inline rad deg2rad(deg d) {
+		return d / 180.0f * pi;
 	}
 
-	inline pd::deg rad2deg(pd::rad r) {
-		return r / pd::pi * 180.0f;
+	inline deg rad2deg(rad r) {
+		return r / pi * 180.0f;
 	}
 
-	inline float deg2quat(pd::deg d) {
+	inline float deg2quat(deg d) {
 		return std::cos(deg2rad(d / 2));
 	}
 
@@ -106,6 +110,10 @@ namespace purdue {
 		return v;
 	}
 	
+	inline bool same_point(const glm::vec3 &a, const glm::vec3 &b) {
+		return glm::distance(a, b) < 1e-3;
+	}
+
 	inline float random_float(float fmin = 0.0f, float fmax = 1.0f) {
 		// engine
 		std::random_device rd;
@@ -172,7 +180,7 @@ namespace purdue {
 		std::chrono::time_point<std::chrono::system_clock> _toc;
 	};
 
-	inline vec3 bary_centric_interpolate(vec3 a, vec3 b, vec3 c, vec3 bary_coord) {
+	inline glm::vec3 bary_centric_interpolate(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 bary_coord) {
 		return a * bary_coord.x + b * bary_coord.y + c * bary_coord.z;
 	}
 
@@ -180,7 +188,7 @@ namespace purdue {
 		return std::abs(a - b) < eps;
 	}
 
-	inline std::ostream& operator<<(std::ostream& out, vec3 v) {
+	inline std::ostream& operator<<(std::ostream& out, glm::vec3 v) {
 		out << v.x << "," << v.y << "," << v.z;
 		return out;
 	}

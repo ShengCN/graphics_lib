@@ -30,33 +30,44 @@ ppc::~ppc()
 {
 }
 
-vec3 ppc::GetRight()
-{
-	vec3 view = GetViewVec();
-
-	return cross(view, _up);
+bool ppc::save(const std::string file) {
+	std::ofstream output(file, std::ofstream::binary);
+	if (output.is_open()) {
+		output.write((char*)&_position[0], sizeof(glm::vec3));
+		output.write((char*)&_front[0], sizeof(glm::vec3));
+		output.write((char*)&_up[0], sizeof(glm::vec3));
+		output.write((char*)&_fov, sizeof(float));
+		output.write((char*)&_near, sizeof(float));
+		output.write((char*)&_far, sizeof(float));
+		output.write((char*)&_width, sizeof(int));
+		output.write((char*)&_height, sizeof(int));
+		output.close();
+		return true;
+	}
+	else {
+		std::cout << "File " << file << " cannot save.\n";
+		return false;
+	}
 }
 
-vec3 ppc::GetUp()
-{
-	return cross(GetRight(), GetViewVec());
-}
-
-void ppc::PositionAndOrient(vec3 p, vec3 lookatP, vec3 up)
-{
-	_position = p;
-	_front = glm::normalize(lookatP - p);
-	_up = up;
-}
-
-glm::mat4 ppc::GetP() {
-	return glm::perspective(deg2rad(_fov), (float)_width / (float)_height, _near, _far);
-}
-
-glm::mat4 ppc::GetV()
-{
-	return glm::lookAt(_position, _position + _front, _up);
-	// return glm::lookAt(_position, target, _worldUp);
+bool ppc::load(const std::string file) {
+	std::ifstream input(file, std::ifstream::binary);
+	if (input.is_open()) {
+		input.read((char*)&_position[0], sizeof(glm::vec3));
+		input.read((char*)&_front[0], sizeof(glm::vec3));
+		input.read((char*)&_up[0], sizeof(glm::vec3));
+		input.read((char*)&_fov, sizeof(float));
+		input.read((char*)&_near, sizeof(float));
+		input.read((char*)&_far, sizeof(float));
+		input.read((char*)&_width, sizeof(int));
+		input.read((char*)&_height, sizeof(int));
+		input.close();
+		return true;
+	}
+	else {
+		std::cout << "File " << file << " cannot save.\n";
+		return false;
+	}
 }
 
 glm::mat3 ppc::get_local_mat() {
