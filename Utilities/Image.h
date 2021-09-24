@@ -21,7 +21,7 @@ public:
     int height() const{ return m_h; }
     void set_dim(int w, int h) {m_w = w; m_h = h;}
     void set_color(glm::vec4 c);
-    void clear();
+    void clear(glm::vec4 c=glm::vec4(1.0f));
 
     /* Processing */
     Image normalize();

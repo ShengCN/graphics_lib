@@ -31,6 +31,7 @@ public:
 	void remove_mesh(mesh_id id);
 	void stand_on_plane(mesh_id id, vec3 p, vec3 n);
 	void set_point_light(glm::vec3 lp);
+	vec3 get_light_pos();
 
 	//------- IO --------//
 	bool save_mesh(mesh_id id, const std::string model_fname);

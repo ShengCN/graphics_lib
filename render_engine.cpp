@@ -115,6 +115,23 @@ void render_engine::stand_on_plane(int mesh_id, vec3 p, vec3 n) {
 	mesh_ptr->add_world_transate(trans_vec); 
 }
 
+void render_engine::set_point_light(glm::vec3 lp) {
+	if (m_manager.lights.empty()) {
+		m_manager.lights.push_back(lp);
+	} else {
+		m_manager.lights[0] = lp;
+	}
+}
+
+glm::vec3 render_engine::get_light_pos() {
+	if (m_manager.lights.empty()) {
+		throw std::invalid_argument("Lights have not been initialized");
+		return glm::vec3(0.0f);
+	}
+
+	return m_manager.lights[0];
+}
+
 mesh_id render_engine::add_visualize_line(vec3 h, vec3 t) {
 	std::shared_ptr<mesh> vis_mesh = std::make_shared<mesh>();
 	if (vis_mesh == nullptr) {

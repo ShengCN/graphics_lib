@@ -162,8 +162,8 @@ std::vector<unsigned int> Image::to_unsigned_data() {
     return ret;
 }
 
-void Image::clear() {
-    m_buffer.clear();
+void Image::clear(glm::vec4 c) {
+    std::fill(m_buffer.begin(), m_buffer.end(), c);
 }
 
 void Image::from_unsigned_data(unsigned char *data, int w, int h) {
