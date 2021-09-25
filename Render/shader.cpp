@@ -530,11 +530,13 @@ void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params)
 
 	glViewport(0, 0, params.light_camera->width(), params.light_camera->height());
 	glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// glDrawBuffer(GL_BACK);
 	glUseProgram(m_program);
 
 	//------- Begin Drawing SM --------//
 	auto tmp_ppc = params.cur_camera;
+    INFO("light position: {}", purdue::to_string(params.p_lights[0]));
 	params.light_camera->PositionAndOrient(params.p_lights[0], params.sm_target_center, vec3(0.0f, 1.0f, 0.0f));
 	params.cur_camera = params.light_camera;
 	shader::draw_mesh(m, params);

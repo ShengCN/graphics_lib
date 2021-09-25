@@ -20,6 +20,7 @@ enum class shader_type {
 
 struct rendering_params {
 	int frame;
+    // uint64_t time;
 	std::shared_ptr<ppc> cur_camera;
 	std::vector<vec3> p_lights;
 	draw_type dtype;
@@ -28,7 +29,7 @@ struct rendering_params {
 	GLuint sm_texture;
 	std::shared_ptr<ppc> light_camera;
 
-	rendering_params():frame(-1), dtype(draw_type::triangle), sm_texture(-1), sm_target_center(0.0f) {
+	rendering_params():frame(0), dtype(draw_type::triangle), sm_texture(-1), sm_target_center(0.0f) {
 	}
 };
 

@@ -57,6 +57,7 @@ public:
 	void set_render_camera(int w, int h, float fov);
 	void set_shader(mesh_id m, const std::string shader_name);
 	void recompute_normal(int mesh_id);
+    void update_time(double t);
 
 	//------- Rendering --------//
 	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));
@@ -97,4 +98,5 @@ private:
 private:
 	asset_manager m_manager;
 	bool m_vis_frame_mode;
+    double m_curtime;
 };

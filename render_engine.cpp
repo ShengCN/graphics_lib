@@ -6,8 +6,7 @@
 #include "render_engine.h"
 #include "Utilities/Utils.h"
 
-render_engine::render_engine() {
-}
+render_engine::render_engine() { }
 
 void render_engine::init() {
 	//------- initialize rendering states --------//
@@ -24,7 +23,7 @@ bool render_engine::init_scenes() {
 	m_manager.visualize_scene = std::make_shared<scene>();
 
 	/* Lightings */
-	m_manager.lights = { glm::vec3(0.75f) };
+	m_manager.lights = { glm::vec3(0.75f) * 2.0f };
 	return true;
 }
 
@@ -97,7 +96,7 @@ void render_engine::init_camera(int w, int h, float fov) {
 	 * Initialize camera and light camera
 	 */
 	m_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
-	m_manager.light_camera = std::make_shared<ppc>(2048, 2048, 60.0f);
+	m_manager.light_camera = std::make_shared<ppc>(2048, 2048, 30.0f);
 }
 
 void render_engine::recompute_normal(int mesh_id) {
@@ -527,6 +526,10 @@ void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 	params.frame = 0;
 	params.cur_camera = m_manager.cur_camera;
 	params.p_lights = m_manager.lights;
+
+    /* TODO, DBGS */
+    params.p_lights[0] = glm::vec3(glm::rotate(purdue::deg2rad(m_curtime * 1e-8f), vec3(0.0f,1.0f,0.0f)) * vec4(params.p_lights[0], 0.0f));
+
 	params.light_camera = m_manager.light_camera; 
 	params.dtype = draw_type::triangle;
 	auto meshes = m_manager.render_scene->get_meshes();
@@ -538,9 +541,9 @@ void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 
 	/* Draw Shadow Receiver */
 	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
-	// shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
 	m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
 	shadow_texid = params.sm_texture;
+    shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
 }
 
 void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {
@@ -669,4 +672,8 @@ std::shared_ptr<Image> render_engine::composite(const Image &bg, const Image &fg
 		ret->at(wi, hi) = vec4(vec3(bg.get(wi, hi)) * (1.0f-fg.get_a(wi, hi)) + vec3(fg.get(wi, hi)) * fg.get_a(wi, hi), 1.0f);
 	}
 	return ret; 
+}
+
+void render_engine::update_time(double t) {
+    m_curtime = t;
 }
