@@ -58,6 +58,7 @@ public:
 	void set_shader(mesh_id m, const std::string shader_name);
 	void recompute_normal(int mesh_id);
     void update_time(double t);
+    double get_time();
 
 	//------- Rendering --------//
 	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));

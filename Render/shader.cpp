@@ -536,7 +536,7 @@ void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params)
 
 	//------- Begin Drawing SM --------//
 	auto tmp_ppc = params.cur_camera;
-    INFO("light position: {}", purdue::to_string(params.p_lights[0]));
+    //INFO("light position: {}", purdue::to_string(params.p_lights[0]));
 	params.light_camera->PositionAndOrient(params.p_lights[0], params.sm_target_center, vec3(0.0f, 1.0f, 0.0f));
 	params.cur_camera = params.light_camera;
 	shader::draw_mesh(m, params);

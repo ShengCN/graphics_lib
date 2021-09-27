@@ -1,11 +1,4 @@
 #include "ppc.h"
-#include <cmath>
-#include <sstream>
-#include <glm/common.hpp>
-#include <glm/gtx/transform.hpp>
-#include "Utilities/Utils.h"
-#include "common.h"
-#include "glm/ext/matrix_float3x3.hpp"
 
 using namespace glm;
 using namespace purdue;

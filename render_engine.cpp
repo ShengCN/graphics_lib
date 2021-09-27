@@ -528,7 +528,7 @@ void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 	params.p_lights = m_manager.lights;
 
     /* TODO, DBGS */
-    params.p_lights[0] = glm::vec3(glm::rotate(purdue::deg2rad(m_curtime * 1e-8f), vec3(0.0f,1.0f,0.0f)) * vec4(params.p_lights[0], 0.0f));
+    //params.p_lights[0] = glm::vec3(glm::rotate(purdue::deg2rad(m_curtime * 1e-8f), vec3(0.0f,1.0f,0.0f)) * vec4(params.p_lights[0], 0.0f));
 
 	params.light_camera = m_manager.light_camera; 
 	params.dtype = draw_type::triangle;
@@ -676,4 +676,8 @@ std::shared_ptr<Image> render_engine::composite(const Image &bg, const Image &fg
 
 void render_engine::update_time(double t) {
     m_curtime = t;
+}
+
+double render_engine::get_time() {
+    return m_curtime;
 }

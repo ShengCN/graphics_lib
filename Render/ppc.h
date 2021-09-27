@@ -1,8 +1,4 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <memory>
 #include "common.h"
 
 #ifdef __CUDACC__
