@@ -9,7 +9,6 @@
 #include "Utilities/voxelization.h"
 #include "asset_manager.h"
 
-extern GLuint shadow_texid; 
 class render_engine {
 	//-------  APIs --------//
 public:
@@ -83,7 +82,7 @@ public:
 
 	//------- Others --------//
 	std::shared_ptr<Image> get_frame_buffer();
-	GLuint to_GPU_texture(std::shared_ptr<Image> img);
+	GLuint to_GPU_texture(Image &img);
 	std::shared_ptr<Image> from_GPU_texture(GLuint texid, int w, int h);
 	std::shared_ptr<Image> composite(const Image &bg, const Image &fg);
 	std::shared_ptr<mesh> get_mesh(int id);

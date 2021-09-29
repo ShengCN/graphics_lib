@@ -1,6 +1,6 @@
 # General OpenGL Rendering Libs for R & D 
 ## Plans
-[ ] OpenGL parts, only implement to single shadow/shadow map
+[x] OpenGL parts, only implement to single shadow/shadow map
 
 Optinal:
 [ ] Maybe Let's Support Cubemap 

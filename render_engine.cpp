@@ -519,7 +519,6 @@ void render_engine::draw_mesh(mesh_id id) {
 	m_manager.rendering_mappings.at(meshptr)->draw_mesh(meshptr, params);
 }
 
-GLuint shadow_texid=-1; 
 void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 	/* Draw Shadow Map First */
 	rendering_params params;
@@ -542,8 +541,6 @@ void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 	/* Draw Shadow Receiver */
 	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
 	m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
-	shadow_texid = params.sm_texture;
-    shadow_texid = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_rgb_texture();
 }
 
 void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {
@@ -619,13 +616,7 @@ std::shared_ptr<mesh> render_engine::add_empty_mesh() {
 	return ret;
 }
 
-GLuint render_engine::to_GPU_texture(std::shared_ptr<Image> img) {
-	// Image test("test.jpg");
-	if (img == nullptr) {
-		WARN("Cannot transfer the image to GPU. Nullptr");
-		return -1;
-	}
-
+GLuint render_engine::to_GPU_texture(Image &img) {
 	GLuint ret;
     glGenTextures(1, &ret);
     glBindTexture(GL_TEXTURE_2D, ret);
@@ -635,7 +626,7 @@ GLuint render_engine::to_GPU_texture(std::shared_ptr<Image> img) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->width(), img->height(), 0, GL_RGBA, GL_FLOAT, img->data());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width(), img.height(), 0, GL_RGBA, GL_FLOAT, img.data());
 	return ret;
 }
 

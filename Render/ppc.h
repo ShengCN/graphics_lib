@@ -39,6 +39,7 @@ public:
 
 	bool save(const std::string file);
 	bool load(const std::string file);
+
 	CUDA_HOSTDEV
 	vec3 GetRight() const {
         vec3 view = GetViewVec();
