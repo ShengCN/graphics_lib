@@ -114,6 +114,7 @@ namespace purdue {
 		return glm::distance(a, b) < 1e-3;
 	}
 
+
 	inline float random_float(float fmin = 0.0f, float fmax = 1.0f) {
 		// engine
 		std::random_device rd;

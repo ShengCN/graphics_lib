@@ -22,7 +22,6 @@
 #include <glm/gtx/transform.hpp>
 #include "glm/ext/matrix_float3x3.hpp"
 #include "Utilities/Utils.h"
-#include "Utilities/Utils.h"
 #include "Utilities/Logger.h"
 #include "Utilities/Image.h"
 
