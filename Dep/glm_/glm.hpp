@@ -1,4 +1,5 @@
-/// @ref core
+/// @ref cor
+//
 /// @file glm/glm.hpp
 ///
 /// @defgroup core Core features
