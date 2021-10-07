@@ -12,3 +12,6 @@
 [submodule "Dep/fmt"]
 	path = Dep/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "Dep/glm"]
+	path = Dep/glm
+	url = https://github.com/g-truc/glm.git
