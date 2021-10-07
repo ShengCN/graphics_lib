@@ -94,7 +94,28 @@ bool shader::reload_shader() {
 	return true;
 }
 
-void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
+void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& params){
+	if (descriptor.m == nullptr) {
+		WARN("Shader input mesh is nullptr");
+		return;
+	}
+
+	for (int i = 0; i < descriptor.texs.size(); ++i) {
+		if (descriptor.texs[i] == nullptr) {
+			WARN("{} texture is nullptr", i);
+			continue;
+		}
+		
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, m_texids[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, descriptor.texs[i]->width(), descriptor.texs[i]->height(), 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+
+    auto m = descriptor.m;
 	GLuint vert_attr = glGetAttribLocation(m_program, "pos_attr");
 	GLuint norm_attr = glGetAttribLocation(m_program, "norm_attr");
 	GLuint col_attr = glGetAttribLocation(m_program, "col_attr");
@@ -190,29 +211,6 @@ void shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
 	glBindVertexArray(vao);
 	glDrawArrays(ogl_draw_type, 0, (GLsizei)m->m_verts.size());
 	glBindVertexArray(0);
-}
-
-void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& params){
-	if (descriptor.m == nullptr) {
-		WARN("Shader input mesh is nullptr");
-		return;
-	}
-
-	for (int i = 0; i < descriptor.texs.size(); ++i) {
-		if (descriptor.texs[i] == nullptr) {
-			WARN("{} texture is nullptr", i);
-			continue;
-		}
-		
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, m_texids[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, descriptor.texs[i]->width(), descriptor.texs[i]->height(), 0, GL_RGBA, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-	draw_mesh(descriptor.m, params);
 }
 
 
@@ -517,7 +515,8 @@ void shadow_shader::init() {
 }
 
 float shadow_shader::m_shadow_fov=60.0f;
-void shadow_shader::draw_mesh(std::shared_ptr<mesh> m, rendering_params& params) {
+void shadow_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params){ 
+    auto m = descriptor.m;
 	if (m == nullptr) {
 		throw std::invalid_argument("Input pointer is null");
 		return;

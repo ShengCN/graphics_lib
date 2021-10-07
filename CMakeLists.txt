@@ -7,6 +7,9 @@ find_package(OpenGL REQUIRED)
 
 # ImGui
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD=1)
+add_compile_definitions(GLM_FORCE_RADIANS=1)
+add_compile_definitions(GLM_FORCE_CUDA=1)
+#add_definitions(-DGLM_FORCE_RADIANS)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glfw)
@@ -39,11 +42,18 @@ ${PROJECT_SOURCE_DIR}/imgui
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
 
+
+target_include_directories(graphics_lib SYSTEM PUBLIC 
+${PROJECT_SOURCE_DIR}/Dep/glm
+)
+
 add_definitions(-DGLM_FORCE_RADIANS)
 target_link_libraries(graphics_lib 
 ${Boost_LIBRARIES}
 ${OPENGL_gl_LIBRARY}
 glfw)
 
+
+#set_target_properties(graphics_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 # install(TARGETS graphics_lib DESTINATION lib)
 # install(FILES *.h DESTINATION include)

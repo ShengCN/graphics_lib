@@ -16,6 +16,13 @@
 typedef std::chrono::high_resolution_clock Clock;
 namespace fs = boost::filesystem;
 
+#ifdef __CUDACC__
+#define CUDA_HOSTDEV __host__ __device__
+#else
+#define CUDA_HOSTDEV
+#endif
+
+
 namespace purdue {
 	typedef float deg;
 	typedef float rad;
@@ -84,17 +91,12 @@ namespace purdue {
 	bool read_image(const std::string fname, int &w, int &h, int &c, std::vector<unsigned char> &buf);
 	bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
 
-	/*!
-	 *
-	 * \brief Math lab
-	 *
-	 * \author YichenSheng
-	 * \date August 2019
-	 */
+    CUDA_HOSTDEV
 	inline rad deg2rad(deg d) {
 		return d / 180.0f * pi;
 	}
 
+    CUDA_HOSTDEV
 	inline deg rad2deg(rad r) {
 		return r / pi * 180.0f;
 	}

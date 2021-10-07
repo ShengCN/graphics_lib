@@ -29,7 +29,7 @@ struct rendering_params {
 	GLuint sm_texture;
 	std::shared_ptr<ppc> light_camera;
 
-	rendering_params():frame(0), dtype(draw_type::triangle), sm_texture(-1), sm_target_center(0.0f) {
+	rendering_params():frame(0), dtype(draw_type::triangle), sm_texture(0), sm_target_center(0.0f) {
 	}
 };
 
@@ -37,6 +37,9 @@ struct rendering_params {
 struct Mesh_Descriptor {
 	std::shared_ptr<mesh> m;
 	std::vector<std::shared_ptr<Image>> texs;
+
+    Mesh_Descriptor(std::shared_ptr<mesh> m):m(m) {}
+    Mesh_Descriptor(std::shared_ptr<mesh> m, std::vector<std::shared_ptr<Image>> texs):m(m), texs(texs) {}
 }; 
 
 class shader  {
@@ -46,8 +49,8 @@ public:
 	shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile);
 	
 	bool reload_shader();
-	virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
-	virtual void draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& params);
+	//virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
+	virtual void draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params);
 
 	GLuint get_program() { return m_program; }
 	GLuint get_shader_program() { return m_program; }
@@ -83,7 +86,7 @@ public:
 	shadow_shader(const char* computeShaderFile);
 	shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile);
 	shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile);
-	virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
+	virtual void draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params) override;
 	GLuint get_sm_rgb_texture();
 	GLuint get_sm_texture();
 
@@ -92,6 +95,6 @@ private:
 	void init();
 
 private:
-	GLuint m_depth_fbo=-1, m_depth_texture_id=-1, m_rgb_texture=-1;
+	GLuint m_depth_fbo=0, m_depth_texture_id=0, m_rgb_texture=0;
 	int light_w = 2048, light_h = 2048;
 };
