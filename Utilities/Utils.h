@@ -158,15 +158,7 @@ namespace purdue {
 			return std::chrono::duration_cast<std::chrono::nanoseconds>(_toc - _tic).count();
 		}
 
-		void print_elapsed() {
-			if (!_is_ticed) {
-				std::cerr << "timer has not been ticed \n";
-				return;
-			}
-
-			auto elapsed = get_elapse();
-			std::cerr << "Time: " << elapsed * 1e-9 << " seconds \n";
-		}
+		void print_elapsed(const std::string log=""); 
 
 		std::string to_string() {
 			if (!_is_ticed) {
@@ -210,3 +202,5 @@ inline std::vector<std::string> split_string(const std::string s, const std::str
 
 	return ret;
 }
+
+#define TIME(x, log) do { purdue::timer clc; clc.tic(); x; clc.toc(); clc.print_elapsed(log); } while(0)

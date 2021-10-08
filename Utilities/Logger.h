@@ -26,7 +26,7 @@ public:
 
 	template<typename T, typename TT, typename TTT>
 	void warn(const std::string s, T file, TT line, TTT func) {
-		std::string log_str = fmt::format("[INFO] {}. \t [{}-{}-{}]\n", s, func, line, file);
+		std::string log_str = fmt::format("[WARN] {}. \t [{}-{}-{}]\n", s, func, line, file);
 		m_log_str += log_str;
 		std::cout << log_str;
 	}
@@ -47,3 +47,7 @@ private:
 #ifndef WARN
 #define WARN(fmt_str, ...) logger::instance()->warn(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)
 #endif // !INFO
+
+#ifndef FAIL_EXIT
+#define FAIL_EXIT(condition, log) do { if (condition) WARN(log); exit(1);} while(0)
+#endif

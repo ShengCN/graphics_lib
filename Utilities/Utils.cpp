@@ -32,4 +32,14 @@ namespace purdue
 		std::normal_distribution<float> distribution(mean, sig);
 		return distribution(generator);
 	}
+
+    void timer::print_elapsed(const std::string log) {
+        if (!_is_ticed) {
+            std::cerr << "timer has not been ticed \n";
+            return;
+        }
+
+        auto elapsed = get_elapse();
+        std::cout << fmt::format("{:30} [Time: {}s]\n", log, elapsed * 1e-9);
+    }
 }
