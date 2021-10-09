@@ -258,11 +258,10 @@ Image Image::operator+(const Image &rhs) const {
 }
 
 Image Image::operator-(const Image &rhs) const {
-    if (width() != rhs.width() || height() != rhs.height()) {
-        throw std::invalid_argument(fmt::format("Image operator -, dim does not match! {},{} but rhs {},{}", width(), height(), rhs.width(), rhs.height()));
-    }
+    FAIL(width() != rhs.width() || height() != rhs.height(), "Image operator -, dim does not match! {},{} but rhs {},{}", width(), height(), rhs.width(), rhs.height());
 
     Image ret(width(), height());
+#pragma omp parallel for collapse(2)
     for(int i = 0; i < m_w; ++i) for(int j = 0; j < m_h; ++j) {
         vec4 c = get(i,j);
         ret.at(i,j) = c - rhs.get(i,j);
@@ -273,6 +272,7 @@ Image Image::operator-(const Image &rhs) const {
 
 Image Image::operator*(const Image &rhs) const {
     Image ret(width(), height());
+#pragma omp parallel for collapse(2)
     for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
         ret.at(i,j) = get(i,j) * rhs.get(i,j);
     }
@@ -281,8 +281,18 @@ Image Image::operator*(const Image &rhs) const {
 
 Image Image::operator*(float v) {
     Image ret(width(), height());
+#pragma omp parallel for collapse(2)
     for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
         ret.at(i,j) = at(i,j) * v;
+    }
+    return ret;
+}
+
+Image Image::operator/(float v) {
+    Image ret(width(), height());
+#pragma omp parallel for collapse(2)
+    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
+        ret.at(i,j) = at(i,j)/v;
     }
     return ret;
 }
@@ -326,14 +336,6 @@ vec3 Image::max() {
         ret.z = std::max(cp.z, ret.z);
     }
 
-    return ret;
-}
-
-Image Image::operator/(float v) {
-    Image ret(width(), height());
-    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
-        ret.at(i,j) = at(i,j)/v;
-    }
     return ret;
 }
 

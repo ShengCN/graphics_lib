@@ -19,14 +19,14 @@ public:
 
 	template<typename T, typename TT, typename TTT>
 	void info(const std::string s, T file, TT line, TTT func) {
-		std::string log_str = fmt::format("[INFO] {}. \t [{}-{}-{}]\n", s, func, line, file);
+		std::string log_str = fmt::format("[INFO] {:50} \t [{}-{}-{}]\n", s, func, line, file);
 		m_log_str += log_str;
 		std::cout << log_str;
 	}
 
 	template<typename T, typename TT, typename TTT>
 	void warn(const std::string s, T file, TT line, TTT func) {
-		std::string log_str = fmt::format("[WARN] {}. \t [{}-{}-{}]\n", s, func, line, file);
+		std::string log_str = fmt::format("[WARN] {:50} \t [{}-{}-{}]\n", s, func, line, file);
 		m_log_str += log_str;
 		std::cout << log_str;
 	}
@@ -48,6 +48,6 @@ private:
 #define WARN(fmt_str, ...) logger::instance()->warn(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)
 #endif // !INFO
 
-#ifndef FAIL_EXIT
-#define FAIL_EXIT(condition, log) do { if (condition) WARN(log); exit(1);} while(0)
+#ifndef FAIL
+#define FAIL(condition, fmt_str, ...) do { if ((condition)) throw std::invalid_argument(fmt::format(fmt_str, ##__VA_ARGS__));} while(0)
 #endif

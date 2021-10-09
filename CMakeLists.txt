@@ -4,6 +4,7 @@ project(libgraphics_lib)
 
 set (CMAKE_CXX_STANDARD 11)
 find_package(OpenGL REQUIRED)
+find_package(OpenMP REQUIRED)
 
 # ImGui
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD=1)
@@ -48,10 +49,12 @@ ${PROJECT_SOURCE_DIR}/Dep/glm
 )
 
 add_definitions(-DGLM_FORCE_RADIANS)
-target_link_libraries(graphics_lib 
+target_link_libraries(graphics_lib PRIVATE
 ${Boost_LIBRARIES}
 ${OPENGL_gl_LIBRARY}
-glfw)
+glfw
+OpenMP::OpenMP_CXX
+)
 
 
 #set_target_properties(graphics_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
