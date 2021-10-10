@@ -8,7 +8,7 @@
 #include "Utilities/voxelization.h"
 #include "asset_manager.h"
 
-class render_engine {
+class render_engine{
 	//-------  APIs --------//
 public:
 	//------- Initialize --------//
@@ -33,8 +33,9 @@ public:
 
 	//------- IO --------//
 	bool save_mesh(mesh_id id, const std::string model_fname);
-	bool load_render_scene(const std::string scene_file);
 	bool save_framebuffer(const std::string ofname);
+    int to_json(const std::string json_fname);
+    int from_json(const std::string json_str);
 
 	//------- UI --------//
 	void camera_press(int x, int y);
@@ -88,7 +89,6 @@ public:
 
 private:
 	bool init_shaders();
-	bool init_scenes();
 	std::shared_ptr<mesh> vis_new_mesh();
 	std::shared_ptr<mesh> add_empty_mesh();
 	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);

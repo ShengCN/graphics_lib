@@ -6,7 +6,10 @@
 // rendering related assets
 struct asset_manager {
 public:
+	//------- Functions --------//
 	asset_manager();
+    int to_json(const std::string json_fname);
+    int from_json(const std::string jsonstr); 
 
 public:
 	//------- Variables --------//
@@ -18,6 +21,8 @@ public:
 	std::unordered_map<std::shared_ptr<mesh>, std::shared_ptr<shader>> rendering_mappings; // mesh_id -> shader
 	std::shared_ptr<ppc> cur_camera=nullptr;
 	std::shared_ptr<ppc> light_camera=nullptr;
-
 	float shadow_ppc_fov = 30.0f;
+
+private:
+    std::unordered_map<std::string, std::shared_ptr<ISerialize>> m_serializers; 
 };

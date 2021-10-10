@@ -23,6 +23,7 @@
 #include <glm/ext/matrix_float3x3.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include "interface.h"
 #include "Utilities/Utils.h"
 #include "Utilities/Logger.h"
 #include "Utilities/Image.h"

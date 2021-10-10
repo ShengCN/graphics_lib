@@ -8,6 +8,14 @@ scene::scene() {
 scene::~scene() {
 }
 
+
+int scene::to_json(const std::string json_fname) {
+
+}
+int scene::from_json(const std::string jsonstr) {
+
+}
+
 std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
 
@@ -28,10 +36,13 @@ bool scene::load_scene(std::string scene_file) {
 }
 
 bool scene::save_scene(const std::string filename) {
-	//#TODO_Save_Scene
-	// merge 
+	//TODO
+    /* Save Camera */
+    
 
-	// save
+    /* Save Environments */
+
+    /* Save Meshes */
 	
 	return false;
 }
@@ -155,3 +166,4 @@ void scene::stand_on_plane(std::shared_ptr<mesh> m) {
 	float offset = ground_height.y - lowest_point.y;
 	m->m_world = glm::translate(vec3(0.0, offset, 0.0)) * m->m_world;
 }
+

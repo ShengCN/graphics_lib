@@ -15,15 +15,9 @@ void render_engine::init() {
 	glEnable(GL_MULTISAMPLE);
 
 	init_shaders();
-	init_scenes();
 }
 
 bool render_engine::init_scenes() {
-	m_manager.render_scene = std::make_shared<scene>();
-	m_manager.visualize_scene = std::make_shared<scene>();
-
-	/* Lightings */
-	m_manager.lights = { glm::vec3(0.75f) * 1.0f };
 	return true;
 }
 
@@ -274,10 +268,6 @@ bool render_engine::save_mesh(mesh_id id, const std::string model_fname) {
 	return false;
 }
 
-bool render_engine::load_render_scene(const std::string scene_file) {
-	return false;
-}
-
 bool render_engine::save_framebuffer(const std::string ofname) {
 	unsigned int *pixels;
 	int w = m_manager.cur_camera->width(), h = m_manager.cur_camera->height();
@@ -296,6 +286,14 @@ bool render_engine::save_framebuffer(const std::string ofname) {
 	bool ret = purdue::save_image(ofname, pixels, w, h, 4);
 	delete[] pixels;
 	return ret;
+}
+
+int render_engine::to_json(const std::string json_fname) {
+    return m_manager.to_json(json_fname);
+}
+
+int render_engine::from_json(const std::string json_str) {
+    return m_manager.from_json(json_str);
 }
 
 bool render_engine::reload_shaders() {
