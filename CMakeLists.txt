@@ -8,9 +8,8 @@ find_package(OpenMP REQUIRED)
 
 # ImGui
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD=1)
-add_compile_definitions(GLM_FORCE_RADIANS=1)
-add_compile_definitions(GLM_FORCE_CUDA=1)
-#add_definitions(-DGLM_FORCE_RADIANS)
+add_definitions(-DGLM_FORCE_RADIANS)
+#add_compile_definitions(GLM_FORCE_RADIANS=1)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glfw)
@@ -38,18 +37,19 @@ ${PROJECT_SOURCE_DIR}/Dep/stb
 ${PROJECT_SOURCE_DIR}/Dep/fmt/include
 ${PROJECT_SOURCE_DIR}/Dep/glad
 ${PROJECT_SOURCE_DIR}/Dep/glfw/include
+${PROJECT_SOURCE_DIR}/Dep/glm
 ${PROJECT_SOURCE_DIR}/Dep/
 ${PROJECT_SOURCE_DIR}/imgui
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
 
 
-target_include_directories(graphics_lib SYSTEM PUBLIC 
+target_include_directories(graphics_lib SYSTEM PRIVATE 
 ${PROJECT_SOURCE_DIR}/Dep/glm
 )
 
 add_definitions(-DGLM_FORCE_RADIANS)
-target_link_libraries(graphics_lib PRIVATE
+target_link_libraries(graphics_lib PUBLIC 
 ${Boost_LIBRARIES}
 ${OPENGL_gl_LIBRARY}
 glfw

@@ -20,36 +20,14 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
-#include "glm/ext/matrix_float3x3.hpp"
+#include <glm/ext/matrix_float3x3.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include "Utilities/Utils.h"
 #include "Utilities/Logger.h"
 #include "Utilities/Image.h"
 
-namespace purdue {
-	inline std::string to_string(glm::vec3 v) {
-		std::stringstream out;
-		out << v.x << "," << v.y << "," << v.z;
-		return out.str();
-	}
-
-	inline std::string to_string(glm::vec4 v) {
-		std::stringstream out;
-		out << v.x << "," << v.y << "," << v.z << "," << v.w;
-		return out.str();
-	}
-
-	inline std::string to_string(glm::mat4 m) {
-		std::stringstream out;
-		out << to_string(m[0]) << std::endl;
-		out << to_string(m[1]) << std::endl;
-		out << to_string(m[2]) << std::endl;
-		out << to_string(m[3]);
-		return out.str();
-	}
-
-};
-
-namespace pd = purdue;
+using glm::ivec2;
 using glm::vec2;
 using glm::vec3;
 using glm::vec4;

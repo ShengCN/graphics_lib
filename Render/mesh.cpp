@@ -1,15 +1,65 @@
-#include <fstream>
-#include <iostream>
-
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-
 #include "mesh.h"
-#include "Utilities/Utils.h" 
-#include "Utilities/Logger.h"
+#include "Utilities/model_loader.h"
 
 int mesh::id = 0;
+
+void AABB::add_point(vec3 p) {
+    p0.x = std::min(p.x, p0.x);
+    p0.y = std::min(p.y, p0.y);
+    p0.z = std::min(p.z, p0.z);
+
+    p1.x = std::max(p.x, p1.x);
+    p1.y = std::max(p.y, p1.y);
+    p1.z = std::max(p.z, p1.z);
+}
+
+void AABB::add_aabb(const AABB &new_aabb) {
+    add_point(new_aabb.p0);
+    add_point(new_aabb.p1);
+}
+
+float AABB::diag_length() {
+    return glm::distance(p0, p1);
+}
+
+vec3 AABB::diagonal() {
+    return p1 - p0;
+}
+
+vec3 AABB::center() {
+    return 0.5f * (p1 + p0);
+}
+
+bool AABB::inside(vec3 p) {
+    return (p.x >= p0.x && p.x <= p1.x) && (p.y >= p0.y && p.y <= p1.y) && (p.z >= p0.z && p.z <= p1.z);
+}
+
+bool AABB::collide(AABB b) {
+    auto &a = *this;
+    return (a.p0.x <= b.p1.x && a.p1.x >= b.p0.x) &&
+        (a.p0.y <= b.p1.y && a.p1.y >= b.p0.y) &&
+        (a.p0.z <= b.p1.z && a.p1.z >= b.p0.z);
+}
+
+AABB AABB::transform(mat4 m) {
+    auto mat_vec3 = [](mat4 m, vec3 p) {
+        vec4 tmp = vec4(p, 1.0f);
+        tmp = m * tmp;
+
+        return vec3(tmp / tmp.w);
+    };
+
+    AABB ret = *this;
+    ret.p0 = mat_vec3(m, ret.p0);
+    ret.p1 = mat_vec3(m, ret.p1);
+    return ret;
+}
+
+std::string AABB::to_string() {
+    std::ostringstream oss;
+    oss << "p0 " << pd::to_string(p0) << " p1 " << pd::to_string(p1);
+    return oss.str();
+}
 
 mesh::mesh(){
 	cur_id = ++id;

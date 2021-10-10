@@ -22,7 +22,6 @@ namespace fs = boost::filesystem;
 #define CUDA_HOSTDEV
 #endif
 
-
 namespace purdue {
 	typedef float deg;
 	typedef float rad;
@@ -112,6 +111,27 @@ namespace purdue {
 		return v;
 	}
 	
+	inline std::string to_string(glm::vec3 v) {
+		std::stringstream out;
+		out << v.x << "," << v.y << "," << v.z;
+		return out.str();
+	}
+
+	inline std::string to_string(glm::vec4 v) {
+		std::stringstream out;
+		out << v.x << "," << v.y << "," << v.z << "," << v.w;
+		return out.str();
+	}
+
+	inline std::string to_string(glm::mat4 m) {
+		std::stringstream out;
+		out << to_string(m[0]) << std::endl;
+		out << to_string(m[1]) << std::endl;
+		out << to_string(m[2]) << std::endl;
+		out << to_string(m[3]);
+		return out.str();
+	}
+
 	inline bool same_point(const glm::vec3 &a, const glm::vec3 &b) {
 		return glm::distance(a, b) < 1e-3;
 	}
@@ -204,3 +224,5 @@ inline std::vector<std::string> split_string(const std::string s, const std::str
 }
 
 #define TIME(x, log) do { purdue::timer clc; clc.tic(); x; clc.toc(); clc.print_elapsed(log); } while(0)
+
+namespace pd = purdue;

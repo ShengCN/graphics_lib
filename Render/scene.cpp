@@ -1,14 +1,5 @@
-#include <memory>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
-#include <exception>
-#include <stdexcept>
-
-#include "fmt/core.h"
+#include <common.h>
 #include "scene.h"
-#include "common.h"
-#include "Utilities/Logger.h"
-#include "Utilities/Utils.h"
 #include "Utilities/model_loader.h"
 
 scene::scene() {
@@ -19,10 +10,8 @@ scene::~scene() {
 
 std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {
 	std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
-	if ( new_mesh == nullptr || !load_model(mesh_file, new_mesh)) {
-		throw std::invalid_argument(fmt::format("Mesh {} cannot be loaded.", mesh_file));
-		return nullptr;
-	}
+
+    FAIL(new_mesh == nullptr || !load_model(mesh_file, new_mesh), "Mesh {} cannot be loaded.", mesh_file);
 
 	new_mesh->set_color(color);
 	int id = new_mesh->get_id();
@@ -31,10 +20,22 @@ std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {
 }
 
 
-void scene::load_scene(std::string scene_file) {
+bool scene::load_scene(std::string scene_file) {
 	//#todo_parse_scene
 	//#todo_parse_ppc
+
+    return false;
 }
+
+bool scene::save_scene(const std::string filename) {
+	//#TODO_Save_Scene
+	// merge 
+
+	// save
+	
+	return false;
+}
+
 
 void scene::clean_up() {
 	m_meshes.clear();
@@ -76,15 +77,6 @@ AABB scene::scene_aabb() {
 	}
 
 	return scene_aabb;
-}
-
-bool scene::save_scene(const std::string filename) {
-	//#TODO_Save_Scene
-	// merge 
-
-	// save
-	
-	return false;
 }
 
 bool scene::remove_mesh(mesh_id id) {

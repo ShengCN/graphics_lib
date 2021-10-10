@@ -1,97 +1,38 @@
 #pragma once
+#include <common.h>
 
-#include <vector>
-#include <algorithm>
-#include <memory>
-#include <sstream>
+using glm::ivec2;
+using glm::vec2;
+using glm::vec3;
+using glm::vec4;
+using glm::mat3;
+using glm::mat4;
+using glm::quat;
+namespace pd = purdue;
 
-#include "common.h"
-
-/*!
- * \class Axis aligned bounding box
- *
- * \brief Simplified geometry for fast pruning 
- *
- * \author YichenSheng
- * \date August 2019
- */
+/*
+* Class Axis aligned bounding box
+**/
 struct AABB
 {
-	vec3 p0, p1;
+    vec3 p0, p1;
 	AABB()=default;
 	AABB(vec3 p) :p0(p), p1(p) {}
 	AABB(vec3 sm, vec3 lg) :p0(sm), p1(lg) {} // small, large
 
-	void add_point(vec3 p) {
-		p0.x = std::min(p.x, p0.x);
-		p0.y = std::min(p.y, p0.y);
-		p0.z = std::min(p.z, p0.z);
-
-		p1.x = std::max(p.x, p1.x);
-		p1.y = std::max(p.y, p1.y);
-		p1.z = std::max(p.z, p1.z);
-	}
-
-	void add_aabb(const AABB &new_aabb) {
-		add_point(new_aabb.p0);
-		add_point(new_aabb.p1);
-	}
-
-	float diag_length() {
-		return glm::distance(p0, p1);
-	}
-	
-	vec3 diagonal() {
-		return p1 - p0;
-	}
-
-	vec3 center() {
-		return 0.5f * (p1 + p0);
-	}
-
-	bool inside(vec3 p) {
-		return (p.x >= p0.x && p.x <= p1.x) && (p.y >= p0.y && p.y <= p1.y) && (p.z >= p0.z && p.z <= p1.z);
-	}
-
-	bool collide(AABB b) {
-		auto &a = *this;
-		return (a.p0.x <= b.p1.x && a.p1.x >= b.p0.x) &&
-			(a.p0.y <= b.p1.y && a.p1.y >= b.p0.y) &&
-			(a.p0.z <= b.p1.z && a.p1.z >= b.p0.z);
-	}
-
-	AABB transform(mat4 m) {
-		auto mat_vec3 = [](mat4 m, vec3 p) {
-			vec4 tmp = vec4(p, 1.0f);
-			tmp = m * tmp;
-
-			return vec3(tmp / tmp.w);
-		};
-
-		AABB ret = *this;
-		ret.p0 = mat_vec3(m, ret.p0);
-		ret.p1 = mat_vec3(m, ret.p1);
-		return ret;
-	}
-
-	std::string to_string() {
-		std::ostringstream oss;
-		oss << "p0 " << pd::to_string(p0) << " p1 " << pd::to_string(p1);
-		return oss.str();
-	}
-
+	void add_point(vec3 p); 
+	void add_aabb(const AABB &new_aabb); 
+	float diag_length();	
+	vec3 diagonal(); 
+	vec3 center(); 
+	bool inside(vec3 p); 
+	bool collide(AABB b); 
+	AABB transform(mat4 m); 
+	std::string to_string(); 
 	std::vector<glm::vec3> to_tri_mesh();
 	std::vector<glm::vec3> to_line_mesh();
 };
 
-/*!
- * \class Base class for mesh
- *
- * \brief 
- *
- * \author YichenSheng
- * \date August 2019
- */
 class mesh {
 public:
 	mesh();
