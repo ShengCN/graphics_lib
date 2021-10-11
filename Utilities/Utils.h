@@ -1,9 +1,5 @@
 #pragma once
-#include "common.h"
-
-#include <random>
-#include <sstream>
-#include <iostream>
+#include <common.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -125,9 +121,9 @@ namespace purdue {
 
 	inline std::string to_string(glm::mat4 m) {
 		std::stringstream out;
-		out << to_string(m[0]) << std::endl;
-		out << to_string(m[1]) << std::endl;
-		out << to_string(m[2]) << std::endl;
+		out << to_string(m[0]) << ",";
+		out << to_string(m[1]) << ",";
+		out << to_string(m[2]) << ",";
 		out << to_string(m[3]);
 		return out.str();
 	}

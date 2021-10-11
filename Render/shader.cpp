@@ -10,8 +10,6 @@
 using std::ifstream;
 using std::ios;
 
-GLuint shader::m_texids[16];
-
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 shader::shader(const char* computeShaderFile) {
 	m_cs = computeShaderFile;
@@ -379,11 +377,11 @@ GLuint shader::init_geometry_shader() {
 }
 
 void shader::init_textures() {
-	glGenTextures(sizeof(m_texids), m_texids);
-	for(int i = 0; i < sizeof(m_texids); ++i) {
-		if (m_texids[i] == -1) {
-			WARN("Texture Initialization failed");
-		}
+    // https://learnopengl.com/Getting-started/Textures
+    m_texids.resize(16);
+	glGenTextures(m_texids.size(), m_texids.data());
+	for(size_t i = 0; i < m_texids.size(); ++i) {
+        FAIL(m_texids[i] == -1, "Texture({}:{}) Initialization failed", i, m_texids[i]);
 	}
 }
 

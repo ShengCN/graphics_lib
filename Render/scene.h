@@ -1,7 +1,5 @@
 #pragma once
-#include <vector>
-#include <memory>
-#include <unordered_map>
+#include <common.h> 
 
 #include "ppc.h"
 #include "mesh.h"
@@ -33,8 +31,6 @@ public:
 	void stand_on_plane(std::shared_ptr<mesh> m);
 
 protected:
-	// std::vector<std::shared_ptr<mesh>> m_meshes;
 	std::unordered_map<mesh_id, std::shared_ptr<mesh>> m_meshes;
-	std::unordered_map<mesh_id, std::shared_ptr<mesh>> m_lights;
 };
 

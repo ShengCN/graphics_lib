@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 
 project(libgraphics_lib)
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 find_package(OpenGL REQUIRED)
 find_package(OpenMP REQUIRED)
 
@@ -14,6 +14,7 @@ add_definitions(-DGLM_FORCE_RADIANS)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glfw)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/fmt)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/rapidjson)
 
 file(GLOB render_src
     "${PROJECT_SOURCE_DIR}/Render/*.cpp"
@@ -33,18 +34,18 @@ add_library(graphics_lib STATIC ${render_src})
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 target_include_directories(graphics_lib PUBLIC 
-${PROJECT_SOURCE_DIR}/Dep/stb
-${PROJECT_SOURCE_DIR}/Dep/fmt/include
-${PROJECT_SOURCE_DIR}/Dep/glad
-${PROJECT_SOURCE_DIR}/Dep/glfw/include
-${PROJECT_SOURCE_DIR}/Dep/glm
 ${PROJECT_SOURCE_DIR}/Dep/
+${PROJECT_SOURCE_DIR}/Dep/stb
+${PROJECT_SOURCE_DIR}/Dep/glad
+${PROJECT_SOURCE_DIR}/Dep/fmt/include
+${PROJECT_SOURCE_DIR}/Dep/glfw/include
+${PROJECT_SOURCE_DIR}/Dep/rapidjson/include
 ${PROJECT_SOURCE_DIR}/imgui
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
 
 
-target_include_directories(graphics_lib SYSTEM PRIVATE 
+target_include_directories(graphics_lib SYSTEM PUBLIC 
 ${PROJECT_SOURCE_DIR}/Dep/glm
 )
 

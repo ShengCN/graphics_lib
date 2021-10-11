@@ -17,10 +17,6 @@ void render_engine::init() {
 	init_shaders();
 }
 
-bool render_engine::init_scenes() {
-	return true;
-}
-
 bool render_engine::init_shaders() {
 	const std::string template_vs = "Shaders/template_vs.glsl";
 	const std::string template_fs = "Shaders/template_fs.glsl";
@@ -89,8 +85,9 @@ void render_engine::init_camera(int w, int h, float fov) {
 	/*
 	 * Initialize camera and light camera
 	 */
-	m_manager.cur_camera = std::make_shared<ppc>(w, h, fov);
-	m_manager.light_camera = std::make_shared<ppc>(2048, 2048, 30.0f);
+    FAIL(!m_manager.cur_camera, "Camera is nullptr");
+    m_manager.cur_camera->set_size(w, h);
+    m_manager.cur_camera->set_fov(fov);
 }
 
 void render_engine::recompute_normal(int mesh_id) {

@@ -66,7 +66,7 @@ protected:
 	GLuint m_program;
 	std::string m_vs, m_fs, m_gs, m_cs;
 	shader_type m_type;
-	static GLuint m_texids[16]; // https://learnopengl.com/Getting-started/Textures
+    std::vector<GLuint> m_texids; 
 };
 
 class quad_shader: public shader {

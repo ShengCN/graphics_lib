@@ -336,3 +336,28 @@ std::vector<glm::vec3> AABB::to_line_mesh() {
 
 	return ret;
 }
+
+std::string mesh::to_json() {
+    using namespace rapidjson;
+    namespace fs = std::filesystem;
+
+    StringBuffer s;
+    Writer<StringBuffer> writer(s);
+    fs::path cur_path = fs::current_path();
+    fs::path model_path(file_path); 
+
+    /* Scene Level */
+    writer.StartObject();
+    writer.Key("path");
+    writer.String(fs::relative(cur_path, model_path).generic_string().c_str());
+    writer.Key("World Matrix");
+    writer.String(purdue::to_string(m_world).c_str());
+    writer.EndObject();
+
+    return s.GetString();
+}
+
+int mesh::from_json(const std::string jsonstr) {
+    return -1;
+}
+

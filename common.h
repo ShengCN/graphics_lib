@@ -11,6 +11,10 @@
 #include <memory>
 #include <cmath>
 #include <sstream>
+#include <map>
+#include <unordered_map>
+#include <filesystem>
+#include <random>
 
 #include <glm/common.hpp>
 #include <glm/vec2.hpp>
@@ -22,6 +26,9 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/matrix_float3x3.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 #include "interface.h"
 #include "Utilities/Utils.h"

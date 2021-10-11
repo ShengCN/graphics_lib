@@ -33,13 +33,17 @@ struct AABB
 	std::vector<glm::vec3> to_line_mesh();
 };
 
-class mesh {
+class mesh : public ISerialize {
 public:
 	mesh();
 	~mesh();
 
-	//------- shared functions --------//
+    /* Interface */
+    virtual std::string to_json() override;  
+    virtual int from_json(const std::string jsonstr) override;  
+
 public:
+	//------- shared functions --------//
 	std::vector<vec3> compute_world_space_coords();
 	std::vector<vec3> compute_world_space_normals();
 	vec3 compute_center();	// center in model space

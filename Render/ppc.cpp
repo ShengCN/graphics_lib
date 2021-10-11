@@ -220,3 +220,27 @@ std::string ppc::to_string() {
 
 	return oss.str();
 }
+
+std::string ppc::to_json() {
+    using namespace rapidjson;
+    StringBuffer s;
+    Writer<StringBuffer> writer(s);
+    writer.StartObject();
+    writer.Key("Width");
+    writer.Int(_width);
+    writer.Key("Height");
+    writer.Int(_height);
+    writer.Key("VFov");
+    writer.Double(_fov);
+    writer.Key("Position");
+    writer.String(purdue::to_string(_position).c_str());
+    writer.Key("Orientation");
+    writer.String(purdue::to_string(_front).c_str());
+    writer.EndObject();
+
+    return s.GetString();
+}
+
+int ppc::from_json(const std::string json_str) {
+    return -1;
+}

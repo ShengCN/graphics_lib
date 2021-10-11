@@ -19,10 +19,10 @@ public:
 	std::vector<glm::vec3> lights;
 	std::unordered_map<std::string, std::shared_ptr<shader>> shaders;
 	std::unordered_map<std::shared_ptr<mesh>, std::shared_ptr<shader>> rendering_mappings; // mesh_id -> shader
-	std::shared_ptr<ppc> cur_camera=nullptr;
-	std::shared_ptr<ppc> light_camera=nullptr;
-	float shadow_ppc_fov = 30.0f;
+	std::shared_ptr<ppc> cur_camera;
+	std::shared_ptr<ppc> light_camera;
+	float shadow_ppc_fov;
 
 private:
-    std::unordered_map<std::string, std::shared_ptr<ISerialize>> m_serializers; 
+    std::map<std::string, std::shared_ptr<ISerialize>> m_serializers; 
 };

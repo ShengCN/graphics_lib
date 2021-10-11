@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+#include <common.h>
 
 struct ray {
 	vec3 ro, rd;
@@ -8,8 +8,7 @@ struct ray {
 /*
  *	Planer Pinhole camera, basic controls.
  */
-enum class CameraMovement
-{
+enum class CameraMovement {
 	forward,
 	backward,
 	left,
@@ -18,8 +17,7 @@ enum class CameraMovement
 	down
 };
 
-class ppc
-{
+class ppc : public ISerialize {
 public:
 	glm::vec3 _position;
 	glm::vec3 _front;
@@ -92,6 +90,8 @@ public:
 	void camera_resize(int w, int h);
 	int width() { return _width; }
 	int height() { return _height; }
+    void set_size(int w, int h) {_width = w; _height = h;}
+	float GetFocal();
 
    	CUDA_HOSTDEV
 	vec2 project(vec3 p) {
@@ -126,8 +126,9 @@ public:
     }
 
 	std::string to_string();
-private:
-	float GetFocal();
+
+    virtual std::string to_json() override;  
+    virtual int from_json(const std::string json_str)override;
 
 private:
 	int m_last_x, m_last_y;

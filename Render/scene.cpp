@@ -9,11 +9,25 @@ scene::~scene() {
 }
 
 
-int scene::to_json(const std::string json_fname) {
+std::string scene::to_json() {
+    using namespace rapidjson;
+    StringBuffer s;
+    Writer<StringBuffer> writer(s);
 
+    /* Scene Level */
+    writer.StartObject();
+    for(auto &mpair:m_meshes) {
+        writer.Key(fmt::format("{}", mpair.first).c_str());
+        std::string scene_json = mpair.second->to_json();
+        writer.RawValue(scene_json.c_str(), scene_json.size(), rapidjson::Type::kStringType);
+    }
+    writer.EndObject();
+
+    return s.GetString();
 }
-int scene::from_json(const std::string jsonstr) {
 
+int scene::from_json(const std::string jsonstr) {
+    return -1;
 }
 
 std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {

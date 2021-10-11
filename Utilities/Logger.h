@@ -31,6 +31,13 @@ public:
 		std::cout << log_str;
 	}
 
+	template<typename T, typename TT>
+	void error(const std::string s, T file, TT line, T func) {
+		std::string log_str = fmt::format("[ERROR] {:50} \t [{}-{}-{}]\n", s, func, line, file);
+		m_log_str += log_str;
+		std::cerr << log_str;
+	}
+
 	std::string get_log() { return m_log_str; }
 
 private:
@@ -46,7 +53,11 @@ private:
 
 #ifndef WARN
 #define WARN(fmt_str, ...) logger::instance()->warn(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)
-#endif // !INFO
+#endif // !WARN
+
+#ifndef ERROR 
+#define ERROR(fmt_str, ...) logger::instance()->error(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)
+#endif // !ERROR
 
 #ifndef FAIL
 #define FAIL(condition, fmt_str, ...) do { if ((condition)) throw std::invalid_argument(fmt::format(fmt_str, ##__VA_ARGS__));} while(0)
