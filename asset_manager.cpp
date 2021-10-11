@@ -6,7 +6,7 @@ asset_manager::asset_manager() {
     cur_camera = std::make_shared<ppc>(512, 512, 90.0f);
 
 	/* Lightings */
-	lights = { glm::vec3(0.75f) * 1.0f };
+	lights = { glm::vec3(0.75f) * 2.0f };
     light_camera = std::make_shared<ppc>(1024, 1024, 30.0f);
 
     /* Serielizer */

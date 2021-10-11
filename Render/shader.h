@@ -92,9 +92,8 @@ public:
 
 	static float m_shadow_fov;
 private:
-	void init();
+	void init(int w, int h);
 
 private:
-	GLuint m_depth_fbo=0, m_depth_texture_id=0, m_rgb_texture=0;
-	int light_w = 2048, light_h = 2048;
+	GLuint m_depth_fbo=-1, m_depth_texture_id=-1, m_rgb_texture=-1;
 };

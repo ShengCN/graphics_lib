@@ -438,18 +438,15 @@ void quad_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params&
 }
 
 shadow_shader::shadow_shader(const char* computeShaderFile):shader(computeShaderFile) {
-	init();
 }
 
 shadow_shader::shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile):shader(vertexShaderFile, fragmentShaderFile) {
-	init();
 }
 
 shadow_shader::shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile):shader(vertexShaderFile, geometryShader, fragmentShaderFile) {
-	init();
 }
 
-void shadow_shader::init() {
+void shadow_shader::init(int light_w, int light_h) {
 	glUseProgram(m_program);
 	//------- Init Buffers --------//
 	if (m_depth_fbo == -1) {
@@ -512,7 +509,6 @@ void shadow_shader::init() {
 	}
 }
 
-float shadow_shader::m_shadow_fov=60.0f;
 void shadow_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params){ 
     auto m = descriptor.m;
 	if (m == nullptr) {
@@ -526,9 +522,16 @@ void shadow_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_param
 	}
 
 	glViewport(0, 0, params.light_camera->width(), params.light_camera->height());
+    if (m_depth_fbo == -1) {
+        /* Late Initialize */
+        init(params.light_camera->width(), params.light_camera->height());
+
+        INFO("Initialize Shadow Shader Success");
+    }
+
 	glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// glDrawBuffer(GL_BACK);
+    //glDrawBuffer(GL_BACK);
 	glUseProgram(m_program);
 
 	//------- Begin Drawing SM --------//
