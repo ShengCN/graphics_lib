@@ -250,7 +250,7 @@ std::shared_ptr<mesh> render_engine::get_mesh(mesh_id id) {
 	return m_manager.render_scene->get_mesh(id);
 }
 
-int render_engine::add_mesh(const std::string model_fname, vec3 c) {
+int render_engine::add_mesh(const std::string model_fname, bool norm, vec3 c) {
 	auto cur_mesh = m_manager.render_scene->add_mesh(model_fname, c);
 
 	if (cur_mesh) {
@@ -289,8 +289,8 @@ int render_engine::to_json(const std::string json_fname) {
     return m_manager.to_json(json_fname);
 }
 
-int render_engine::from_json(const std::string json_str) {
-    return m_manager.from_json(json_str);
+int render_engine::from_json(const std::string json_fname) {
+    return m_manager.from_json(json_fname);
 }
 
 bool render_engine::reload_shaders() {
@@ -667,4 +667,36 @@ void render_engine::update_time(double t) {
 
 double render_engine::get_time() {
     return m_curtime;
+}
+
+void render_engine::draw_scene() {
+    /* Default Rendering Settings */
+    if (!m_manager.check_assets()) {
+        ERROR("Asset states have problem");
+        return;
+    }
+
+    int w = m_manager.cur_camera->width(), h = m_manager.cur_camera->height();
+    glViewport(0,0,w,h);
+
+    /* Draw Shadow Maps */
+	rendering_params params;
+	params.frame = 0;
+	params.cur_camera = m_manager.cur_camera;
+	params.p_lights = m_manager.lights;
+	params.light_camera = m_manager.light_camera; 
+	params.dtype = draw_type::triangle;
+
+	auto meshes = m_manager.render_scene->get_meshes();
+	for(auto m:meshes) {
+		m_manager.shaders.at(sm_shader_name)->draw_mesh(m.second, params);
+	}
+
+	/* Draw Shadow Receiver */
+	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
+
+    /* Draw Scenes */
+	for(auto &m:meshes) {
+		m_manager.shaders.at(default_shader_name)->draw_mesh(m.second, params);
+	}
 }

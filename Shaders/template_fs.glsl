@@ -4,15 +4,32 @@ in vec3 vs_pos;
 in vec3 vs_color;
 in vec3 vs_norm;
 in vec2 vs_uvs;
+in vec4 vs_light_space_pos;
 
 uniform float slider;
 uniform int cur_selected_id;
 uniform int is_draw_normal;
+uniform sampler2D shadow_map;
 
 out vec4 frag_color;
 
 float lerp(float t1, float t2, float fract){
     return (1.0 - fract) * t1 + fract * t2;
+}
+
+float shadow(vec4 light_space_pos) {
+    vec3 projected = light_space_pos.xyz/light_space_pos.w;
+    projected = projected * 0.5 + 0.5;
+    float lit = 1.0;
+    if(projected.x >= 0.0 && projected.x <= 1.0 && projected.y >=0.0 && projected.y <= 1.0) {
+        float closest = texture(shadow_map, projected.xy).r;
+        float cur_depth = projected.z;
+
+        float bias = 0.0000001;
+        // lit = cur_depth - bias > closest  ? 1.0 : 0.0;
+        lit = cur_depth - bias > closest  ? 0.0 : 1.0;
+    }
+    return lit;
 }
 
 void main(){
@@ -22,9 +39,9 @@ void main(){
     vec3 light = vec3(0.0, 100.0, 80.0);
     float ka = 0.3;
     float kd = clamp(dot(normalize(light - vs_pos),vs_norm), 0.0f, 1.0f);
+    float shadow_eff = shadow(vs_light_space_pos);
 
-    vec3 col = (ka + (1.0 - ka) * kd) * vs_color;
-    // col = vs_norm;
+    vec3 col = (ka + (1.0 - ka) * kd) * vs_color * shadow_eff;
 
     if(cur_selected_id == 1){
         float fract = 0.8;

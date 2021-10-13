@@ -24,7 +24,7 @@ public:
 	std::shared_ptr<ppc> get_render_ppc();
 
 	//------- Modify Scene --------//
-	mesh_id add_mesh(const std::string model_fname, vec3 color=vec3(0.8f));
+	mesh_id add_mesh(const std::string model_fname, bool norm=false, vec3 color=vec3(0.8f));
 	mesh_id add_plane_mesh(vec3 p, vec3 n); 
 	void remove_mesh(mesh_id id);
 	void stand_on_plane(mesh_id id, vec3 p, vec3 n);
@@ -35,7 +35,7 @@ public:
 	bool save_mesh(mesh_id id, const std::string model_fname);
 	bool save_framebuffer(const std::string ofname);
     int to_json(const std::string json_fname);
-    int from_json(const std::string json_str);
+    int from_json(const std::string json_fname);
 
 	//------- UI --------//
 	void camera_press(int x, int y);
@@ -70,6 +70,7 @@ public:
 	void draw_quad();
 	void draw_image(std::shared_ptr<Image> img); 
 	void draw_mesh(mesh_id id);
+    void draw_scene();
 	void draw_shadow(mesh_id shadow_receiver);
 	void draw_sihouette(int mesh_id, vec3 light_pos);
 	void draw_shadow_volume(int mesh_id, vec3 light_pos);

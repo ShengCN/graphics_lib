@@ -9,11 +9,13 @@ uniform mat4 PVM;
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
+uniform mat4 light_pv;
 
 out vec3 vs_pos;  // world space position
 out vec3 vs_color;
 out vec3 vs_norm;
 out vec2 vs_uvs;
+out vec4 vs_light_space_pos; // light space position
 
 void main(){
     gl_Position = PVM * vec4(pos_attr,1.0f);
@@ -23,4 +25,6 @@ void main(){
     vs_color = col_attr;
     vs_norm = normalize((transpose(inverse(M)) * vec4(norm_attr, 0.0f)).xyz);
     vs_uvs = uv_attr;    
+
+    vs_light_space_pos = light_pv * vec4(pos_attr,1.0f);
 }

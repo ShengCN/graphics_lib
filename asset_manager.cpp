@@ -6,7 +6,7 @@ asset_manager::asset_manager() {
     cur_camera = std::make_shared<ppc>(512, 512, 90.0f);
 
 	/* Lightings */
-	lights = { glm::vec3(0.75f) * 2.0f };
+	lights = { glm::vec3(0.75f) * 5.0f };
     light_camera = std::make_shared<ppc>(1024, 1024, 30.0f);
 
     /* Serielizer */
@@ -58,6 +58,42 @@ int asset_manager::to_json(const std::string json_fname) {
     return -1;
 }
 
-int asset_manager::from_json(const std::string json_str) {
+int asset_manager::from_json(const std::string json_fname) {
+    std::ifstream iss(json_fname);
+
+    if (!purdue::file_exists(json_fname) || !iss.is_open()) {
+        WARN("{} is not exists or able to open!", json_fname);
+        iss.close();
+        return -1;
+    }
+    
+    std::stringstream buffer;
+    buffer << iss.rdbuf();
+    iss.close();
+    std::string json_str = buffer.str();
+    INFO("{}", json_str);
+
     return -1;
+}
+
+int asset_manager::check_assets() {
+    /* Make Sure Every Pointer Exists */
+    if(!render_scene) {
+        FAIL(true, "Assets Check Failed. [render_scene]");
+        return -1;
+    }
+
+    if(!visualize_scene) {
+        FAIL(true, "Assets Check Failed. [visualize_scene]");
+        return -1;
+    }
+
+    auto meshes = render_scene->get_meshes();
+    for (auto mpair:meshes) {
+        if (!mpair.second) {
+            FAIL(true, "Assets Check Failed. [mesh: {}]", mpair.first);
+            return -1;
+        }
+    }
+    return 1;
 }

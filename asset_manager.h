@@ -9,7 +9,8 @@ public:
 	//------- Functions --------//
 	asset_manager();
     int to_json(const std::string json_fname);
-    int from_json(const std::string jsonstr); 
+    int from_json(const std::string json_fname); 
+    int check_assets();
 
 public:
 	//------- Variables --------//
