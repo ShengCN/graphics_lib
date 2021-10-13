@@ -190,7 +190,7 @@ void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& param
 
 	if (params.sm_texture != -1) {
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, params.sm_texture);
+        glBindTexture(GL_TEXTURE_2D, params.sm_texture);
 		auto uniform_loc = glGetUniformLocation(m_program, "shadow_map");
 		if(uniform_loc != -1) {
 			glUniform1i(uniform_loc, 0);

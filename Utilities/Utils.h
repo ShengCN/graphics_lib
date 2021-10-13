@@ -83,6 +83,20 @@ namespace purdue {
 		return buffAsStdStr;
 	}
 
+    inline std::vector<std::string> split_string(const std::string s, const std::string delimiter = ",") {
+        std::vector<std::string> ret;
+        std::string tmp = s;
+        size_t pos = 0;
+        std::string token;
+        while ((pos = tmp.find(delimiter)) != std::string::npos) {
+            token = tmp.substr(0, pos);
+            ret.push_back(token);
+            tmp.erase(0, pos + delimiter.length());
+        }
+        ret.push_back(tmp);
+        return ret;
+    }
+
 	bool read_image(const std::string fname, int &w, int &h, int &c, std::vector<unsigned char> &buf);
 	bool save_image(const std::string fname, unsigned int *pixels, int w, int h, int c = 4);
 
@@ -126,6 +140,37 @@ namespace purdue {
 		out << to_string(m[2]) << ",";
 		out << to_string(m[3]);
 		return out.str();
+	}
+
+	inline glm::vec3 string_vec3(std::string s) {
+        glm::vec3 v(0.0f);
+        std::vector<std::string> strings = split_string(s, ",");
+        FAIL(strings.size() != 3, "{}(size: {}) cannot be converted to vec3", s, strings.size());
+        v[0] = std::stof(strings[0]);
+        v[1] = std::stof(strings[1]);
+        v[2] = std::stof(strings[2]);
+        return v;
+	}
+
+	inline glm::vec4 string_vec4(std::string s) {
+        glm::vec4 v(0.0f);
+        std::vector<std::string> strings = split_string(s, ",");
+        FAIL(strings.size() != 4, "{}(size: {}) cannot be converted to vec4", s, strings.size());
+        v[0] = std::stof(strings[0]);
+        v[1] = std::stof(strings[1]);
+        v[2] = std::stof(strings[2]);
+        v[3] = std::stof(strings[3]);
+        return v;
+	}
+
+	inline glm::mat4 string_mat4(std::string s) {
+        glm::mat4 m(1.0f);
+        std::vector<std::string> strings = split_string(s, ",");
+        FAIL(strings.size() != 16, "{}/(size: {}) cannot be converted to mat4", s, strings.size());
+        for (int i =0; i < 4; ++i) for(int j = 0; j < 4; ++j) {
+            m[i][j] = std::stof(strings[i * 4 + j]);
+        }
+        return m;
 	}
 
 	inline bool same_point(const glm::vec3 &a, const glm::vec3 &b) {
@@ -203,20 +248,6 @@ namespace purdue {
 		out << v.x << "," << v.y << "," << v.z;
 		return out;
 	}
-}
-
-inline std::vector<std::string> split_string(const std::string s, const std::string delimiter = ",") {
-	std::vector<std::string> ret;
-	std::string tmp = s;
-	size_t pos = 0;
-	std::string token;
-	while ((pos = tmp.find(delimiter)) != std::string::npos) {
-		token = tmp.substr(0, pos);
-		ret.push_back(token);
-		tmp.erase(0, pos + delimiter.length());
-	}
-
-	return ret;
 }
 
 #define TIME(x, log) do { purdue::timer clc; clc.tic(); x; clc.toc(); clc.print_elapsed(log); } while(0)

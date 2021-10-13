@@ -46,6 +46,7 @@ public:
 
 	//------- Modify --------//
 	void norm_render_scene();
+	void norm_mesh(mesh_id id, glm::vec3 scale=vec3(1.0f));
 	void draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc);
 	void set_mesh_color(mesh_id id, vec3 c);
 	void mesh_add_transform(mesh_id id, glm::mat4 mat);
@@ -58,6 +59,7 @@ public:
 	void recompute_normal(int mesh_id);
     void update_time(double t);
     double get_time();
+    void set_caster(mesh_id id, bool is_caster);
 
 	//------- Rendering --------//
 	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));

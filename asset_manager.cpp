@@ -65,15 +65,53 @@ int asset_manager::from_json(const std::string json_fname) {
         WARN("{} is not exists or able to open!", json_fname);
         iss.close();
         return -1;
+    } else {
+        INFO("Loading {} succeed", json_fname);
     }
     
     std::stringstream buffer;
     buffer << iss.rdbuf();
     iss.close();
-    std::string json_str = buffer.str();
-    INFO("{}", json_str);
+    std::string json_str = buffer.str(), cur_key;
+    bool ret = true;
 
-    return -1;
+    using namespace rapidjson;
+    Document document;
+    document.Parse(json_str.c_str());
+
+    /* Camera */
+    cur_key = "camera";
+    if (document.HasMember(cur_key.c_str()) && document[cur_key.c_str()].IsString()) {
+        ret = ret & (bool)cur_camera->from_json(document[cur_key.c_str()].GetString());
+    } else {
+        ERROR("Cannot find {} or {} type is wrong", cur_key, cur_key);
+        ret = ret & false;
+    }
+
+    /* Light */
+    cur_key = "lights";
+    if (document.HasMember(cur_key.c_str()) && document[cur_key.c_str()].IsArray()) {
+        lights.clear();
+        /* Parse Light Arrays */
+        const Value& a = document[cur_key.c_str()];
+        for(SizeType i = 0; i < a.Size(); ++i) {
+            lights.push_back(purdue::string_vec3(a[i].GetString()));
+        }
+    } else {
+        ERROR("Cannot find {} or {} type is wrong",cur_key, cur_key);
+        ret = ret & false;
+    }
+
+    /* Render Scene */
+    cur_key = "render_scene";
+    if (document.HasMember(cur_key.c_str()) && document[cur_key.c_str()].IsString()) {
+        ret = ret & (bool)render_scene->from_json(document[cur_key.c_str()].GetString());
+    } else {
+        ERROR("Cannot find {} or {} type is wrong",cur_key, cur_key);
+        ret = ret & false;
+    }
+
+    return (int)ret;
 }
 
 int asset_manager::check_assets() {

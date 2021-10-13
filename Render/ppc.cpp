@@ -19,8 +19,7 @@ ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
 	m_trackball(true){
 }
 
-ppc::~ppc()
-{
+ppc::~ppc() {
 }
 
 bool ppc::save(const std::string file) {

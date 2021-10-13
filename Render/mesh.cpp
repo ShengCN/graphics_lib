@@ -205,7 +205,6 @@ void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat r
 	vec3 center = compute_center();
 	float diagnoal = compute_world_aabb().diag_length();
 	mat4 norm_transform = glm::toMat4(rot_quant) * 
-		glm::rotate(pd::deg2rad(90.0f), vec3(1.0f, 0.0f, 0.0f)) *
 		glm::scale(scale/ diagnoal) *
 		glm::translate(-center);
 
@@ -352,6 +351,8 @@ std::string mesh::to_json() {
     writer.String(fs::relative(model_path, cur_path).generic_string().c_str());
     writer.Key("World Matrix");
     writer.String(purdue::to_string(m_world).c_str());
+    writer.Key("Caster");
+    writer.Bool(m_is_caster);
     writer.EndObject();
 
     return s.GetString();

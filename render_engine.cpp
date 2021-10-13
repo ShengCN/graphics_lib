@@ -361,6 +361,15 @@ void render_engine::norm_render_scene() {
 	//#todo_normalize_render_scene
 }
 
+void render_engine::norm_mesh(mesh_id id, glm::vec3 scale) {
+    auto mesh = get_mesh(id);
+    if (mesh) {
+        mesh->normalize_position_orientation(scale);
+    } else {
+        ERROR("Cannot find mesh {}", id);
+    }
+}
+
 void render_engine::draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc) {
 	std::shared_ptr<mesh> line_mesh = std::make_shared<mesh>();
 	line_mesh->add_vertex(t, vec3(0.0f), tc);
@@ -669,6 +678,15 @@ double render_engine::get_time() {
     return m_curtime;
 }
 
+void render_engine::set_caster(mesh_id id, bool is_caster) {
+    auto meshptr = m_manager.render_scene->get_mesh(id);
+    if (meshptr) {
+        meshptr->set_caster(is_caster);
+    } else {
+        ERROR("Cannot find mesh {}", id);
+    }
+}
+
 void render_engine::draw_scene() {
     /* Default Rendering Settings */
     if (!m_manager.check_assets()) {
@@ -677,7 +695,7 @@ void render_engine::draw_scene() {
     }
 
     int w = m_manager.cur_camera->width(), h = m_manager.cur_camera->height();
-    glViewport(0,0,w,h);
+    glViewport(0, 0, w, h);
 
     /* Draw Shadow Maps */
 	rendering_params params;
@@ -693,7 +711,7 @@ void render_engine::draw_scene() {
 	}
 
 	/* Draw Shadow Receiver */
-	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
+    // params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
 
     /* Draw Scenes */
 	for(auto &m:meshes) {

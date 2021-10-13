@@ -86,6 +86,7 @@ public:
 	void set_verts(std::vector<vec3> &verts) {
 		m_verts = verts;
 	}
+    void set_caster(bool is_caster) { m_is_caster = is_caster;} 
 
 	//------- member variables --------//
 public:
@@ -101,4 +102,5 @@ public:
 	static int id;
 	bool m_is_selected = false;
 	bool m_is_emitter = false;
+    bool m_is_caster = true;
 };
