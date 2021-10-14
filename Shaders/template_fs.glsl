@@ -26,8 +26,8 @@ float shadow(vec4 light_space_pos) {
         float closest = texture(shadow_map, projected.xy).r;
         float cur_depth = projected.z;
 
-        float bias = 0.000;
-        lit = cur_depth - bias > closest  ? 0.0 : 1.0;
+        float bias = 0.000001;
+        lit = cur_depth - closest > bias  ? 0.0 : 1.0;
         //lit = cur_depth > closest  ? 0.0 : 1.0;
     }
     return lit;

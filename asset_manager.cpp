@@ -35,7 +35,7 @@ void asset_manager::init() {
 
 	/* Lightings */
 	lights = { glm::vec3(1.0f) * 1.5f };
-    light_camera = std::make_shared<ppc>(2048, 2048, 40.0f);
+    light_camera = std::make_shared<ppc>(2048, 2048, 20.0f, 0.001f, 5.0f);
 }
 
 int asset_manager::from_json(const std::string json_fname) {

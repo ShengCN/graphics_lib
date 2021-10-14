@@ -634,7 +634,7 @@ void render_engine::prepare_shadow_map_states() {
 
     /* Bind Current Frame Buffer */
     m_fbo->bind();
-    glDrawBuffer(0);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -697,7 +697,7 @@ void render_engine::default_shading() {
         if (meshpair.second->get_caster()) {
             params.sm_texture = -1;
         } else {
-            params.sm_texture = m_fbo->get_depth_texture();
+            params.sm_texture = m_fbo->get_rgba_texture();
         }
         m_manager.shaders.at(default_shader_name)->draw_mesh(meshpair.second, params);
     }
