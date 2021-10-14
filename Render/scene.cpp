@@ -26,8 +26,34 @@ std::string scene::to_json() {
     return s.GetString();
 }
 
-int scene::from_json(const std::string jsonstr) {
-    //TODO
+int scene::from_json(const std::string json_str) {
+    using namespace rapidjson;
+    Document document;
+    document.Parse(json_str.c_str()); 
+    clean_up();
+    bool ret = true;
+
+    for (auto &member:document.GetObject()) {
+        INFO("Find mesh {}", member.name.GetString());
+        auto mesh_obj = member.value.GetObject();
+
+        std::string mesh_path;
+        mat4 world_mat;
+        bool caster;
+
+        ret = ret & rapidjson_get_string(mesh_obj, "path", mesh_path);
+        INFO("Parse mesh {}", ret);
+        ret = ret & rapidjson_get_mat4(mesh_obj, "World Matrix", world_mat);
+        INFO("Parse mesh {}", ret);
+        ret = ret & rapidjson_get_bool(mesh_obj, "Caster", caster);
+        INFO("Parse mesh {}", ret);
+
+        /* Initialize the mesh */
+        auto mesh_ptr = add_mesh(mesh_path, vec3(0.7f));
+        mesh_ptr->set_world_mat(world_mat);
+        mesh_ptr->set_caster(caster);
+    }
+
     return -1;
 }
 

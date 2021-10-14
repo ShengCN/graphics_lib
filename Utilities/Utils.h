@@ -248,6 +248,7 @@ namespace purdue {
 		out << v.x << "," << v.y << "," << v.z;
 		return out;
 	}
+
 }
 
 #define TIME(x, log) do { purdue::timer clc; clc.tic(); x; clc.toc(); clc.print_elapsed(log); } while(0)

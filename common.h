@@ -4,10 +4,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <memory>
 #include <vector>
 #include <fstream>
-#include <string>
 #include <memory>
 #include <cmath>
 #include <sstream>
@@ -26,17 +24,6 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/matrix_float3x3.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-
-
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
-
-#include "interface.h"
-#include "Utilities/Utils.h"
-#include "Utilities/Logger.h"
-#include "Utilities/Image.h"
-
 using glm::ivec2;
 using glm::vec2;
 using glm::vec3;
@@ -44,6 +31,12 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 using glm::quat;
+
+#include "interface.h"
+#include "Utilities/Utils.h"
+#include "Utilities/Logger.h"
+#include "Utilities/Image.h"
+#include "Utilities/rapidjson_helper.h"
 
 typedef int mesh_id;
 const std::string default_shader_name = "template";

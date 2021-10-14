@@ -15,7 +15,7 @@ public:
     virtual int from_json(const std::string jsonstr) override;  
 
 	//------- Shared Functions --------//
-	std::shared_ptr<mesh> add_mesh(const std::string mesh_file, vec3 color);
+	std::shared_ptr<mesh> add_mesh(const std::string mesh_file, vec3 color=vec3(0.7f));
 	bool remove_mesh(int mesh_id);
 	void add_mesh(std::shared_ptr<mesh> m);
 	bool load_scene(std::string scene_file);
