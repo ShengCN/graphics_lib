@@ -24,6 +24,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/matrix_float3x3.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+
 using glm::ivec2;
 using glm::vec2;
 using glm::vec3;
@@ -37,6 +38,7 @@ using glm::quat;
 #include "Utilities/Logger.h"
 #include "Utilities/Image.h"
 #include "Utilities/rapidjson_helper.h"
+#include "Utilities/ogl_helper.h"
 
 typedef int mesh_id;
 const std::string default_shader_name = "template";

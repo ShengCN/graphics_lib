@@ -49,7 +49,6 @@ std::shared_ptr<model_loader> model_loader::create(const std::string file_path) 
 }
 
 bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
-	
 	if(!m) {
 		WARN("Input of obj loader");
 		return false;
@@ -545,6 +544,11 @@ bool off_loader::save_model(std::string file_path, std::shared_ptr<mesh>& m) {
 }
 
 bool load_model(const std::string mesh_file, std::shared_ptr<mesh>& m) {
+    if (!purdue::file_exists(mesh_file)) {
+        WARN("Cannot find the file [{}].", mesh_file);
+        return false;
+    }
+
 	auto loader = model_loader::create(mesh_file);
 	try {
 		if (loader->load_model(mesh_file, m)) {

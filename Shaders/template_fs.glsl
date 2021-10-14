@@ -26,8 +26,8 @@ float shadow(vec4 light_space_pos) {
         float cur_depth = projected.z;
 
         float bias = 0.0000001;
-        // lit = cur_depth - bias > closest  ? 1.0 : 0.0;
         lit = cur_depth - bias > closest  ? 0.0 : 1.0;
+        //lit = cur_depth > closest  ? 0.0 : 1.0;
     }
     return lit;
 }

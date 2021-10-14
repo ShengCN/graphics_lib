@@ -176,17 +176,16 @@ void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& param
 		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(m->m_world));
 
 	uniform_loc = glGetUniformLocation(m_program, "light_pos");
-	if (uniform_loc != -1) {
+	if (uniform_loc != -1 && !params.lights.empty()) {
 		//#todo_multiple_lights
-		glUniform3f(uniform_loc, params.p_lights[0].x, params.p_lights[0].y, params.p_lights[0].z);
+		glUniform3f(uniform_loc, params.lights[0].x, params.lights[0].y, params.lights[0].z);
 	}
 
 	uniform_loc = glGetUniformLocation(m_program, "light_pv");
-	if (uniform_loc != -1) {
+	if (uniform_loc != -1 && params.light_camera) {
 		glm::mat4 pv = params.light_camera->GetP() * params.light_camera->GetV();
 		glUniformMatrix4fv(uniform_loc, 1, false, glm::value_ptr(pv));
 	}
-
 
 	if (params.sm_texture != -1) {
 		glActiveTexture(GL_TEXTURE0);
@@ -437,120 +436,3 @@ void quad_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params&
 	glBindVertexArray(0);
 }
 
-shadow_shader::shadow_shader(const char* computeShaderFile):shader(computeShaderFile) {
-}
-
-shadow_shader::shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile):shader(vertexShaderFile, fragmentShaderFile) {
-}
-
-shadow_shader::shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile):shader(vertexShaderFile, geometryShader, fragmentShaderFile) {
-}
-
-void shadow_shader::init(int light_w, int light_h) {
-	glUseProgram(m_program);
-	//------- Init Buffers --------//
-	if (m_depth_fbo == -1) {
-		glGenTextures(1, &m_depth_texture_id);
-		glBindTexture(GL_TEXTURE_2D, m_depth_texture_id);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, light_w, light_h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		glGenTextures(1, &m_rgb_texture);
-		glBindTexture(GL_TEXTURE_2D, m_rgb_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, light_w, light_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		glGenFramebuffers(1, &m_depth_fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_rgb_texture, 0);  
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depth_texture_id, 0);
-
-		auto check = [&]() {
-			GLenum status;
-			status = (GLenum)glCheckFramebufferStatus(GL_FRAMEBUFFER);
-			switch (status) {
-			case GL_FRAMEBUFFER_COMPLETE:
-				return true;
-			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-				printf("Framebuffer incomplete, incomplete attachment\n");
-				return false;
-			case GL_FRAMEBUFFER_UNSUPPORTED:
-				printf("Unsupported framebuffer format\n");
-				return false;
-			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-				printf("Framebuffer incomplete, missing attachment\n");
-				return false;
-			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-				printf("Framebuffer incomplete, missing draw buffer\n");
-				return false;
-			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-				printf("Framebuffer incomplete, missing read buffer\n");
-				return false;
-			}
-			return false;
-		};
-
-		if (check()) {
-			INFO("Framebuffer safe");
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	} else {
-		WARN("Shadow Shader has been initialized");
-	}
-}
-
-void shadow_shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params){ 
-    auto m = descriptor.m;
-	if (m == nullptr) {
-		throw std::invalid_argument("Input pointer is null");
-		return;
-	}
-	
-	if (params.cur_camera == nullptr || params.light_camera == nullptr) {
-		throw std::invalid_argument("Rendering Camera or light camera is null");
-		return;
-	}
-
-	glViewport(0, 0, params.light_camera->width(), params.light_camera->height());
-    if (m_depth_fbo == -1) {
-        /* Late Initialize */
-        init(params.light_camera->width(), params.light_camera->height());
-
-        INFO("Initialize Shadow Shader Success");
-    }
-
-	glBindFramebuffer(GL_FRAMEBUFFER, m_depth_fbo);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glDrawBuffer(GL_BACK);
-	glUseProgram(m_program);
-
-	//------- Begin Drawing SM --------//
-	auto tmp_ppc = params.cur_camera;
-    //INFO("light position: {}", purdue::to_string(params.p_lights[0]));
-	params.light_camera->PositionAndOrient(params.p_lights[0], params.sm_target_center, vec3(0.0f, 1.0f, 0.0f));
-	params.cur_camera = params.light_camera;
-	shader::draw_mesh(m, params);
-	params.cur_camera = tmp_ppc;
-
-	glViewport(0, 0, params.cur_camera->width(), params.cur_camera->height());
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDrawBuffer(GL_BACK);
-}
-
-GLuint shadow_shader::get_sm_texture() {
-	return m_depth_texture_id;	
-}
-
-GLuint shadow_shader::get_sm_rgb_texture() {
-	return m_rgb_texture;	
-}

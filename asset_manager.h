@@ -9,6 +9,8 @@ public:
 	//------- Functions --------//
 	asset_manager();
     int check_assets();
+    int to_json(const std::string json_fname);
+    int from_json(const std::string json_fname);
 
 public:
 	//------- Variables --------//
@@ -17,11 +19,11 @@ public:
 
 	std::vector<glm::vec3> lights;
 	static std::unordered_map<std::string, std::shared_ptr<shader>> shaders;
-	std::unordered_map<std::shared_ptr<mesh>, std::shared_ptr<shader>> rendering_mappings; // mesh_id -> shader
 	std::shared_ptr<ppc> cur_camera;
 	std::shared_ptr<ppc> light_camera;
 	float shadow_ppc_fov;
 
+	// std::unordered_map<std::shared_ptr<mesh>, std::shared_ptr<shader>> rendering_mappings; // mesh_id -> shader
 private:
     void init();
 };

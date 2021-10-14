@@ -22,14 +22,12 @@ struct rendering_params {
 	int frame;
     // uint64_t time;
 	std::shared_ptr<ppc> cur_camera;
-	std::vector<vec3> p_lights;
-	draw_type dtype;
-
-	vec3 sm_target_center;
-	GLuint sm_texture;
 	std::shared_ptr<ppc> light_camera;
+    std::vector<glm::vec3> lights;
+	draw_type dtype;
+    GLuint sm_texture;
 
-	rendering_params():frame(0), dtype(draw_type::triangle), sm_texture(0), sm_target_center(0.0f) {
+	rendering_params():frame(0), dtype(draw_type::triangle) {
 	}
 };
 
@@ -81,19 +79,3 @@ private:
 	void init_vao();
 };
 
-class shadow_shader: public shader {
-public:
-	shadow_shader(const char* computeShaderFile);
-	shadow_shader(const char* vertexShaderFile, const char* fragmentShaderFile);
-	shadow_shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile);
-	virtual void draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params) override;
-	GLuint get_sm_rgb_texture();
-	GLuint get_sm_texture();
-
-	static float m_shadow_fov;
-private:
-	void init(int w, int h);
-
-private:
-	GLuint m_depth_fbo=-1, m_depth_texture_id=-1, m_rgb_texture=-1;
-};

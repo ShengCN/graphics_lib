@@ -87,6 +87,7 @@ public:
 		m_verts = verts;
 	}
     void set_caster(bool is_caster) { m_is_caster = is_caster;} 
+    bool get_caster() { return m_is_caster; } 
 
 	//------- member variables --------//
 public:

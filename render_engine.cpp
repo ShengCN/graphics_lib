@@ -6,15 +6,35 @@
 #include "render_engine.h"
 #include "Utilities/Utils.h"
 
-render_engine::render_engine() { }
+render_engine::render_engine() { 
+}
 
 void render_engine::init() {
-	//------- initialize rendering states --------//
+	/* initialize rendering states */
+	FAIL(!init_shaders(), "Shader init failed");
+    FAIL(!init_ogl_states(),"OGL states init failed");
+}
+
+bool render_engine::init_ogl_states() {
+    FAIL(!m_manager.check_assets(), "Asset manager has not been initialized yet");
+
+    bool ret = true;
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 
-	init_shaders();
+    auto light_camera = m_manager.light_camera;
+    m_fbo = std::make_shared<ogl_fbo>(light_camera->width(), light_camera->height());
+    FAIL(!m_fbo, "Framebuffer object initialization failed");
+
+    return ret;
+}
+
+AABB render_engine::get_mesh_size(mesh_id id) {
+    auto meshptr = get_mesh(id);
+    FAIL(!meshptr, "cannot find mesh {}", id);
+
+    return meshptr->compute_world_aabb();
 }
 
 bool render_engine::init_shaders() {
@@ -40,7 +60,7 @@ bool render_engine::init_shaders() {
 	m_manager.shaders[quad_shader_name] = std::make_shared<quad_shader>(quad_vs.c_str(), quad_fs.c_str());
 	m_manager.shaders[plane_shader_name] = std::make_shared<shader>(ground_vs.c_str(), ground_fs.c_str());
 	m_manager.shaders[mask_shader_name] = std::make_shared<shader>(mask_vs.c_str(), mask_fs.c_str());
-	m_manager.shaders[sm_shader_name] = std::make_shared<shadow_shader>(shmap_vs.c_str(), shmap_fs.c_str());
+	m_manager.shaders[sm_shader_name] = std::make_shared<shader>(shmap_vs.c_str(), shmap_fs.c_str());
 	m_manager.shaders[shadow_caster_name] = std::make_shared<shader>(shadow_vs.c_str(), shadow_fs.c_str());
 
 	bool ret = true;
@@ -53,9 +73,6 @@ bool render_engine::init_shaders() {
 
 	INFO("{} shaders finished", (int)m_manager.shaders.size());
 	return ret;
-	// const std::string weighted_OIT_vs = "Shaders/transparent_vs.glsl";
-	// const std::string weighted_OIT_fs = "Shaders/transparent_fs.glsl";
-	// m_manager.shaders["weight_OIT"] = std::make_shared<shader>(weighted_OIT_vs.c_str(), weighted_OIT_fs.c_str());
 }
 
 void render_engine::test_scene(int w, int h) {
@@ -132,7 +149,7 @@ mesh_id render_engine::add_visualize_line(vec3 h, vec3 t) {
 	vis_mesh->add_vertex(h, vec3(0.0f), vec3(1.0f,0.0f,0.0f)); 
 	vis_mesh->add_vertex(t, vec3(0.0f), vec3(1.0f,0.0f,0.0f)); 
 	
-	m_manager.rendering_mappings[vis_mesh] = m_manager.shaders.at(default_shader_name);
+	//m_manager.rendering_mappings[vis_mesh] = m_manager.shaders.at(default_shader_name);
 	m_manager.visualize_scene->add_mesh(vis_mesh);	
 	return vis_mesh->get_id();
 }
@@ -141,23 +158,27 @@ bool render_engine::remove_visualize_line(mesh_id id) {
 	return m_manager.render_scene->remove_mesh(id);	
 }
 
+extern GLuint dbg_tex;
 void render_engine::render(int frame) {	
-	rendering_params params;
-	params.frame = frame;
-	params.cur_camera = m_manager.cur_camera;
-	params.p_lights = m_manager.lights;
-	params.dtype = draw_type::triangle;
+    /* Default Rendering Settings */
+    if (!m_manager.check_assets()) {
+        ERROR("Asset states have problem");
+        return;
+    }
 
-	render_scene(m_manager.render_scene, params);
-}
+    /* Draw Shadow Maps */
+    prepare_shadow_map_states();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    render_shadow_maps();
+    reset_shadow_map_states();
 
-void render_engine::render_scene(std::shared_ptr<scene> cur_scene, rendering_params params) {
-	// shader render mesh
-	auto meshes = cur_scene->get_meshes();
+    /* Default Shading */
+    prepare_default_shading();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    default_shading();
 
-	for(auto &m:meshes) {
-		m_manager.rendering_mappings.at(m.second)->draw_mesh(m.second, params);
-	}
+    /* DBG */
+    dbg_tex = m_fbo->get_id();
 }
 
 void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params) {
@@ -222,7 +243,8 @@ void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, render
 	//glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 
-	render_scene(cur_scene, params);
+	//render_scene(cur_scene, params);
+    default_shading();
 	glDepthMask(GL_TRUE);
 	
 	// ------------------------ pass 3, merge results ------------------------ //
@@ -254,7 +276,7 @@ int render_engine::add_mesh(const std::string model_fname, bool norm, vec3 c) {
 	auto cur_mesh = m_manager.render_scene->add_mesh(model_fname, c);
 
 	if (cur_mesh) {
-		m_manager.rendering_mappings[cur_mesh] = m_manager.shaders[default_shader_name];
+		//m_manager.rendering_mappings[cur_mesh] = m_manager.shaders[default_shader_name];
 		return cur_mesh->get_id();
 	}
 
@@ -286,122 +308,19 @@ bool render_engine::save_framebuffer(const std::string ofname) {
 }
 
 int render_engine::to_json(const std::string json_fname) {
-    /* Serielize Orders 
-        * Camera
-        * Lights
-        * Render scene 
-     **/
-    m_manager.check_assets();
-    std::fstream out(json_fname, std::ios::out);
-    if (!out.is_open()) {
-        out.close();
-        ERROR("{} cannot be open for writing", json_fname);
-        return -1;
-    }
-
-    using namespace rapidjson;
-    StringBuffer s;
-    Writer<StringBuffer> writer(s);
-
-    writer.StartObject();
-    /* Camera */
-    writer.Key("camera");
-    std::string camera_json = std::dynamic_pointer_cast<ISerialize>(m_manager.cur_camera)->to_json();
-    writer.RawValue(camera_json.c_str(), camera_json.size(), rapidjson::Type::kStringType);
-
-    /* Lights */
-    writer.Key("lights");
-    writer.StartArray();
-    for(auto &l:m_manager.lights) {
-        writer.String(purdue::to_string(l).c_str());
-    }
-    writer.EndArray();
-
-    /* Render Scene */
-    writer.Key("render_scene");
-    std::string scene_json = std::dynamic_pointer_cast<ISerialize>(m_manager.render_scene)->to_json();
-    writer.RawValue(scene_json.c_str(), scene_json.size(), rapidjson::Type::kStringType);
-    writer.EndObject();
-
-    out << s.GetString() << std::endl;
-    return -1;
+    return m_manager.to_json(json_fname);
 }
 
 int render_engine::from_json(const std::string json_fname) {
-    std::ifstream iss(json_fname);
-
-    if (!purdue::file_exists(json_fname) || !iss.is_open()) {
-        WARN("{} is not exists or able to open!", json_fname);
-        iss.close();
-        return -1;
-    } else {
-        INFO("Loading {} succeed", json_fname);
-    }
-    
-    asset_manager tmp_manager;
-    FAIL(!tmp_manager.check_assets(), "tmp asset manager failed to initialize");
-    std::stringstream buffer;
-    buffer << iss.rdbuf();
-    iss.close();
-    std::string json_str = buffer.str(), cur_key;
-    bool ret = true;
-
-    using namespace rapidjson;
-    Document document;
-    document.Parse(json_str.c_str());
-
-    /* Camera */
-    cur_key = "camera";
-    if (document.HasMember(cur_key.c_str()) && document[cur_key.c_str()].IsObject()) {
-        ret = ret & (bool)tmp_manager.cur_camera->from_json(
-                get_obj_string(
-                    document[cur_key.c_str()]));
-    } else {
-        ERROR("Cannot find {} or {} type is wrong", cur_key, cur_key);
-        ret = ret & false;
-    }
-
-    /* Light */
-    cur_key = "lights";
-    if (document.HasMember(cur_key.c_str()) && document[cur_key.c_str()].IsArray()) {
-        /* Parse Light Arrays */
-        const Value& a = document[cur_key.c_str()];
-        for(SizeType i = 0; i < a.Size(); ++i) {
-            tmp_manager.lights.push_back(purdue::string_vec3(a[i].GetString()));
-        }
-    } else {
-        ERROR("Cannot find {} or {} type is wrong",cur_key, cur_key);
-        ret = ret & false;
-    }
-
-    /* Render Scene */
-    cur_key = "render_scene";
-    if (document.HasMember(cur_key.c_str()) && document[cur_key.c_str()].IsObject()) {
-        ret = ret & tmp_manager.render_scene->from_json(
-                get_obj_string(
-                    document[cur_key.c_str()]));
-
-        auto meshes = tmp_manager.render_scene->get_meshes(); 
-
-        /* Also initialize shaders
-         * just use default shader as there is no entry in the description 
-         * */
-        for (auto &mpair:meshes) {
-            tmp_manager.rendering_mappings[mpair.second] = tmp_manager.shaders.at(default_shader_name);
-        }
-    } else {
-        ERROR("Cannot find {} or {} type is wrong",cur_key, cur_key);
-        ret = ret & false;
-    }
-
+    asset_manager tmp;
+    int ret = tmp.from_json(json_fname);
     if (ret) {
-        m_manager = tmp_manager;
-        INFO("Success fully loading from {} file", json_fname);
+        INFO("Scene reading from {}", json_fname);
+        m_manager = tmp;
     } else {
-        ERROR("Failed to load from {} file", json_fname);
+        ERROR("Scene reading failed.(from {})", json_fname);
     }
-
-    return (int)ret;
+    return ret;
 }
 
 bool render_engine::reload_shaders() {
@@ -489,7 +408,7 @@ void render_engine::draw_line(glm::vec3 t, glm::vec3 h, vec3 tc, vec3 hc) {
 	rendering_params params;
 	params.frame = 0;
 	params.cur_camera = m_manager.cur_camera;
-	params.p_lights = m_manager.lights;
+	params.lights = m_manager.lights;
 	params.dtype = draw_type::line_segments;
 
 	glDisable(GL_DEPTH_TEST);
@@ -546,8 +465,8 @@ void render_engine::set_render_camera(int w, int h, float fov) {
 }
 
 void render_engine::set_shader(mesh_id id, const std::string shader_name) {
-	auto m = m_manager.render_scene->get_mesh(id);
-	m_manager.rendering_mappings[m] = m_manager.shaders.at(shader_name);
+	//auto m = m_manager.render_scene->get_mesh(id);
+	//m_manager.rendering_mappings[m] = m_manager.shaders.at(shader_name);
 }
 
 void render_engine::remove_mesh(int mesh_id) {
@@ -579,35 +498,13 @@ std::shared_ptr<ppc> render_engine::get_render_ppc() {
 }
 
 mesh_id render_engine::add_plane_mesh(vec3 p, vec3 n)  {
-	vec3 x(1.0f,0.0f,0.0f), y(0.0f,1.0f,0.0f);
+    auto meshptr = scene::get_plane_mesh(p, n);
+    FAIL(!meshptr, "Failed to add a plane mesh");
+    meshptr->set_color(vec3(1.0f));
+	m_manager.render_scene->add_mesh(meshptr);
+	//m_manager.rendering_mappings[meshptr] = m_manager.shaders.at(default_shader_name);
 
-	std::shared_ptr<mesh> plane = add_empty_mesh();
-	if (plane == nullptr) {
-		throw std::invalid_argument("Cannot make memory");
-		return -1;
-	}
-
-	// avoid same line
-	if (glm::dot(x, n) > glm::dot(y, n)) {
-		x = glm::cross(n, y);
-		y = glm::cross(n, x);
-	} else {
-		y = glm::cross(n, x);
-		x = glm::cross(n, y);
-	}
-
-	float big_scale = 10000.0f;
-	plane->add_vertex(p + big_scale * (-x + y), n, vec3(1.0f));
-	plane->add_vertex(p + big_scale * (-x - y), n, vec3(1.0f));
-	plane->add_vertex(p + big_scale * (x - y), n, vec3(1.0f));
-
-	plane->add_vertex(p + big_scale * (x - y), n, vec3(1.0f));
-	plane->add_vertex(p + big_scale * (x + y), n, vec3(1.0f));
-	plane->add_vertex(p + big_scale * (-x + y), n, vec3(1.0f));
-
-	int plane_id = plane->get_id();
-	set_shader(plane_id, plane_shader_name);
-	return plane_id;
+    return meshptr->get_id();
 }
 
 void render_engine::draw_visualize_line(glm::vec3 t, glm::vec3 h) {
@@ -621,41 +518,39 @@ void render_engine::draw_image(std::shared_ptr<Image> img) {
 
 void render_engine::draw_mesh(mesh_id id) {
 	auto meshptr = get_mesh(id);
-	if (meshptr == nullptr) {
-		throw std::invalid_argument(fmt::format("Mesh ID: {} cannot find", id));
-		return;
-	}
+	FAIL(meshptr == nullptr || m_manager.check_assets(), "Draw mesh({}) failed", id);
 
 	rendering_params params;
 	params.cur_camera = m_manager.cur_camera;
-	params.p_lights = m_manager.lights;
 	params.frame = 0;
 	params.dtype = draw_type::triangle;
-	m_manager.rendering_mappings.at(meshptr)->draw_mesh(meshptr, params);
+    params.lights = m_manager.lights;
+	//m_manager.rendering_mappings.at(meshptr)->draw_mesh(meshptr, params);
+    m_manager.shaders.at(default_shader_name)->draw_mesh(meshptr, params);
 }
 
 void render_engine::draw_shadow(mesh_id rec_mesh_id) {
 	/* Draw Shadow Map First */
-	rendering_params params;
-	params.frame = 0;
-	params.cur_camera = m_manager.cur_camera;
-	params.p_lights = m_manager.lights;
+	//rendering_params params;
+	//params.frame = 0;
+	//params.cur_camera = m_manager.cur_camera;
+	//params.p_lights = m_manager.lights;
 
-    /* TODO, DBGS */
-    //params.p_lights[0] = glm::vec3(glm::rotate(purdue::deg2rad(m_curtime * 1e-8f), vec3(0.0f,1.0f,0.0f)) * vec4(params.p_lights[0], 0.0f));
+    //[> TODO, DBGS <]
+    ////params.p_lights[0] = glm::vec3(glm::rotate(purdue::deg2rad(m_curtime * 1e-8f), vec3(0.0f,1.0f,0.0f)) * vec4(params.p_lights[0], 0.0f));
 
-	params.light_camera = m_manager.light_camera; 
-	params.dtype = draw_type::triangle;
-	auto meshes = m_manager.render_scene->get_meshes();
-	for(auto m:meshes) {
-		if (m.second->get_id() == rec_mesh_id)
-			continue;
-		m_manager.shaders.at(sm_shader_name)->draw_mesh(m.second, params);
-	}
+	//params.light_camera = m_manager.light_camera; 
+	//params.dtype = draw_type::triangle;
+	//auto meshes = m_manager.render_scene->get_meshes();
+	//for(auto m:meshes) {
+		//if (m.second->get_id() == rec_mesh_id)
+			//continue;
+		//m_manager.shaders.at(sm_shader_name)->draw_mesh(m.second, params);
+	//}
 
-	/* Draw Shadow Receiver */
-	params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
-	m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
+	//[> Draw Shadow Receiver <]
+	//params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
+	//m_manager.shaders.at(shadow_caster_name)->draw_mesh(get_mesh(rec_mesh_id), params);
 }
 
 void render_engine::draw_sihouette(mesh_id id, vec3 light_pos) {
@@ -688,7 +583,7 @@ void render_engine::draw_shadow_volume(mesh_id id, vec3 light_pos) {
 	shadow_volume->add_vertices(shadow_verts);
 	shadow_volume->set_color(vec3(1.0f));
 	
-	m_manager.rendering_mappings[shadow_volume] = m_manager.shaders["template"];
+	//m_manager.rendering_mappings[shadow_volume] = m_manager.shaders["template"];
 	clear_visualize();
 	m_manager.visualize_scene->add_mesh(shadow_volume);
 }
@@ -727,8 +622,81 @@ std::shared_ptr<Image> render_engine::get_frame_buffer() {
 std::shared_ptr<mesh> render_engine::add_empty_mesh() {
 	std::shared_ptr<mesh> ret = std::make_shared<mesh>();
 	m_manager.render_scene->add_mesh(ret);
-	m_manager.rendering_mappings[ret] = m_manager.shaders.at(default_shader_name);
+	//m_manager.rendering_mappings[ret] = m_manager.shaders.at(default_shader_name);
 	return ret;
+}
+
+void render_engine::prepare_shadow_map_states() {
+    FAIL(!m_manager.check_assets()||!m_fbo, "prepare shadow map states failed");
+
+    auto light_camera = m_manager.light_camera;
+    glViewport(0, 0, light_camera->width(), light_camera->height());
+
+    /* Bind Current Frame Buffer */
+    m_fbo->bind();
+    glDrawBuffer(0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void render_engine::reset_shadow_map_states() {
+    FAIL(!m_manager.check_assets()||!m_fbo, "prepare shadow map states failed");
+
+    auto camera = m_manager.cur_camera;
+    glViewport(0, 0, camera->width(), camera->height());
+
+    m_fbo->unbind();
+    glDrawBuffer(GL_BACK);
+}
+
+void render_engine::render_shadow_maps() {
+    FAIL(!m_manager.light_camera, "light camera is nullptr");
+
+	rendering_params params;
+	params.frame = 0;
+    params.cur_camera = m_manager.light_camera;
+    params.light_camera = nullptr;
+	params.dtype = draw_type::triangle;
+    params.sm_texture = -1;
+
+    /* Caliberate Light Camera */
+    params.cur_camera->PositionAndOrient(m_manager.lights[0], vec3(0.0f), vec3(0.0f,1.0f,0.0f));
+
+	auto meshes = m_manager.render_scene->get_meshes();
+	for(auto m:meshes) {
+        if (m.second->get_caster()) {
+            m_manager.shaders.at(sm_shader_name)->draw_mesh(m.second, params);
+        }
+	}
+}
+
+void render_engine::prepare_default_shading() {
+    FAIL(!m_manager.check_assets(), "prepare shadow map states failed");
+
+    auto camera = m_manager.cur_camera;
+    int w = camera->width();
+    int h = camera->height();
+    glViewport(0, 0, w, h);
+    glDrawBuffer(GL_BACK);
+}
+
+void render_engine::default_shading() {
+    FAIL(!m_manager.check_assets() || !m_fbo, "Render Scene nullptr");
+
+	rendering_params params;
+	params.cur_camera = m_manager.cur_camera;
+    params.lights = m_manager.lights;
+    params.light_camera = m_manager.light_camera;
+	params.frame = 0;
+	params.dtype = draw_type::triangle;
+    params.sm_texture = m_fbo->get_depth_texture();
+
+    /* Caliberate Light Camera */
+    params.light_camera->PositionAndOrient(m_manager.lights[0], vec3(0.0f), vec3(0.0f,1.0f,0.0f));
+
+    auto meshes = m_manager.render_scene->get_meshes();
+    for(auto meshpair:meshes) {
+        m_manager.shaders.at(default_shader_name)->draw_mesh(meshpair.second, params);
+    }
 }
 
 GLuint render_engine::to_GPU_texture(Image &img) {
@@ -798,34 +766,4 @@ void render_engine::set_caster(mesh_id id, bool is_caster) {
     }
 }
 
-void render_engine::draw_scene() {
-    /* Default Rendering Settings */
-    if (!m_manager.check_assets()) {
-        ERROR("Asset states have problem");
-        return;
-    }
 
-    int w = m_manager.cur_camera->width(), h = m_manager.cur_camera->height();
-    glViewport(0, 0, w, h);
-
-    /* Draw Shadow Maps */
-	rendering_params params;
-	params.frame = 0;
-	params.cur_camera = m_manager.cur_camera;
-	params.p_lights = m_manager.lights;
-	params.light_camera = m_manager.light_camera; 
-	params.dtype = draw_type::triangle;
-
-	auto meshes = m_manager.render_scene->get_meshes();
-	for(auto m:meshes) {
-		m_manager.shaders.at(sm_shader_name)->draw_mesh(m.second, params);
-	}
-
-	/* Draw Shadow Receiver */
-    // params.sm_texture = std::dynamic_pointer_cast<shadow_shader>(m_manager.shaders.at(sm_shader_name))->get_sm_texture();
-
-    /* Draw Scenes */
-	for(auto &m:meshes) {
-		m_manager.shaders.at(default_shader_name)->draw_mesh(m.second, params);
-	}
-}

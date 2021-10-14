@@ -1,1 +1,24 @@
-{"camera":{"Width":1080,"Height":800,"VFov":60.0,"Position":"-0.0168005,0.101781,0.49727","Orientation":"0,-0.0499376,-0.998752"},"lights":["1.62503,1.5,-1.36356"],"render_scene":{"2":{"path":"../graphics_lib/Meshes/bunny.obj","World Matrix":"1,0,0,0,0,1,0,0,0,0,1,0,0,-0.03331,0,1"},"1":{"path":"","World Matrix":"1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1"}}}
+{
+	"camera": {
+		"Width": 1080,
+		"Height": 800,
+		"VFov": 60.0,
+		"Position": "-0.0168005,0.101781,0.49727",
+		"Orientation": "0,-0.0499376,-0.998752"
+	},
+	"lights": [
+		"1.62503,1.5,-1.36356"
+	],
+	"render_scene": {
+		"2": {
+			"path": "../graphics_lib/Meshes/bunny.obj",
+			"World Matrix": "1,0,0,0,0,1,0,0,0,0,1,0,0,-0.03331,0,1",
+			"Caster": true
+		},
+		"1": {
+			"path": "",
+			"World Matrix": "1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1",
+			"Caster": false
+		}
+	}
+}

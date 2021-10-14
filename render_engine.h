@@ -22,6 +22,7 @@ public:
 
 	//------- Query --------//
 	std::shared_ptr<ppc> get_render_ppc();
+    AABB get_mesh_size(mesh_id id); 
 
 	//------- Modify Scene --------//
 	mesh_id add_mesh(const std::string model_fname, bool norm=false, vec3 color=vec3(0.8f));
@@ -72,11 +73,16 @@ public:
 	void draw_quad();
 	void draw_image(std::shared_ptr<Image> img); 
 	void draw_mesh(mesh_id id);
-    void draw_scene();
 	void draw_shadow(mesh_id shadow_receiver);
 	void draw_sihouette(int mesh_id, vec3 light_pos);
 	void draw_shadow_volume(int mesh_id, vec3 light_pos);
 	bool reload_shaders();
+
+    void prepare_shadow_map_states();
+    void prepare_default_shading();
+    void reset_shadow_map_states();
+    void render_shadow_maps();
+    void default_shading();
 
 	//------- Visualization --------//
 	mesh_id add_visualize_line(vec3 h, vec3 t);
@@ -92,6 +98,7 @@ public:
 
 private:
 	bool init_shaders();
+    bool init_ogl_states();
 	std::shared_ptr<mesh> vis_new_mesh();
 	std::shared_ptr<mesh> add_empty_mesh();
 	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);
@@ -101,4 +108,8 @@ private:
 	asset_manager m_manager;
 	bool m_vis_frame_mode;
     double m_curtime;
+
+    /* OpenGL States */
+    std::shared_ptr<ogl_fbo> m_fbo;
 };
+

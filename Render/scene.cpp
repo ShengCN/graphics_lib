@@ -26,6 +26,32 @@ std::string scene::to_json() {
     return s.GetString();
 }
 
+std::shared_ptr<mesh> scene::get_plane_mesh(vec3 p, vec3 n) {
+	vec3 x(1.0f,0.0f,0.0f), y(0.0f,1.0f,0.0f);
+
+	std::shared_ptr<mesh> plane = std::make_shared<mesh>();
+    FAIL(!plane, "Cannot make memory");
+
+	// avoid same line
+	if (glm::dot(x, n) > glm::dot(y, n)) {
+		x = glm::cross(n, y);
+		y = glm::cross(n, x);
+	} else {
+		y = glm::cross(n, x);
+		x = glm::cross(n, y);
+	}
+
+	float big_scale = 10000.0f;
+	plane->add_vertex(p + big_scale * (-x + y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (-x - y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (x - y), n, vec3(1.0f));
+
+	plane->add_vertex(p + big_scale * (x - y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (x + y), n, vec3(1.0f));
+	plane->add_vertex(p + big_scale * (-x + y), n, vec3(1.0f));
+    return plane;
+}
+
 int scene::from_json(const std::string json_str) {
     using namespace rapidjson;
     Document document;
@@ -42,19 +68,23 @@ int scene::from_json(const std::string json_str) {
         bool caster;
 
         ret = ret & rapidjson_get_string(mesh_obj, "path", mesh_path);
-        INFO("Parse mesh {}", ret);
         ret = ret & rapidjson_get_mat4(mesh_obj, "World Matrix", world_mat);
-        INFO("Parse mesh {}", ret);
         ret = ret & rapidjson_get_bool(mesh_obj, "Caster", caster);
-        INFO("Parse mesh {}", ret);
 
         /* Initialize the mesh */
-        auto mesh_ptr = add_mesh(mesh_path, vec3(0.7f));
+        std::shared_ptr<mesh> mesh_ptr;
+        if (purdue::file_exists(mesh_path)) {
+            mesh_ptr = add_mesh(mesh_path, vec3(0.7f));
+        } else {
+            WARN("Cannot find the mesh file. Use plane instead");
+            mesh_ptr = get_plane_mesh(vec3(0.f), vec3(0.0f,1.0f,0.0f));
+            m_meshes[mesh_ptr->get_id()] = mesh_ptr;
+        }
         mesh_ptr->set_world_mat(world_mat);
         mesh_ptr->set_caster(caster);
     }
 
-    return -1;
+    return ret;
 }
 
 std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {

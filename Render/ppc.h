@@ -26,7 +26,7 @@ public:
 	int _width, _height;
 
 	ppc()=default;
-	ppc(int w, int h, float fov, float p_near=0.001f, float p_far=100.0f);
+	ppc(int w, int h, float fov, float p_near=0.001f, float p_far=1000.0f);
 	~ppc();
 
 	bool save(const std::string file);
@@ -52,7 +52,6 @@ public:
 	CUDA_HOSTDEV
 	void set_fov(float f) { _fov = f;}
     
-
 	CUDA_HOSTDEV
 	void PositionAndOrient(vec3 p, vec3 lookatP, vec3 up){
         _position = p;
@@ -60,6 +59,11 @@ public:
         _up = up;
     }
     
+	CUDA_HOSTDEV
+	void look_at(vec3 center){
+        _front = glm::normalize(center - _position);
+    }
+
    	CUDA_HOSTDEV
 	glm::mat4 GetP() const {
 		return glm::perspective(purdue::deg2rad(_fov), (float)_width / (float)_height, _near, _far);
