@@ -20,15 +20,19 @@ float lerp(float t1, float t2, float fract){
 
 float shadow(vec4 light_space_pos) {
     vec3 projected = light_space_pos.xyz/light_space_pos.w;
+    
     projected = projected * 0.5 + 0.5;
     float lit = 1.0;
-    if(projected.x >= 0.0 && projected.x <= 1.0 && projected.y >=0.0 && projected.y <= 1.0) {
+    if(projected.x >= 0.0 && 
+        projected.x <= 1.0 && 
+        projected.y >=0.0  && 
+        projected.y <= 1.0) {
         float closest = texture(shadow_map, projected.xy).r;
         float cur_depth = projected.z;
 
         float bias = 0.000001;
-        lit = cur_depth - closest > bias  ? 0.0 : 1.0;
-        //lit = cur_depth > closest  ? 0.0 : 1.0;
+        //lit = cur_depth - closest > bias  ? 0.0 : 1.0;
+        lit = cur_depth > closest  ? 0.0 : 1.0;
     }
     return lit;
 }

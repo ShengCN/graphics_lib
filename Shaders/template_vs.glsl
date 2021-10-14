@@ -21,10 +21,11 @@ void main(){
     gl_Position = PVM * vec4(pos_attr,1.0f);
 
     // pass values to next step
-    vs_pos = vec3(M * vec4(pos_attr, 1.0));
+    vec4 tmp = M * vec4(pos_attr, 1.0);
+    vs_pos = vec3(tmp/tmp.w);
     vs_color = col_attr;
     vs_norm = normalize((transpose(inverse(M)) * vec4(norm_attr, 0.0f)).xyz);
     vs_uvs = uv_attr;    
 
-    vs_light_space_pos = light_pv * vec4(pos_attr,1.0f);
+    vs_light_space_pos = light_pv * M * vec4(pos_attr,1.0f);
 }

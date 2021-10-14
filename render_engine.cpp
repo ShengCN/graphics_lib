@@ -158,7 +158,7 @@ bool render_engine::remove_visualize_line(mesh_id id) {
 	return m_manager.render_scene->remove_mesh(id);	
 }
 
-extern GLuint dbg_tex;
+extern GLuint dbg_tex, dbg_tex2;
 void render_engine::render(int frame) {	
     /* Default Rendering Settings */
     if (!m_manager.check_assets()) {
@@ -179,6 +179,7 @@ void render_engine::render(int frame) {
 
     /* DBG */
     dbg_tex = m_fbo->get_rgba_texture();
+    dbg_tex2 = m_fbo->get_depth_texture();
 }
 
 void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params) {
@@ -697,7 +698,7 @@ void render_engine::default_shading() {
         if (meshpair.second->get_caster()) {
             params.sm_texture = -1;
         } else {
-            params.sm_texture = m_fbo->get_rgba_texture();
+            params.sm_texture = m_fbo->get_depth_texture();
         }
         m_manager.shaders.at(default_shader_name)->draw_mesh(meshpair.second, params);
     }
