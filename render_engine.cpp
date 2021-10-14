@@ -178,7 +178,7 @@ void render_engine::render(int frame) {
     default_shading();
 
     /* DBG */
-    dbg_tex = m_fbo->get_id();
+    dbg_tex = m_fbo->get_rgba_texture();
 }
 
 void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params) {
@@ -688,13 +688,17 @@ void render_engine::default_shading() {
     params.light_camera = m_manager.light_camera;
 	params.frame = 0;
 	params.dtype = draw_type::triangle;
-    params.sm_texture = m_fbo->get_depth_texture();
 
     /* Caliberate Light Camera */
     params.light_camera->PositionAndOrient(m_manager.lights[0], vec3(0.0f), vec3(0.0f,1.0f,0.0f));
 
     auto meshes = m_manager.render_scene->get_meshes();
     for(auto meshpair:meshes) {
+        if (meshpair.second->get_caster()) {
+            params.sm_texture = -1;
+        } else {
+            params.sm_texture = m_fbo->get_depth_texture();
+        }
         m_manager.shaders.at(default_shader_name)->draw_mesh(meshpair.second, params);
     }
 }

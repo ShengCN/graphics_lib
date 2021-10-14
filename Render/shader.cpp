@@ -194,7 +194,18 @@ void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& param
 		if(uniform_loc != -1) {
 			glUniform1i(uniform_loc, 0);
 		}
-	}
+
+		uniform_loc = glGetUniformLocation(m_program, "draw_shadow");
+		if(uniform_loc != -1) {
+			glUniform1i(uniform_loc, 1);
+		}
+
+	} else {
+		auto uniform_loc = glGetUniformLocation(m_program, "draw_shadow");
+		if(uniform_loc != -1) {
+			glUniform1i(uniform_loc, 0);
+		}
+    }
 
 	int ogl_draw_type = 0;
 	if (params.dtype == draw_type::triangle) {
