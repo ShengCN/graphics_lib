@@ -98,7 +98,6 @@ void ppc::Keyboard(CameraMovement cm, float speed)
 		_position -= speed * GetRight();
 		break;
 	case CameraMovement::right:
-
 		_position += speed * GetRight();
 		break;
 	case CameraMovement::up:
