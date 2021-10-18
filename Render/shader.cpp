@@ -216,6 +216,10 @@ void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& param
 		ogl_draw_type = GL_LINES;
 	}
 
+    if (params.dtype == draw_type::points) {
+        ogl_draw_type = GL_POINTS;
+    }
+
 	glBindVertexArray(vao);
 	glDrawArrays(ogl_draw_type, 0, (GLsizei)m->m_verts.size());
 	glBindVertexArray(0);

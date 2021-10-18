@@ -9,7 +9,8 @@
 
 enum class draw_type {
 	triangle,
-	line_segments
+	line_segments,
+    points
 };
 
 enum class shader_type {

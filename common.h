@@ -39,6 +39,7 @@ using glm::quat;
 #include "Utilities/Image.h"
 #include "Utilities/rapidjson_helper.h"
 #include "Utilities/ogl_helper.h"
+#include "Utilities/cxxopts.hpp"
 
 typedef int mesh_id;
 const std::string default_shader_name = "template";

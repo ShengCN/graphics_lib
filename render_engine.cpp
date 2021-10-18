@@ -13,6 +13,9 @@ void render_engine::init() {
 	/* initialize rendering states */
 	FAIL(!init_shaders(), "Shader init failed");
     FAIL(!init_ogl_states(),"OGL states init failed");
+
+    auto camera = m_manager.cur_camera; 
+    //m_rt_renderer = std::make_shared<dynamic_renderer>(camera->width(), camera->height());
 }
 
 bool render_engine::init_ogl_states() {
@@ -22,11 +25,13 @@ bool render_engine::init_ogl_states() {
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
+    glPointSize(3.0);
 
     auto light_camera = m_manager.light_camera;
     m_fbo = std::make_shared<ogl_fbo>(light_camera->width(), light_camera->height());
     FAIL(!m_fbo, "Framebuffer object initialization failed");
-
+    
+    m_cur_draw_type = draw_type::triangle;
     return ret;
 }
 
@@ -158,7 +163,7 @@ bool render_engine::remove_visualize_line(mesh_id id) {
 	return m_manager.render_scene->remove_mesh(id);	
 }
 
-extern GLuint dbg_tex, dbg_tex2;
+GLuint dbg_tex, dbg_tex2;
 void render_engine::render(int frame) {	
     /* Default Rendering Settings */
     if (!m_manager.check_assets()) {
@@ -180,6 +185,74 @@ void render_engine::render(int frame) {
     /* DBG */
     dbg_tex = m_fbo->get_rgba_texture();
     dbg_tex2 = m_fbo->get_depth_texture();
+}
+
+void render_engine::rt_render(int frame) {
+	rendering_params params;
+	params.cur_camera = m_manager.cur_camera;
+    params.lights = m_manager.lights;
+    params.light_camera = m_manager.light_camera;
+	params.frame = 0;
+    params.dtype = m_cur_draw_type;
+
+    //m_rt_renderer->render_softshadow(m_manager.render_scene, params);
+
+    /* update visualize buffer 
+     * TODOs:
+     *    1. All the ob
+     * */
+
+}
+
+void render_engine::get_casters(std::vector<glm::vec3> &verts, AABB &aabb) {
+    verts.clear();
+    bool aabb_init = false;
+
+    auto meshes = m_manager.render_scene->get_meshes();
+    for(auto mpair:meshes) {
+        if (mpair.second->get_caster()) {
+            auto world_verts = mpair.second->compute_world_space_coords();
+            auto world_AABB = mpair.second->compute_world_aabb();
+
+            verts.insert(verts.end(), world_verts.begin(), world_verts.end());
+            if (!aabb_init) {
+                aabb_init = true;
+                aabb = world_AABB;
+            } else {
+                aabb.add_aabb(world_AABB);
+            }
+        }
+    }
+}
+
+void render_engine::get_receiver(std::vector<glm::vec3> &verts, AABB &aabb) {
+    verts.clear();
+    bool aabb_init = false;
+
+    auto meshes = m_manager.render_scene->get_meshes();
+    for(auto mpair:meshes) {
+        if (!mpair.second->get_caster()) {
+            auto world_verts = mpair.second->compute_world_space_coords();
+            auto world_AABB = mpair.second->compute_world_aabb();
+
+            verts.insert(verts.end(), world_verts.begin(), world_verts.end());
+            if (!aabb_init) {
+                aabb_init = true;
+                aabb = world_AABB;
+            } else {
+                aabb.add_aabb(world_AABB);
+            }
+        }
+    }
+}
+
+void render_engine::set_mesh_verts(mesh_id id, std::vector<glm::vec3> &verts) {
+    auto mesh_ptr = get_mesh(id);
+    mesh_ptr->set_verts(verts);
+}
+
+void render_engine::set_draw_types(draw_type dt) {
+    m_cur_draw_type = dt;
 }
 
 void render_engine::render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params) {
@@ -656,7 +729,8 @@ void render_engine::render_shadow_maps() {
 	params.frame = 0;
     params.cur_camera = m_manager.light_camera;
     params.light_camera = nullptr;
-	params.dtype = draw_type::triangle;
+	//params.dtype = draw_type::triangle;
+    params.dtype = m_cur_draw_type;
     params.sm_texture = -1;
 
     /* Caliberate Light Camera */
@@ -688,7 +762,7 @@ void render_engine::default_shading() {
     params.lights = m_manager.lights;
     params.light_camera = m_manager.light_camera;
 	params.frame = 0;
-	params.dtype = draw_type::triangle;
+    params.dtype = m_cur_draw_type;
 
     /* Caliberate Light Camera */
     params.light_camera->PositionAndOrient(m_manager.lights[0], vec3(0.0f), vec3(0.0f,1.0f,0.0f));

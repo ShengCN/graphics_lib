@@ -7,6 +7,7 @@
 #include "Render/ppc.h"
 #include "Utilities/voxelization.h"
 #include "asset_manager.h"
+//#include <RT/RT_engine.h>
 
 class render_engine{
 	//-------  APIs --------//
@@ -19,10 +20,13 @@ public:
 
 	//------- Render --------//
 	void render(int frame);
+    void rt_render(int frame);
 
 	//------- Query --------//
 	std::shared_ptr<ppc> get_render_ppc();
     AABB get_mesh_size(mesh_id id); 
+    void get_casters(std::vector<glm::vec3> &verts, AABB &aabb);
+    void get_receiver(std::vector<glm::vec3> &verts, AABB &aabb);
 
 	//------- Modify Scene --------//
 	mesh_id add_mesh(const std::string model_fname, bool norm=false, vec3 color=vec3(0.8f));
@@ -31,6 +35,7 @@ public:
 	void stand_on_plane(mesh_id id, vec3 p, vec3 n);
 	void set_point_light(glm::vec3 lp);
 	vec3 get_light_pos();
+    void set_mesh_verts(mesh_id id, std::vector<glm::vec3> &verts);
 
 	//------- IO --------//
 	bool save_mesh(mesh_id id, const std::string model_fname);
@@ -95,21 +100,24 @@ public:
 	std::shared_ptr<Image> from_GPU_texture(GLuint texid, int w, int h);
 	std::shared_ptr<Image> composite(const Image &bg, const Image &fg);
 	std::shared_ptr<mesh> get_mesh(int id);
+    void set_draw_types(draw_type dt);
 
 private:
 	bool init_shaders();
     bool init_ogl_states();
-	std::shared_ptr<mesh> vis_new_mesh();
-	std::shared_ptr<mesh> add_empty_mesh();
 	void render_scene(std::shared_ptr<scene> cur_scene, rendering_params params);
 	void render_weighted_OIT(std::shared_ptr<scene> cur_scene, rendering_params params);
 
-private:
+protected:
+	std::shared_ptr<mesh> vis_new_mesh();
+	std::shared_ptr<mesh> add_empty_mesh();
 	asset_manager m_manager;
+    //std::shared_ptr<dynamic_renderer> m_rt_renderer;
 	bool m_vis_frame_mode;
     double m_curtime;
 
     /* OpenGL States */
     std::shared_ptr<ogl_fbo> m_fbo;
+    draw_type m_cur_draw_type;
 };
 
