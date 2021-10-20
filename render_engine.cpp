@@ -571,6 +571,10 @@ std::shared_ptr<ppc> render_engine::get_render_ppc() {
 	return m_manager.cur_camera;
 }
 
+std::shared_ptr<ppc> render_engine::get_light_ppc() {
+    return m_manager.light_camera;
+}
+
 mesh_id render_engine::add_plane_mesh(vec3 p, vec3 n)  {
     auto meshptr = scene::get_plane_mesh(p, n);
     FAIL(!meshptr, "Failed to add a plane mesh");

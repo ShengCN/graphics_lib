@@ -24,6 +24,7 @@ public:
 
 	//------- Query --------//
 	std::shared_ptr<ppc> get_render_ppc();
+	std::shared_ptr<ppc> get_light_ppc();
     AABB get_mesh_size(mesh_id id); 
     void get_casters(std::vector<glm::vec3> &verts, AABB &aabb);
     void get_receiver(std::vector<glm::vec3> &verts, AABB &aabb);

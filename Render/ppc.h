@@ -26,7 +26,7 @@ public:
 	int _width, _height;
 
 	ppc()=default;
-	ppc(int w, int h, float fov, float p_near=0.001f, float p_far=1000.0f);
+	ppc(int w, int h, float fov, float p_near=2.0f, float p_far=1000.0f);
 	~ppc();
 
 	bool save(const std::string file);
@@ -52,6 +52,19 @@ public:
 	CUDA_HOSTDEV
 	void set_fov(float f) { _fov = f;}
     
+	CUDA_HOSTDEV
+    void caliberate_same(float d1) {
+        /* Given d1, calibrate fov to keep current distance the same as d1 */
+        //TODO
+    }
+
+	CUDA_HOSTDEV
+    void set_aa_sample(size_t aasp, size_t aasi, size_t aasj) {
+        m_aasp = aasp;
+        m_aasi = aasi;
+        m_aasj = aasj;
+    }
+
 	CUDA_HOSTDEV
 	void PositionAndOrient(vec3 p, vec3 lookatP, vec3 up){
         _position = p;
@@ -108,17 +121,21 @@ public:
 	}
 
    	CUDA_HOSTDEV
-	ray get_ray(int u, int v) const {
+	ray get_ray(float u, float v) const {
 		ray ret;
         float focal = get_focal();
         vec3 right = glm::normalize(GetRight());
         vec3 up = glm::normalize(GetUp());
         vec3 front = glm::normalize(GetViewVec());
+        float delta_aa = 1.0/((float)m_aasp + 1.0);
 
         ret.ro = _position;
         int center_u = _width / 2, center_v = _height / 2;
 
-        ret.rd = front * focal + (u - center_u + 0.5f) * right + (v - center_v + 0.5f) * up;
+        ret.rd = front * focal + 
+            (u - center_u + delta_aa * (float)(m_aasi + 1)) * right + 
+            (v - center_v + delta_aa * (float)(m_aasj + 1)) * up;
+
         ret.rd = glm::normalize(ret.rd);
 		return ret;
     }
@@ -139,4 +156,5 @@ private:
 	vec3 m_last_orientation, m_last_position;
 	bool m_pressed;
 	bool m_trackball;
+    size_t m_aasp, m_aasi, m_aasj;
 };

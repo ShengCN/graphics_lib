@@ -16,7 +16,10 @@ ppc::ppc(int w, int h, float fov, float p_near, float p_far) :
 	_position(0.0f, 0.35f, 1.3f), 
 	_up(0.0f, 1.0f, 0.0f),
 	m_pressed(false),
-	m_trackball(true){
+	m_trackball(true), 
+    m_aasp(2),
+    m_aasi(0),
+    m_aasj(0) {
 }
 
 ppc::~ppc() {
