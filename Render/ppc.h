@@ -35,16 +35,16 @@ public:
 	CUDA_HOSTDEV
 	vec3 GetRight() const {
         vec3 view = GetViewVec();
-        return cross(view, _up);
+        return glm::normalize(cross(view, _up));
     }
 	
     CUDA_HOSTDEV
     vec3 GetUp() const {
-        return cross(GetRight(), GetViewVec());
+        return glm::normalize(cross(GetRight(), GetViewVec()));
     }
 
     CUDA_HOSTDEV
-	vec3 GetViewVec() const { return _front; }
+	vec3 GetViewVec() const { return glm::normalize(_front); }
 	
 	CUDA_HOSTDEV
 	float get_fov() const { return _fov; }
@@ -111,13 +111,19 @@ public:
 	float GetFocal();
 
    	CUDA_HOSTDEV
-	vec2 project(vec3 p) {
+	vec3 project(vec3 p) {
+        /*
+         * return <u, v, t> 
+         * */
 		vec3 a = glm::normalize(GetRight());
 		vec3 b = -glm::normalize(GetUp());
 		vec3 c = glm::normalize(GetViewVec()) * get_focal() - 0.5f * (float)_width * GetRight() + 0.5f * (float)_height * GetUp();
 		mat3 m(a,b,c);
 		vec3 pp = glm::inverse(m) * (p-_position);
-		return vec2(pp.x/pp.z, _height-pp.y/pp.z);
+
+        vec2 pix(pp.x/pp.z, _height-pp.y/pp.z);
+        vec3 rd = m * vec3(pix, 1.0f);
+		return vec3(pix, pp.z * glm::length(rd));
 	}
 
    	CUDA_HOSTDEV
@@ -127,8 +133,8 @@ public:
         vec3 right = glm::normalize(GetRight());
         vec3 up = glm::normalize(GetUp());
         vec3 front = glm::normalize(GetViewVec());
-        float delta_aa = 1.0/((float)m_aasp + 1.0);
 
+        float delta_aa = 1.0/((float)m_aasp + 1.0);
         ret.ro = _position;
         int center_u = _width / 2, center_v = _height / 2;
 
