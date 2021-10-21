@@ -418,3 +418,11 @@ Image Image::resize(int size) const {
     }
     return ret;
 }
+
+void Image::copy_buffer(int w, int h, std::vector<glm::vec4> &buffer) {
+    FAIL(w * h !=buffer.size(), "Copy Buffer size not match.");
+
+    m_w = w;
+    m_h = h;
+    m_buffer = buffer;
+}

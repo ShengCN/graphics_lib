@@ -41,6 +41,7 @@ public:
     glm::vec4& at(int i, int j);
     glm::vec4 get(int i, int j) const;
     std::vector<glm::vec4>& get_buffer() { return m_buffer; }
+    void copy_buffer(int w, int h, std::vector<glm::vec4> &buffer); 
     std::vector<unsigned int> to_unsigned_data();
     void from_unsigned_data(const std::vector<unsigned int> &data, int w, int h);
     void from_unsigned_data(unsigned char *data, int w, int h);
