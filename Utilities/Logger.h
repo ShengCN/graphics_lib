@@ -60,5 +60,5 @@ private:
 #endif // !ERROR
 
 #ifndef FAIL
-#define FAIL(condition, fmt_str, ...) do { if ((condition)) throw std::invalid_argument(fmt::format(fmt_str, ##__VA_ARGS__));} while(0)
+#define FAIL(condition, fmt_str, ...) do { if ((condition)) {ERROR("{} {} {}", __FILE__, __LINE__, __FUNCTION__); throw std::invalid_argument(fmt::format(fmt_str, ##__VA_ARGS__)); }} while(0)
 #endif
