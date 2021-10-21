@@ -769,6 +769,8 @@ void render_engine::default_shading() {
     params.dtype = m_cur_draw_type;
 
     /* Caliberate Light Camera */
+    float d1 = glm::distance(m_manager.lights[0], params.light_camera->get_pos());
+    params.light_camera->caliberate_same(d1, vec3(0.0f));
     params.light_camera->PositionAndOrient(m_manager.lights[0], vec3(0.0f), vec3(0.0f,1.0f,0.0f));
 
     auto meshes = m_manager.render_scene->get_meshes();
