@@ -178,11 +178,11 @@ namespace purdue {
 	}
 
 
+    static std::mt19937 engine(19920208);
 	inline float random_float(float fmin = 0.0f, float fmax = 1.0f) {
 		// engine
 		//std::random_device rd;
 		//std::mt19937 engine(rd());
-		static std::mt19937 engine(19920208);
 		std::uniform_real_distribution<float> u(fmin, fmax);
 		return u(engine);
 	}
@@ -191,7 +191,6 @@ namespace purdue {
 		// engine
 		//std::random_device rd;
 		//std::mt19937 engine(rd());
-		static std::mt19937 engine(19920208);
 		std::uniform_int_distribution<> dis(mi, ma);
 
 		return dis(engine);
