@@ -28,6 +28,8 @@ public:
     AABB get_mesh_size(mesh_id id); 
     void get_casters(std::vector<glm::vec3> &verts, AABB &aabb);
     void get_receiver(std::vector<glm::vec3> &verts, AABB &aabb);
+    glm::vec3 get_mesh_center(mesh_id id);
+    AABB get_mesh_aabb(mesh_id id);
 
 	//------- Modify Scene --------//
 	mesh_id add_mesh(const std::string model_fname, bool norm=false, vec3 color=vec3(0.8f));
@@ -37,6 +39,7 @@ public:
 	void set_point_light(glm::vec3 lp);
 	vec3 get_light_pos();
     void set_mesh_verts(mesh_id id, std::vector<glm::vec3> &verts);
+    bool reload_mesh(mesh_id id, std::string fname);
 
 	//------- IO --------//
 	bool save_mesh(mesh_id id, const std::string model_fname);

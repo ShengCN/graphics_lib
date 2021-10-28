@@ -1,10 +1,6 @@
-#include <stdexcept>
-#include <string>
-#include <glm/gtx/transform.hpp>
-
-#include "model_loader.h"
-
 #include "common.h"
+#include "Render/mesh.h"
+#include "model_loader.h"
 #include "Utilities/Utils.h"
 #include "Utilities/Logger.h"
 using namespace purdue;

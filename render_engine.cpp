@@ -1,10 +1,5 @@
 #include <common.h>
-#include <memory>
-#include <stdexcept>
-#include "fmt/core.h"
-#include "glm/gtx/transform.hpp"
 #include "render_engine.h"
-#include "Utilities/Utils.h"
 
 render_engine::render_engine() { 
 }
@@ -40,6 +35,15 @@ AABB render_engine::get_mesh_size(mesh_id id) {
     FAIL(!meshptr, "cannot find mesh {}", id);
 
     return meshptr->compute_world_aabb();
+}
+
+bool render_engine::reload_mesh(mesh_id id, std::string fname) {
+    auto meshptr = get_mesh(id);
+    FAIL(!meshptr, "Cannot find mesh: {}", id);
+
+    bool ret = load_model(fname, meshptr);
+    set_mesh_color(id, vec3(0.8));
+    return ret; 
 }
 
 bool render_engine::init_shaders() {
@@ -96,6 +100,18 @@ void render_engine::test_scene(int w, int h) {
 
 	m_manager.cur_camera = std::make_shared<ppc>(w, h, 80.0f);
 	look_at(id);
+}
+
+glm::vec3 render_engine::get_mesh_center(mesh_id id) {
+    auto meshptr = get_mesh(id);
+    FAIL(!meshptr, "Mesh {} cannot be found", id);
+    return meshptr->compute_world_center();
+}
+
+AABB render_engine::get_mesh_aabb(mesh_id id) {
+    auto meshptr = get_mesh(id);
+    FAIL(!meshptr, "Mesh {} cannot be found", id);
+    return meshptr->compute_world_aabb();
 }
 
 void render_engine::add_rotate(mesh_id id, purdue::deg angle, vec3 axis) {

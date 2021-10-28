@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include "Render/mesh.h"
 #include "tinyobjloader/tiny_obj_loader.h"
 
 enum model_type {
@@ -11,6 +10,7 @@ enum model_type {
 	unknown
 };
 
+class mesh;
 bool load_model(const std::string mesh_file, std::shared_ptr<mesh>& m);
 
 class model_loader
