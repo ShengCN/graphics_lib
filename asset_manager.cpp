@@ -49,7 +49,7 @@ int asset_manager::from_json(const std::string json_fname) {
     } else {
         INFO("Loading {} succeed", json_fname);
     }
-    
+
     std::stringstream buffer;
     buffer << iss.rdbuf();
     iss.close();

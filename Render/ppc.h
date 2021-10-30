@@ -28,6 +28,7 @@ public:
 	ppc()=default;
 	ppc(int w, int h, float fov, float p_near=2.0f, float p_far=1000.0f);
 	~ppc();
+    void set_nearfar(float near, float far) { _near = near; _far = far;}
 
 	bool save(const std::string file);
 	bool load(const std::string file);
@@ -117,6 +118,7 @@ public:
 	int height() { return _height; }
     void set_size(int w, int h) {_width = w; _height = h;}
 	float GetFocal();
+    void set_event_listen(bool islisten) {m_listen = islisten;}
 
    	CUDA_HOSTDEV
 	vec3 project(vec3 p) {
@@ -168,7 +170,6 @@ public:
 private:
 	int m_last_x, m_last_y;
 	vec3 m_last_orientation, m_last_position;
-	bool m_pressed;
-	bool m_trackball;
+	bool m_pressed, m_trackball, m_listen;
     size_t m_aasp, m_aasi, m_aasj;
 };

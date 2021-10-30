@@ -16,9 +16,14 @@ std::string scene::to_json() {
 
     /* Scene Level */
     writer.StartObject();
-    for(auto &mpair:m_meshes) {
-        writer.Key(fmt::format("{}", mpair.first).c_str());
-        std::string scene_json = mpair.second->to_json();
+    //for(auto &mpair:m_meshes) {
+    for(mesh_id id = 0; id < mesh::id; ++id ) { 
+        if (m_meshes.find(id) == m_meshes.end()) {
+            continue;
+        }
+
+        writer.Key(fmt::format("{}", id).c_str());
+        std::string scene_json = m_meshes.at(id)->to_json();
         writer.RawValue(scene_json.c_str(), scene_json.size(), rapidjson::Type::kStringType);
     }
     writer.EndObject();
@@ -61,6 +66,11 @@ int scene::from_json(const std::string json_str) {
 
     for (auto &member:document.GetObject()) {
         INFO("Find mesh {}", member.name.GetString());
+        mesh_id id = std::stoi(member.name.GetString()); 
+        if (mesh::id < id - 1) {
+            mesh::id = id - 1;
+        }
+
         auto mesh_obj = member.value.GetObject();
 
         std::string mesh_path;
@@ -80,8 +90,16 @@ int scene::from_json(const std::string json_str) {
             mesh_ptr = get_plane_mesh(vec3(0.f), vec3(0.0f,1.0f,0.0f));
             m_meshes[mesh_ptr->get_id()] = mesh_ptr;
         }
+
         mesh_ptr->set_world_mat(world_mat);
         mesh_ptr->set_caster(caster);
+
+        /* Keep m_meshes key - id consistent */
+        if (mesh_ptr->get_id() != id) {
+            m_meshes.erase(mesh_ptr->get_id());
+            mesh_ptr->cur_id = id;
+            m_meshes[mesh_ptr->cur_id] = mesh_ptr;
+        }
     }
 
     return ret;
@@ -121,6 +139,7 @@ bool scene::save_scene(const std::string filename) {
 
 void scene::clean_up() {
 	m_meshes.clear();
+    mesh::id = 0;
 }
 
 vec3 scene::scene_center() {
@@ -138,10 +157,12 @@ vec3 scene::scene_center() {
 }
 
 std::shared_ptr<mesh> scene::get_mesh(mesh_id id) {
-	if (m_meshes.find(id) == m_meshes.end()) {
-		throw std::invalid_argument(fmt::format("Cannot find mesh(ID: {}).", id));
-		return nullptr;
-	}
+    if (m_meshes.find(id) == m_meshes.end()) {
+        for(auto mptr:m_meshes) {
+            ERROR("Current meshes: {}", mptr.second->get_id());
+        }
+        FAIL(true, "Cannot find mesh(ID: {})", id);
+    }
 	return m_meshes.at(id);
 }
 

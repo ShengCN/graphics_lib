@@ -1,0 +1,1 @@
+{"camera":{"Width":512,"Height":512,"VFov":60.0,"Position":"0,0.23547,0.6","Orientation":"0,-0.196116,-0.980581"},"lights":["3,3,3"],"render_scene":{"1":{"path":"../graphics_lib/Meshes/sphere.obj","World Matrix":"0.11547,0,0,0,0,0.11547,0,0,0,0,0.11547,0,8.83843e-10,0.11547,-7.76303e-10,1","Caster":true}}}

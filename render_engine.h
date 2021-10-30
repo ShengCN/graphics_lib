@@ -17,6 +17,7 @@ public:
 	void init();
 	void test_scene(int w, int h);
 	void init_camera(int w, int h, float fov);
+    void set_camera_nearfar(float near, float far);
 
 	//------- Render --------//
 	void render(int frame);
@@ -70,6 +71,7 @@ public:
     void update_time(double t);
     double get_time();
     void set_caster(mesh_id id, bool is_caster);
+    void ppc_event_listen(bool islisten);
 
 	//------- Rendering --------//
 	void look_at(int mesh_id, vec3 relative=vec3(0.0f,0.0f,1.0f));

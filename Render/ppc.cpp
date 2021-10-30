@@ -85,8 +85,11 @@ void ppc::Zoom(float delta)
 	_fov = glm::clamp(_fov, 10.0f, 150.0f);
 }
 
-void ppc::Keyboard(CameraMovement cm, float speed)
-{
+void ppc::Keyboard(CameraMovement cm, float speed) {
+    if (!m_listen) {
+        return;
+    }
+
 	switch (cm)
 	{
 	case CameraMovement::forward:

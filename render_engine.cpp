@@ -37,6 +37,10 @@ AABB render_engine::get_mesh_size(mesh_id id) {
     return meshptr->compute_world_aabb();
 }
 
+void render_engine::ppc_event_listen(bool islisten) {
+    m_manager.cur_camera->set_event_listen(islisten);
+}
+
 bool render_engine::reload_mesh(mesh_id id, std::string fname) {
     auto meshptr = get_mesh(id);
     FAIL(!meshptr, "Cannot find mesh: {}", id);
@@ -126,6 +130,10 @@ void render_engine::init_camera(int w, int h, float fov) {
     FAIL(!m_manager.cur_camera, "Camera is nullptr");
     m_manager.cur_camera->set_size(w, h);
     m_manager.cur_camera->set_fov(fov);
+}
+
+void render_engine::set_camera_nearfar(float near, float far) {
+    m_manager.cur_camera->set_nearfar(near, far);
 }
 
 void render_engine::recompute_normal(int mesh_id) {
