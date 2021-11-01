@@ -88,6 +88,7 @@ int scene::from_json(const std::string json_str) {
         } else {
             WARN("Cannot find the mesh file. Use plane instead");
             mesh_ptr = get_plane_mesh(vec3(0.f), vec3(0.0f,1.0f,0.0f));
+            mesh_ptr->set_caster(false);
             m_meshes[mesh_ptr->get_id()] = mesh_ptr;
         }
 
