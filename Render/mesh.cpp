@@ -348,7 +348,7 @@ std::string mesh::to_json() {
     /* Scene Level */
     writer.StartObject();
     writer.Key("path");
-    writer.String(fs::relative(model_path, cur_path).generic_string().c_str());
+    writer.String(model_path.c_str());
     writer.Key("World Matrix");
     writer.String(purdue::to_string(m_world).c_str());
     writer.Key("Caster");

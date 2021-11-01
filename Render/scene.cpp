@@ -16,12 +16,8 @@ std::string scene::to_json() {
 
     /* Scene Level */
     writer.StartObject();
-    //for(auto &mpair:m_meshes) {
-    for(mesh_id id = 0; id < mesh::id; ++id ) { 
-        if (m_meshes.find(id) == m_meshes.end()) {
-            continue;
-        }
-
+    for(auto &mpair:m_meshes) {
+        int id = mpair.first;
         writer.Key(fmt::format("{}", id).c_str());
         std::string scene_json = m_meshes.at(id)->to_json();
         writer.RawValue(scene_json.c_str(), scene_json.size(), rapidjson::Type::kStringType);
@@ -86,7 +82,7 @@ int scene::from_json(const std::string json_str) {
         if (purdue::file_exists(mesh_path)) {
             mesh_ptr = add_mesh(mesh_path, vec3(0.7f));
         } else {
-            WARN("Cannot find the mesh file. Use plane instead");
+            WARN("Cannot find the mesh file({}). Use plane instead", mesh_path);
             mesh_ptr = get_plane_mesh(vec3(0.f), vec3(0.0f,1.0f,0.0f));
             mesh_ptr->set_caster(false);
             m_meshes[mesh_ptr->get_id()] = mesh_ptr;
@@ -100,6 +96,10 @@ int scene::from_json(const std::string json_str) {
             m_meshes.erase(mesh_ptr->get_id());
             mesh_ptr->cur_id = id;
             m_meshes[mesh_ptr->cur_id] = mesh_ptr;
+        }
+
+        for(auto m:m_meshes) {
+            INFO("Current meshes: {}, {}", m.first, m.second->get_id());
         }
     }
 

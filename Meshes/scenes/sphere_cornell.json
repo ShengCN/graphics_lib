@@ -1,1 +1,24 @@
-{"camera":{"Width":512,"Height":512,"VFov":60.0,"Position":"-0.00144258,4.62234e-05,1.05817","Orientation":"0,0,-1"},"lights":["3,3,3"],"render_scene":{"2":{"path":"../graphics_lib/Meshes/cornell_box.obj","World Matrix":"0.104031,0,0,0,0,0.104031,0,0,0,0,0.104031,0,0.0229019,-0.268723,0.374615,1","Caster":false},"1":{"path":"../graphics_lib/Meshes/sphere.obj","World Matrix":"0.11547,0,0,0,0,0.11547,0,0,0,0,0.11547,0,8.83843e-10,-0.170223,-7.76303e-10,1","Caster":true}}}
+{
+	"camera": {
+		"Width": 512,
+		"Height": 512,
+		"VFov": 60.0,
+		"Position": "-0.00144258,0.285693,1.05817",
+		"Orientation": "0,0,-1"
+	},
+	"lights": [
+		"3,3,3"
+	],
+	"render_scene": {
+		"2": {
+			"path": "Meshes/cornell_box.obj",
+			"World Matrix": "0.104031,0,0,0,0,0.104031,0,0,0,0,0.104031,0,0.0229019,0.0169244,0.374615,1",
+			"Caster": false
+		},
+		"1": {
+			"path": "Meshes/sphere.obj",
+			"World Matrix": "0.11547,0,0,0,0,0.11547,0,0,0,0,0.11547,0,8.83843e-10,0.11547,-7.76303e-10,1",
+			"Caster": true
+		}
+	}
+}

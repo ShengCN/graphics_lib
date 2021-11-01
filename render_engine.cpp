@@ -375,6 +375,7 @@ int render_engine::add_mesh(const std::string model_fname, bool norm, vec3 c) {
 
 	if (cur_mesh) {
 		//m_manager.rendering_mappings[cur_mesh] = m_manager.shaders[default_shader_name];
+        m_manager.render_scene->add_mesh(cur_mesh);
 		return cur_mesh->get_id();
 	}
 
@@ -417,6 +418,11 @@ int render_engine::from_json(const std::string json_fname) {
         m_manager = tmp;
     } else {
         ERROR("Scene reading failed.(from {})", json_fname);
+    }
+
+    /* For Debugging */
+    for(auto m:tmp.render_scene->get_meshes()) {
+        INFO("Mesh: {}, caster: {}", m.second->get_id(), m.second->get_caster());
     }
     return ret;
 }
@@ -604,7 +610,6 @@ mesh_id render_engine::add_plane_mesh(vec3 p, vec3 n)  {
     FAIL(!meshptr, "Failed to add a plane mesh");
     meshptr->set_color(vec3(1.0f));
 	m_manager.render_scene->add_mesh(meshptr);
-	//m_manager.rendering_mappings[meshptr] = m_manager.shaders.at(default_shader_name);
 
     return meshptr->get_id();
 }
@@ -874,4 +879,11 @@ void render_engine::set_caster(mesh_id id, bool is_caster) {
     }
 }
 
+void render_engine::dbg_scene() {
+    FAIL(!m_manager.render_scene, "scene has not been set up");
 
+    auto meshes = m_manager.render_scene->get_meshes();
+    for(auto m:meshes) {
+        INFO("ID({}): {}, {}", m.first, m.second->get_id(), m.second->file_path);
+    }
+}

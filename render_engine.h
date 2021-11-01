@@ -107,6 +107,7 @@ public:
 	std::shared_ptr<Image> composite(const Image &bg, const Image &fg);
 	std::shared_ptr<mesh> get_mesh(int id);
     void set_draw_types(draw_type dt);
+    void dbg_scene();
 
 private:
 	bool init_shaders();
