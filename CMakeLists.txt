@@ -7,8 +7,9 @@ find_package(OpenGL REQUIRED)
 find_package(OpenMP REQUIRED)
 
 # ImGui
-add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD=1)
+#add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD=1)
 add_definitions(-DGLM_FORCE_RADIANS)
+add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 #add_compile_definitions(GLM_FORCE_RADIANS=1)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
