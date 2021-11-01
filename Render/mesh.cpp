@@ -338,11 +338,9 @@ std::vector<glm::vec3> AABB::to_line_mesh() {
 
 std::string mesh::to_json() {
     using namespace rapidjson;
-    namespace fs = std::filesystem;
 
     StringBuffer s;
     Writer<StringBuffer> writer(s);
-    fs::path cur_path = fs::current_path();
     fs::path model_path(file_path); 
 
     /* Scene Level */
