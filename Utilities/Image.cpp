@@ -207,6 +207,11 @@ bool Image::save(const std::string fname, bool normalize) {
         Image tmp = this->normalize();
         return tmp.save(fname);
     }
+    std::string folder = purdue::get_file_dir(fname);
+    if (!purdue::file_exists(folder)) {
+        ERROR("Folder({}) is missing", folder);
+    }
+
 
     std::vector<unsigned int> tmp = to_unsigned_data();
 
@@ -293,6 +298,15 @@ Image Image::operator/(float v) {
 #pragma omp parallel for collapse(2)
     for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
         ret.at(i,j) = at(i,j)/v;
+    }
+    return ret;
+}
+
+Image Image::rgb_product(float v) {
+    Image ret(width(), height());
+#pragma omp parallel for collapse(2)
+    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
+        ret.at(i,j) = vec4(vec3(at(i,j) * v), at(i, j).a);
     }
     return ret;
 }

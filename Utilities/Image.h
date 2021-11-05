@@ -56,6 +56,7 @@ public:
     float sum();
     glm::vec3 min();
     glm::vec3 max();
+    Image rgb_product(float v);
 
     Image operator-(const Image &rhs) const;
     Image operator+(const Image &rhs) const;
