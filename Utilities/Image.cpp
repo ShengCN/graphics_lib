@@ -208,10 +208,10 @@ bool Image::save(const std::string fname, bool normalize) {
         return tmp.save(fname);
     }
     std::string folder = purdue::get_file_dir(fname);
-    if (!purdue::file_exists(folder)) {
+    if (!folder.empty() && !purdue::file_exists(folder)) {
         ERROR("Folder({}) is missing", folder);
+        return false;
     }
-
 
     std::vector<unsigned int> tmp = to_unsigned_data();
 
