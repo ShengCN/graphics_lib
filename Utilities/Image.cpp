@@ -223,10 +223,10 @@ bool Image::load(const std::string fname) {
     int c=0;
     std::vector<unsigned char> buf;
     if (purdue::read_image(fname, m_w, m_h, c, buf)) {
-        INFO("Loading " + fname);
-        INFO(fmt::format("W: {}, H: {}, C: {} \n", m_w, m_h, c));
+        //INFO("Loading " + fname);
+        //INFO(fmt::format("W: {}, H: {}, C: {} \n", m_w, m_h, c));
         from_unsigned_data(buf.data(), m_w, m_h);    
-        INFO("Loading Success");
+        //INFO("Loading Success");
         return true;
     }
 
@@ -309,6 +309,13 @@ Image Image::rgb_product(float v) {
         ret.at(i,j) = vec4(vec3(at(i,j) * v), at(i, j).a);
     }
     return ret;
+}
+
+void Image::rgb_add_(const Image &rhs) {
+#pragma omp parallel for collapse(2)
+    for(int i =0; i < m_w; ++i) for (int j = 0; j < m_h; ++j) {
+        at(i,j) = vec4(rhs.get_rgb(i,j), at(i, j).a);
+    }
 }
 
 float Image::sum() {

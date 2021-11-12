@@ -58,6 +58,8 @@ public:
     glm::vec3 max();
     Image rgb_product(float v);
 
+    void rgb_add_(const Image &rhs);
+
     Image operator-(const Image &rhs) const;
     Image operator+(const Image &rhs) const;
     Image operator/(float v);
