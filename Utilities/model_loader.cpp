@@ -88,6 +88,7 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 	}
 	
 	// For each shape
+    int tri_count = 0;
 	for (size_t i = 0; i < shapes.size(); i++) {
 		size_t index_offset = 0;
 
@@ -118,12 +119,12 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 					m->m_uvs.push_back(uv);
 				}
 			}
-
+            tri_count++;
 			index_offset += fnum;
 		}
 	}
 
-	std::cerr << "Success fully loaded file: \n" << file_path << std::endl;
+    INFO("{} load success. {} triangles.", file_path, tri_count);
 	return true;
 }
 

@@ -1,0 +1,1 @@
+{"camera":{"Width":512,"Height":512,"VFov":60.0,"Position":"0,0.11547,0.6","Orientation":"0,0,-1"},"lights":["3,3,3"],"render_scene":{"2":{"path":"","World Matrix":"3.53553,0,0,0,0,3.53553,0,0,0,0,3.53553,0,0,0,0,1","Caster":false},"1":{"path":"Meshes/Chair.obj","World Matrix":"0.0730443,0,0,0,0,0.0730443,0,0,0,0,0.0730443,0,0.0793015,0.0814709,0.0197711,1","Caster":true}}}
