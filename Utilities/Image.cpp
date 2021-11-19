@@ -62,10 +62,8 @@ bool Image::set_a(int i, int j, float v) {
 
 glm::vec4& Image::at(int i, int j) {
     size_t ind = get_ind(i, j, width(), height());
-    if (!(ind < height() * width() && ind >=0)) {
-        throw std::invalid_argument(fmt::format("Index out of range. Ind: {}, ({},{}),h: {}, w: {}", ind, i, j, height(), width()));
-    }
 
+    FAIL(!(ind < height() * width() && ind >=0), "Index out of range. Ind: {}, ({},{}),h: {}, w: {}", ind, i, j, height(), width());
     return m_buffer[ind];
 }
 
