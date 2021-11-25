@@ -548,14 +548,8 @@ bool load_model(const std::string mesh_file, std::shared_ptr<mesh>& m) {
 
 	auto loader = model_loader::create(mesh_file);
 	try {
-		if (loader->load_model(mesh_file, m)) {
-			INFO("Loading file " + mesh_file + " success");
-			return true;
-		}
-		else {
-			throw std::invalid_argument(fmt::format("Loading file {} failed.", mesh_file));
-			return false;
-		}
+        FAIL(!loader->load_model(mesh_file, m), "Loading file {} failed.", mesh_file);
+        return true;
 	}
 	catch (std::exception& e) {
 		WARN(e.what());

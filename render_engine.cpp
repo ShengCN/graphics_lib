@@ -30,6 +30,10 @@ bool render_engine::init_ogl_states() {
     return ret;
 }
 
+void render_engine::clear_scene() {
+    m_manager.render_scene->clean_up();
+}
+
 AABB render_engine::get_mesh_size(mesh_id id) {
     auto meshptr = get_mesh(id);
     FAIL(!meshptr, "cannot find mesh {}", id);
@@ -204,6 +208,7 @@ void render_engine::render(int frame) {
     /* Default Shading */
     prepare_default_shading();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     default_shading();
 
     /* DBG */

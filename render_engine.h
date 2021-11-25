@@ -41,6 +41,7 @@ public:
 	vec3 get_light_pos();
     void set_mesh_verts(mesh_id id, std::vector<glm::vec3> &verts);
     bool reload_mesh(mesh_id id, std::string fname);
+    void clear_scene();
 
 	//------- IO --------//
 	bool save_mesh(mesh_id id, const std::string model_fname);

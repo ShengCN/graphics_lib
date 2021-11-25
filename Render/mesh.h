@@ -104,4 +104,7 @@ public:
 	bool m_is_selected = false;
 	bool m_is_emitter = false;
     bool m_is_caster = true;
+
+private:
+    void init() { cur_id = ++id; };
 };

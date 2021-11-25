@@ -62,7 +62,7 @@ std::string AABB::to_string() {
 }
 
 mesh::mesh(){
-	cur_id = ++id;
+    init();
 }
 
 mesh::~mesh() {
