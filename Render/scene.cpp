@@ -232,19 +232,21 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m, glm::
 	vec3 new_pos, new_at;
 	
 	//vec3 meshes_center = m->compute_world_center();
-	INFO("center: " + pd::to_string(m->compute_center()));
-	INFO("world matrix: \n" + pd::to_string(m->m_world));
 
 	AABB world_aabb = m->compute_world_aabb();
-	vec3 meshes_center = world_aabb.center();
+	vec3 meshes_center = m->compute_world_center();
 	float mesh_length = m->compute_world_aabb().diag_length();
-	if (mesh_length < 0.1f)
-		mesh_length = 5.0f;
+	if (mesh_length < 0.0001f)
+		mesh_length = 1.0f;
 	new_pos = meshes_center + mesh_length * relative_vec;
 	new_at = meshes_center;
 
-	camera->_position = new_pos;
-	camera->_front = glm::normalize(new_at - new_pos);
+    INFO("Mesh center: {}, Camera new Pos: {}, at: {}", 
+            purdue::to_string(meshes_center),
+            purdue::to_string(new_pos),
+            purdue::to_string(new_at));
+
+    camera->PositionAndOrient(new_pos, meshes_center, vec3(0.0f,1.0f,0.0f));
 }
 
 void scene::stand_on_plane(std::shared_ptr<mesh> m) {
@@ -257,6 +259,6 @@ void scene::stand_on_plane(std::shared_ptr<mesh> m) {
 
 	vec3 ground_height = m_meshes[0]->compute_world_center();
 	float offset = ground_height.y - lowest_point.y;
-	m->m_world = glm::translate(vec3(0.0, offset, 0.0)) * m->m_world;
+	m->m_world = glm::translate(glm::mat4(1.0f),vec3(0.0, offset, 0.0)) * m->m_world;
 }
 

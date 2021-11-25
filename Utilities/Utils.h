@@ -45,6 +45,18 @@ namespace purdue {
 		return ret;
 	}
 
+	inline std::vector<std::string> get_files_from_dir(std::string const dir, std::string const ext) {
+		using namespace boost::filesystem;
+		std::vector<std::string> ret;
+        if (fs::exists(dir) && fs::is_directory(dir)) {
+            for (auto const & entry : fs::recursive_directory_iterator(dir)) {
+                if (fs::is_regular_file(entry) && entry.path().extension() == ext)
+                    ret.push_back(entry.path().string());
+            }
+        }
+		return ret;
+	}
+
 	// with ext
 	inline std::string get_file_basename(const std::string file) {
 		fs::path p(file);

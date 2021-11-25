@@ -105,7 +105,7 @@ vec3 mesh::compute_world_center() {
 }
 
 void mesh::add_world_transate(vec3 v) {
-	m_world = glm::translate(v) * m_world;
+	m_world = glm::translate(glm::mat4(1.0f), v) * m_world;
 }
 
 void mesh::add_scale(vec3 s) {
@@ -206,7 +206,7 @@ void mesh::normalize_position_orientation(vec3 scale/*=vec3(1.0f)*/, glm::quat r
 	float diagnoal = compute_world_aabb().diag_length();
 	mat4 norm_transform = glm::toMat4(rot_quant) * 
 		glm::scale(scale/ diagnoal) *
-		glm::translate(-center);
+		glm::translate(glm::mat4(1.0f),-center);
 
 	m_world = norm_transform;
 }

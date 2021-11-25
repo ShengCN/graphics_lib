@@ -208,7 +208,6 @@ void render_engine::render(int frame) {
     /* Default Shading */
     prepare_default_shading();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
     default_shading();
 
     /* DBG */
