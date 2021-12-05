@@ -58,7 +58,3 @@ glfw
 OpenMP::OpenMP_CXX
 )
 
-
-#set_target_properties(graphics_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-# install(TARGETS graphics_lib DESTINATION lib)
-# install(FILES *.h DESTINATION include)
