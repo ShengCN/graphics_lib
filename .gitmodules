@@ -21,3 +21,6 @@
 [submodule "Dep/pybind11"]
 	path = Dep/pybind11
 	url = https://github.com/pybind/pybind11.git
+[submodule "Dep/Catch2"]
+	path = Dep/Catch2
+	url = https://github.com/catchorg/Catch2.git
