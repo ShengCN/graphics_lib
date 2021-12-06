@@ -50,7 +50,11 @@ target_include_directories(graphics_lib SYSTEM PUBLIC
 ${PROJECT_SOURCE_DIR}/Dep/glm
 )
 
-add_definitions(-DGLM_FORCE_RADIANS)
+set_target_properties(graphics_lib 
+PROPERTIES 
+    POSITION_INDEPENDENT_CODE ON
+)
+
 target_link_libraries(graphics_lib PUBLIC 
 ${Boost_LIBRARIES}
 ${OPENGL_gl_LIBRARY}
