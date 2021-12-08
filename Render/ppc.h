@@ -162,7 +162,17 @@ public:
         return 0.5f * _height/ std::tan(rad);
     }
 
-	std::string to_string();
+    CUDA_HOSTDEV
+	std::string to_string() {
+        std::ostringstream oss;
+        oss << "w: " << _width << " h: " << _height<< std::endl;
+        oss << "look: " << purdue::to_string(_position) << std::endl;
+        oss << "at: " << purdue::to_string(_position + _front) << std::endl;
+        oss << "up: " << purdue::to_string(GetUp()) << std::endl;
+        oss << "fov: " << std::to_string(_fov) << std::endl;
+
+        return oss.str();
+    }
 
     virtual std::string to_json() override;  
     virtual int from_json(const std::string json_str)override;

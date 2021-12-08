@@ -212,17 +212,6 @@ void ppc::camera_resize(int w, int h) {
 	_height = h;
 }
 
-std::string ppc::to_string() {
-	std::ostringstream oss;
-	oss << "w: " << _width << " h: " << _height<< std::endl;
-	oss << "look: " << purdue::to_string(_position) << std::endl;
-	oss << "at: " << purdue::to_string(_position + _front) << std::endl;
-	oss << "up: " << purdue::to_string(GetUp()) << std::endl;
-	oss << "fov: " << std::to_string(_fov) << std::endl;
-
-	return oss.str();
-}
-
 std::string ppc::to_json() {
     using namespace rapidjson;
     StringBuffer s;

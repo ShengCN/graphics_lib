@@ -81,7 +81,7 @@ bool Image::ind_check(int i, int j) {
 }
 
 void Image::init_buffer() {
-    m_buffer.resize(m_h * m_w, glm::vec4(0.0f,0.0f,0.0f,1.0f));
+    m_buffer.resize(m_h * m_w, glm::vec4(0.0f,0.0f,0.0f,0.0f));
 }
 
 void Image::padding(int i, int j, int w, int h, int &outi, int &outj) const {
