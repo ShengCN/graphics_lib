@@ -61,7 +61,7 @@ int scene::from_json(const std::string json_str) {
     bool ret = true;
 
     for (auto &member:document.GetObject()) {
-        INFO("Find mesh {}", member.name.GetString());
+        //INFO("Find mesh {}", member.name.GetString());
         mesh_id id = std::stoi(member.name.GetString()); 
         if (mesh::id < id - 1) {
             mesh::id = id - 1;
@@ -99,7 +99,7 @@ int scene::from_json(const std::string json_str) {
         }
 
         for(auto m:m_meshes) {
-            INFO("Current meshes: {}, {}", m.first, m.second->get_id());
+            DBG("Current meshes: {}, {}", m.first, m.second->get_id());
         }
     }
 

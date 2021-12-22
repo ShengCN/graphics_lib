@@ -191,7 +191,6 @@ bool render_engine::remove_visualize_line(mesh_id id) {
 	return m_manager.render_scene->remove_mesh(id);	
 }
 
-GLuint dbg_tex, dbg_tex2;
 void render_engine::render(int frame) {	
     /* Default Rendering Settings */
     if (!m_manager.check_assets()) {
@@ -209,10 +208,6 @@ void render_engine::render(int frame) {
     prepare_default_shading();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     default_shading();
-
-    /* DBG */
-    dbg_tex = m_fbo->get_rgba_texture();
-    dbg_tex2 = m_fbo->get_depth_texture();
 }
 
 void render_engine::rt_render(int frame) {
@@ -417,17 +412,13 @@ int render_engine::to_json(const std::string json_fname) {
 int render_engine::from_json(const std::string json_fname) {
     asset_manager tmp;
     int ret = tmp.from_json(json_fname);
-    if (ret) {
-        INFO("Scene reading from {}", json_fname);
-        m_manager = tmp;
-    } else {
-        ERROR("Scene reading failed.(from {})", json_fname);
-    }
+    FAIL(!ret, "Scene reading failed.(from {})", json_fname);
+    m_manager = tmp; 
 
     /* For Debugging */
-    for(auto m:tmp.render_scene->get_meshes()) {
-        INFO("Mesh: {}, caster: {}", m.second->get_id(), m.second->get_caster());
-    }
+    //for(auto m:tmp.render_scene->get_meshes()) {
+        //INFO("Mesh: {}, caster: {}", m.second->get_id(), m.second->get_caster());
+    //}
     return ret;
 }
 

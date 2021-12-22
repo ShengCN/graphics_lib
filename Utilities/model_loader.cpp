@@ -72,7 +72,7 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 								base_path.c_str(),
 								triangulate);
 	t.toc();
-	t.print_elapsed();
+	//t.print_elapsed();
 
 	if (!warn.empty()) {
 		std::cout << "WARN: " << warn << std::endl;
@@ -124,7 +124,7 @@ bool obj_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 		}
 	}
 
-    INFO("{} load success. {} triangles.", file_path, tri_count);
+    DBG("{} load success. {} triangles.", file_path, tri_count);
 	return true;
 }
 
@@ -333,11 +333,11 @@ bool stl_loader::load_model(std::string file, std::shared_ptr<mesh>& m) {
 		char nTri[4];
 		unsigned int nTriLong;
 		if (mfile) {
-			INFO("Successfully open file: " + file);
+			DBG("Successfully open file: " + file);
 
 			// read 80 byte header
 			if (!mfile.read(header_info, 80)) {
-				INFO("Cannot read header info\n");
+				ERROR("Cannot read header info\n");
 			}
 				
 
@@ -347,7 +347,7 @@ bool stl_loader::load_model(std::string file, std::shared_ptr<mesh>& m) {
 				std::cout << "Triangle numbers: " << static_cast<int>(nTriLong) << std::endl;
 			}
 			else
-				INFO("Cannot read number of triangles");
+				ERROR("Cannot read number of triangles");
 
 			// Read all triangles
 			for (int trii = 0; trii < static_cast<int>(nTriLong); ++trii) {
@@ -379,18 +379,18 @@ bool stl_loader::load_model(std::string file, std::shared_ptr<mesh>& m) {
 				}
 				else {
 					success = false;
-					INFO("Read triangle error");
+					ERROR("Read triangle error");
 				}
 			}
 		}
 		else {
 			success = false;
-			INFO("Cannot open file: "+file);
+			ERROR("Cannot open file: "+file);
 		}
 	}
 	else {
 		success = false;
-		INFO("It's not a stl file!");
+		ERROR("It's not a stl file!");
 	}
 
 	return true;
@@ -424,15 +424,15 @@ bool stl_loader::save_model(std::string file, std::shared_ptr<mesh>& m) {
 			}
 
 			success = true;
-			INFO("File " + file+ " saved.");
+			DBG("File " + file+ " saved.");
 		}
 		else {
-			INFO("File " + file+ " cannot be saved!");
+			ERROR("File " + file+ " cannot be saved!");
 		}
 	}
 	else {
 		success = false;
-		INFO("It's not a stl file!");
+		ERROR("It's not a stl file!");
 	}
 
 	return success;
@@ -505,7 +505,7 @@ bool off_loader::load_model(std::string file_path, std::shared_ptr<mesh>& m) {
 	}
 
 	m->recompute_normal();
-	INFO(file_path + " loading success");
+	DBG(file_path + " loading success");
 	return true;
 }
 

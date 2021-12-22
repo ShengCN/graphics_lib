@@ -5,6 +5,10 @@
 #define FMT_HEADER_ONLY
 #include <fmt/core.h>
 
+#ifndef VERBOSE
+#define VERBOSE 0 
+#endif
+
 class logger {
 public:
 	~logger() {};
@@ -17,10 +21,18 @@ public:
 	}
 
 	template<typename T, typename TT, typename TTT>
+	void dbg(const std::string s, T file, TT line, TTT func) {
+		std::string log_str = fmt::format("[DBG] {:50} \t [{}-{}-{}]\n", s, func, line, file);
+		m_log_str += log_str;
+        if (VERBOSE)
+            std::cout << log_str;
+	}
+
+	template<typename T, typename TT, typename TTT>
 	void info(const std::string s, T file, TT line, TTT func) {
 		std::string log_str = fmt::format("[INFO] {:50} \t [{}-{}-{}]\n", s, func, line, file);
 		m_log_str += log_str;
-		std::cout << log_str;
+        std::cout << log_str;
 	}
 
 	template<typename T, typename TT, typename TTT>
@@ -43,6 +55,10 @@ private:
 	std::string m_log_str;
 	static logger *m_instance;
 };
+
+#ifndef DBG 
+#define DBG(fmt_str, ...) logger::instance()->dbg(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)
+#endif // !INFO
 
 #ifndef INFO
 #define INFO(fmt_str, ...) logger::instance()->info(fmt::format(fmt_str, ##__VA_ARGS__), __FILE__, __LINE__, __FUNCTION__)

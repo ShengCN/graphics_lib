@@ -200,6 +200,17 @@ Image Image::normalize() {
     return norm_minmax();
 }
 
+Image Image::inverse() {
+    Image ret(width(), height());
+#pragma omp parallel for collapse(2)
+    for(int i = 0; i < m_w; ++i) for(int j = 0; j < m_h; ++j) {
+        vec4 c = get(i,j);
+        ret.at(i,j) = 1.0f/at(i, j);
+        ret.at(i,j).a = c.a;
+    }
+    return ret;
+}
+
 bool Image::save(const std::string fname, bool normalize) {
     if (normalize) {
         Image tmp = this->normalize();
@@ -439,7 +450,7 @@ Image Image::resize(int size) const {
 }
 
 void Image::copy_buffer(int w, int h, std::vector<glm::vec4> &buffer) {
-    FAIL(w * h !=buffer.size(), "Copy Buffer size not match.");
+    FAIL(w * h !=buffer.size(), "Copy Buffer size not match. {} != {}", w * h, buffer.size());
 
     m_w = w;
     m_h = h;

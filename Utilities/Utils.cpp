@@ -4,7 +4,7 @@
 #include "Dep/stb/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "Dep/stb/stb_image_write.h"
-
+#include "Logger.h"
 
 namespace purdue
 {
@@ -40,6 +40,7 @@ namespace purdue
         }
 
         auto elapsed = get_elapse();
-        std::cout << fmt::format("{:30} [Time: {}s]\n", log, elapsed * 1e-9);
+        //std::cout << fmt::format("{:30} [Time: {}s]\n", log, elapsed * 1e-9);
+        INFO("{:30} [Time: {}s]\n", log, elapsed * 1e-9);
     }
 }

@@ -25,6 +25,7 @@ public:
 
     /* Processing */
     Image normalize();
+    Image inverse();
 
     /* IO */
     bool save(const std::string fname, bool normalize=false);

@@ -46,9 +46,7 @@ int asset_manager::from_json(const std::string json_fname) {
         WARN("{} is not exists or able to open!", json_fname);
         iss.close();
         return -1;
-    } else {
-        INFO("Loading {} succeed", json_fname);
-    }
+    } 
 
     std::stringstream buffer;
     buffer << iss.rdbuf();
