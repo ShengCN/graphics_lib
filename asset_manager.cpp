@@ -45,6 +45,7 @@ int asset_manager::from_json(const std::string json_fname) {
     if (!purdue::file_exists(json_fname) || !iss.is_open()) {
         WARN("{} is not exists or able to open!", json_fname);
         iss.close();
+        exit(1);
         return -1;
     } 
 

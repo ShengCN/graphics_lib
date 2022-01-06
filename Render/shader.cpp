@@ -92,7 +92,7 @@ bool shader::reload_shader() {
 	return true;
 }
 
-void shader::draw_mesh(const Mesh_Descriptor &descriptor,rendering_params& params){
+void shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params){
 	if (descriptor.m == nullptr) {
 		WARN("Shader input mesh is nullptr");
 		return;
