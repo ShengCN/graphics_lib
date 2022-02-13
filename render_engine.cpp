@@ -148,10 +148,13 @@ void render_engine::stand_on_plane(int mesh_id, vec3 p, vec3 n) {
 	auto mesh_ptr = get_mesh(mesh_id);
 	if(mesh_ptr == nullptr) return;
 
+    float eps = 1e-5f;
+
 	AABB world_aabb = mesh_ptr->compute_world_aabb();
 	vec3 normalized_n = glm::normalize(n);
 	glm::vec3 trans_vec = -glm::dot(world_aabb.p0 - p, normalized_n) * normalized_n;
-	
+
+	trans_vec += normalized_n * eps;
 	mesh_ptr->add_world_transate(trans_vec); 
 }
 
