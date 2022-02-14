@@ -422,7 +422,29 @@ int render_engine::from_json(const std::string json_fname) {
     //for(auto m:tmp.render_scene->get_meshes()) {
         //INFO("Mesh: {}, caster: {}", m.second->get_id(), m.second->get_caster());
     //}
+    //
+
+    /* Scaling the space */
+    glm::vec3 scaling_factor = vec3(1.0f);
+
+    for(auto m:tmp.render_scene->get_meshes()) {
+        if (m.second->get_caster()) {
+            auto aabb = m.second->compute_world_aabb();
+            scaling_factor = vec3(1.0f/aabb.diag_length());
+        }
+    }
+
+    scaling_space(scaling_factor);
+
     return ret;
+}
+
+void render_engine::scaling_space(glm::vec3 s) {
+    /* Scaling All Meshes */
+    m_manager.render_scene->scale(s);
+
+    /* Scaling the camera as well */
+    m_manager.cur_camera->scale(s);
 }
 
 bool render_engine::reload_shaders() {

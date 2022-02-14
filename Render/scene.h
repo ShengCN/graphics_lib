@@ -30,6 +30,7 @@ public:
 	void reset_camera(std::shared_ptr<ppc> camera);
 	void focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m, glm::vec3 relative_vec);
 	void stand_on_plane(std::shared_ptr<mesh> m);
+	void scale(glm::vec3 s);
 
 protected:
 	std::unordered_map<mesh_id, std::shared_ptr<mesh>> m_meshes;

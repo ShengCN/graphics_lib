@@ -157,6 +157,14 @@ vec3 scene::scene_center() {
 	return center;
 }
 
+
+void scene::scale(glm::vec3 s) {
+    for(auto m:m_meshes) {
+        m.second->add_scale(s);
+    }
+}
+
+
 std::shared_ptr<mesh> scene::get_mesh(mesh_id id) {
     if (m_meshes.find(id) == m_meshes.end()) {
         for(auto mptr:m_meshes) {

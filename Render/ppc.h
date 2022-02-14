@@ -119,6 +119,7 @@ public:
     void set_size(int w, int h) {_width = w; _height = h;}
 	float GetFocal();
     void set_event_listen(bool islisten) {m_listen = islisten;}
+    void scale(glm::vec3 s) {_position = _position * s;}
 
    	CUDA_HOSTDEV
 	vec3 project(vec3 p) {
