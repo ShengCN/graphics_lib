@@ -17,11 +17,11 @@ public:
 	std::shared_ptr<scene> render_scene;
 	std::shared_ptr<scene> visualize_scene;
 
-	std::vector<glm::vec3> lights;
 	static std::unordered_map<std::string, std::shared_ptr<shader>> shaders;
-	std::shared_ptr<ppc> cur_camera;
-	std::shared_ptr<ppc> light_camera;
-	float shadow_ppc_fov;
+
+	std::vector<glm::vec3> lights;
+	std::shared_ptr<ppc>   cur_camera;
+	std::shared_ptr<ppc>   light_camera;
 
 	// std::unordered_map<std::shared_ptr<mesh>, std::shared_ptr<shader>> rendering_mappings; // mesh_id -> shader
 private:

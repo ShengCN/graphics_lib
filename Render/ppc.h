@@ -54,17 +54,11 @@ public:
 	void set_fov(float f) { _fov = f;}
     
 	CUDA_HOSTDEV
-    void caliberate_same(float d1, glm::vec3 center) {
-        /* Given d1, calibrate fov to keep current distance the same as d1 
-         * a/f * d = c 
-         * 
-         * */
-        float cur_dis = glm::distance(center, _position);
-        float focal = get_focal();
-        float new_focal = focal / cur_dis * d1;
+    void keep_consistent(float old_rel_dis, float new_rel_dis) {
+        float old_focal = get_focal();
+        float new_focal = old_focal * new_rel_dis/old_rel_dis;
 
-        /* focal -> fov*/
-        set_fov(2.0f * purdue::rad2deg(atan2(height()*0.5f, new_focal)));
+        set_focal(new_focal);
     }
 
 	CUDA_HOSTDEV
@@ -157,10 +151,15 @@ public:
 		return ret;
     }
 
-   CUDA_HOSTDEV
+    CUDA_HOSTDEV
     float get_focal() const {
         float rad = 0.5f * _fov /180.0 * 3.1415926;
         return 0.5f * _height/ std::tan(rad);
+    }
+
+    CUDA_HOSTDEV
+    void set_focal(float focal) {
+        _fov = pd::rad2deg(std::atan2(0.5f * _height, focal)) * 2.0f;
     }
 
     CUDA_HOSTDEV

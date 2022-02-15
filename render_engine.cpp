@@ -159,11 +159,15 @@ void render_engine::stand_on_plane(int mesh_id, vec3 p, vec3 n) {
 }
 
 void render_engine::set_point_light(glm::vec3 lp) {
-	if (m_manager.lights.empty()) {
-		m_manager.lights.push_back(lp);
-	} else {
-		m_manager.lights[0] = lp;
-	}
+    if (m_manager.lights.empty()) {
+        m_manager.lights.push_back(lp);
+    } else {
+        float oldz = glm::length(m_manager.lights[0]);
+        float newz = glm::length(lp);
+
+        m_manager.lights[0] = lp;
+        m_manager.light_camera->keep_consistent(oldz, newz);
+    }
 }
 
 glm::vec3 render_engine::get_light_pos() {
