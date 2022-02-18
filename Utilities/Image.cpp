@@ -196,8 +196,8 @@ void Image::from_unsigned_data(unsigned int *data, int w, int h) {
     }
 }
 
-Image Image::normalize() {
-    return norm_minmax();
+Image Image::normalize(bool alpha) {
+    return norm_minmax(alpha);
 }
 
 Image Image::inverse() {
@@ -213,9 +213,28 @@ Image Image::inverse() {
 
 bool Image::save(const std::string fname, bool normalize) {
     if (normalize) {
-        Image tmp = this->normalize();
+        Image tmp = this->normalize(normalize);
         return tmp.save(fname);
     }
+
+    std::string folder = purdue::get_file_dir(fname);
+    if (!folder.empty() && !purdue::file_exists(folder)) {
+        ERROR("Folder({}) is missing", folder);
+        return false;
+    }
+
+    std::vector<unsigned int> tmp = to_unsigned_data();
+
+    /* Note, only save to png currently */
+    return purdue::save_image(fname.c_str(), tmp.data(), m_w, m_h);
+}
+
+bool Image::save(const std::string fname, bool normalize, bool alpha) {
+    if (normalize) {
+        Image tmp = this->normalize(alpha);
+        return tmp.save(fname);
+    }
+
     std::string folder = purdue::get_file_dir(fname);
     if (!folder.empty() && !purdue::file_exists(folder)) {
         ERROR("Folder({}) is missing", folder);
@@ -369,18 +388,25 @@ vec3 Image::max() {
     return ret;
 }
 
-Image Image::norm_minmax() {
+Image Image::norm_minmax(bool alpha) {
     Image ret(width(), height());
+
     vec3 min_v(FLT_MAX, FLT_MAX, FLT_MAX), max_v(-FLT_MAX, -FLT_MAX, -FLT_MAX);
     for(int i = 0; i < m_w; ++i) for(int j = 0; j < m_h; ++j) {
         vec3 p = vec3(at(i,j));
-        min_v.x = std::min(min_v.x, p.x);
-        min_v.y = std::min(min_v.y, p.y);
-        min_v.z = std::min(min_v.z, p.z);
+        float a = 1.0;
 
-        max_v.x = std::max(max_v.x, p.x);
-        max_v.y = std::max(max_v.y, p.y);
-        max_v.z = std::max(max_v.z, p.z);
+        if (alpha) {
+            a = at(i,j).a;
+        }
+
+        min_v.x = std::min(min_v.x, p.x * a);
+        min_v.y = std::min(min_v.y, p.y * a);
+        min_v.z = std::min(min_v.z, p.z * a);
+
+        max_v.x = std::max(max_v.x, p.x * a);
+        max_v.y = std::max(max_v.y, p.y * a);
+        max_v.z = std::max(max_v.z, p.z * a);
     }
      
     float min_ = 0.0f,max_ = 0.0f;

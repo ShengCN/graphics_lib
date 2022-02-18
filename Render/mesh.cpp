@@ -111,7 +111,7 @@ void mesh::add_world_transate(vec3 v) {
 void mesh::add_scale(vec3 s) {
 	vec3 center = compute_center();
 	mat4 scale_mat = glm::scale(s);
-	m_world = m_world * scale_mat;
+	m_world = scale_mat * m_world;
 }
 
 void mesh::add_rotate(pd::deg angle, vec3 axis) {

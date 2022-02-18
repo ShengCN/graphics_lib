@@ -122,12 +122,15 @@ public:
          * */
 		vec3 a = glm::normalize(GetRight());
 		vec3 b = -glm::normalize(GetUp());
-		vec3 c = glm::normalize(GetViewVec()) * get_focal() - 0.5f * (float)_width * GetRight() + 0.5f * (float)_height * GetUp();
+		vec3 c = glm::normalize(GetViewVec()) * get_focal() -
+                 0.5f * (float)_width * GetRight() +
+                 0.5f * (float)_height * GetUp();
 		mat3 m(a,b,c);
 		vec3 pp = glm::inverse(m) * (p-_position);
 
         vec2 pix(pp.x/pp.z, _height-pp.y/pp.z);
         vec3 rd = m * vec3(pix, 1.0f);
+
 		return vec3(pix, pp.z * sqrtf(glm::dot(rd, rd)));
 	}
 

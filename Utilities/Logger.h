@@ -6,7 +6,7 @@
 #include <fmt/core.h>
 
 #ifndef VERBOSE
-#define VERBOSE 0
+#define VERBOSE 1
 #endif
 
 class logger {

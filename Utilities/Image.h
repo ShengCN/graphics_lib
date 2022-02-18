@@ -24,11 +24,12 @@ public:
     void clear(glm::vec4 c=glm::vec4(1.0f));
 
     /* Processing */
-    Image normalize();
+    Image normalize(bool alpha);
     Image inverse();
 
     /* IO */
     bool save(const std::string fname, bool normalize=false);
+    bool save(const std::string fname, bool normalize, bool alpha);
     bool load(const std::string fname);
 
     /* Low level IO */
@@ -73,5 +74,5 @@ private:
     void init(int w, int h);
     bool ind_check(int i, int j);
     void init_buffer();
-    Image norm_minmax();
+    Image norm_minmax(bool alpha);
 };
