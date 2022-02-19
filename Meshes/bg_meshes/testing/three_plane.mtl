@@ -1,7 +1,7 @@
-# Blender MTL File: 'droids.blend'
+# Blender MTL File: 'None'
 # Material Count: 3
 
-newmtl BloodyRed
+newmtl BloodyRed.005
 Ns 96.078443
 Ka 1.000000 1.000000 1.000000
 Kd 0.445000 0.000000 0.000000
@@ -11,7 +11,7 @@ Ni 1.000000
 d 1.000000
 illum 2
 
-newmtl DarkGreen
+newmtl DarkGreen.005
 Ns 96.078443
 Ka 1.000000 1.000000 1.000000
 Kd 0.000000 0.320000 0.000000
@@ -21,7 +21,7 @@ Ni 1.000000
 d 1.000000
 illum 2
 
-newmtl Khaki
+newmtl Khaki.005
 Ns 96.078443
 Ka 1.000000 1.000000 1.000000
 Kd 0.800000 0.659341 0.439560

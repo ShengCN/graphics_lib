@@ -1,7 +1,7 @@
-# Blender MTL File: 'Emilia LG1.blend'
+# Blender MTL File: 'None'
 # Material Count: 4
 
-newmtl Metal
+newmtl Metal.016
 Ns 575.999996
 Ka 1.000000 1.000000 1.000000
 Kd 0.617207 0.407240 0.300544
@@ -10,11 +10,10 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 3
-map_Kd /home/ysheng/Downloads/Emilia_LG1_blend/textures/Metal base.jpg
-map_Ks /home/ysheng/Downloads/Emilia_LG1_blend/textures/Metal Metalnes.jpg
-refl /home/ysheng/Downloads/Emilia_LG1_blend/textures/Metal Metalnes.jpg
+map_Kd Metalnes.jpg
+map_Ks Metalnes.jpg
 
-newmtl Plafon
+newmtl Plafon.016
 Ns 225.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.473531 0.381326 0.502886
@@ -24,7 +23,7 @@ Ni 1.000000
 d 1.000000
 illum 2
 
-newmtl Plafon_lenta
+newmtl Plafon_lenta.016
 Ns 225.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.752942 0.630757 0.584078
@@ -33,10 +32,10 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.300000
 d 1.000000
 illum 2
-map_Kd /home/ysheng/Downloads/Emilia_LG1_blend/textures/Plafon lenta base.jpg
-map_Ks /home/ysheng/Downloads/Emilia_LG1_blend/textures/Plafon lenta r.jpg
+map_Kd base.jpg
+map_Ks r.jpg
 
-newmtl emission
+newmtl emission.016
 Ns 225.000000
 Ka 1.000000 1.000000 1.000000
 Kd 0.800000 0.586796 0.323496
