@@ -478,6 +478,7 @@ void render_engine::camera_scroll(int offset) {
 
 void render_engine::camera_keyboard(char m, bool shift) {
 	float speed = 1.0f * 0.1f;
+
 	if(shift) 
 		speed *= 10.0f;
 	
