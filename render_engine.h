@@ -68,6 +68,7 @@ public:
 	glm::mat4 get_mesh_world(mesh_id m);
 	void set_render_camera(int w, int h);
 	void set_render_camera(int w, int h, float fov);
+    void set_render_camera_fov(float fov);
 	void set_shader(mesh_id m, const std::string shader_name);
 	void recompute_normal(int mesh_id);
     void update_time(double t);

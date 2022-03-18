@@ -9,7 +9,7 @@ void render_engine::init() {
 	FAIL(!init_shaders(), "Shader init failed");
     FAIL(!init_ogl_states(),"OGL states init failed");
 
-    auto camera = m_manager.cur_camera; 
+    // auto camera = m_manager.cur_camera;
     //m_rt_renderer = std::make_shared<dynamic_renderer>(camera->width(), camera->height());
 }
 
@@ -590,7 +590,15 @@ void render_engine::set_render_camera(int w, int h, float fov) {
 	m_manager.cur_camera->_width = w;
 	m_manager.cur_camera->_height = h;
 	m_manager.cur_camera->_fov = fov;
-	glViewport(0, 0, m_manager.cur_camera->_width, m_manager.cur_camera->_height);
+}
+
+void render_engine::set_render_camera_fov(float fov) {
+	if (m_manager.cur_camera == nullptr) {
+		m_manager.cur_camera = std::make_shared<ppc>(512, 512, fov);
+		return;
+	}
+
+	m_manager.cur_camera->_fov = fov;
 }
 
 void render_engine::set_shader(mesh_id id, const std::string shader_name) {
@@ -808,6 +816,7 @@ void render_engine::prepare_default_shading() {
     auto camera = m_manager.cur_camera;
     int w = camera->width();
     int h = camera->height();
+
     glViewport(0, 0, w, h);
     glDrawBuffer(GL_BACK);
 }
