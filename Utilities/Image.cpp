@@ -476,9 +476,16 @@ Image Image::resize(int size) const {
 }
 
 void Image::copy_buffer(int w, int h, std::vector<glm::vec4> &buffer) {
-    FAIL(w * h !=buffer.size(), "Copy Buffer size not match. {} != {}", w * h, buffer.size());
+    FAIL(w * h != buffer.size(), "Copy Buffer size not match. {} != {}", w * h, buffer.size());
 
     m_w = w;
     m_h = h;
-    m_buffer = buffer;
+    m_buffer.clear();
+    m_buffer.resize(m_w * m_h);
+
+    // m_buffer = buffer;
+#pragma omp parallel for collapse(2)
+    for(int i = 0; i < m_w; ++i) for(int j = 0; j < m_h; ++j) {
+            at(i, j) = buffer[get_ind(i, j, w, h)];
+        }
 }
