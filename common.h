@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <random>
 #include <tuple>
+#include <set>
 
 #include <glm/common.hpp>
 #include <glm/vec2.hpp>

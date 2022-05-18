@@ -28,6 +28,7 @@ public:
     std::shared_ptr<ppc> get_light_ppc();
     AABB get_mesh_size(mesh_id id); 
     void get_casters(std::vector<glm::vec3> &verts, AABB &aabb);
+    void get_caster_local(std::vector<glm::vec3> &verts);
     void get_receiver(std::vector<glm::vec3> &verts, AABB &aabb);
     glm::vec3 get_mesh_center(mesh_id id);
     AABB get_mesh_aabb(mesh_id id);
@@ -49,6 +50,8 @@ public:
     bool save_framebuffer(const std::string ofname);
     int to_json(const std::string json_fname);
     int from_json(const std::string json_fname);
+
+    static bool save_obj(const std::vector<glm::vec3> &verts, const std::string ofile);
 
     //------- UI --------//
     void camera_press(int x, int y);
