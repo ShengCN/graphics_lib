@@ -1,5 +1,6 @@
 #pragma once
 #include <common.h>
+#include <cfloat>
 
 using glm::ivec2;
 using glm::vec2;
@@ -15,7 +16,7 @@ namespace pd = purdue;
 **/
 struct AABB
 {
-    vec3 p0, p1;
+    vec3 p0=vec3(FLT_MAX), p1=vec3(-FLT_MAX);
 	AABB()=default;
 	AABB(vec3 p) :p0(p), p1(p) {}
 	AABB(vec3 sm, vec3 lg) :p0(sm), p1(lg) {} // small, large
