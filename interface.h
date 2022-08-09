@@ -10,8 +10,3 @@ public:
     virtual int from_json(const std::string json_str)=0;  
 };
 
-//TODO
-class IGUI {
-public:
-    virtual void draw_gui()=0;
-};

@@ -1,6 +1,8 @@
-#include <memory>
-#include <glm/ext/matrix_float4x4.hpp>
 #include "otb_window.h"
+#include <memory>
+
+#include <glm/ext/matrix_float4x4.hpp>
+#include "GLFW/glfw3.h"
 #include <imgui/imgui.h>
 #include <imgui/examples/imgui_impl_glfw.h>
 #include <imgui/examples/imgui_impl_opengl3.h>
@@ -85,12 +87,14 @@ int otb_window::create_window(int w, int h, const std::string title) {
 	if (!glfwInit())
 		return -1;
 
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 	glfwWindowHint(GLFW_DEPTH_BITS, 32);
 	glfwWindowHint(GLFW_SAMPLES, 16);
+	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
 	/* Create a windowed mode window and its OpenGL context */
 	_window = glfwCreateWindow(w, h, title.c_str(), NULL, NULL);
@@ -217,8 +221,10 @@ void otb_window::draw_gui() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
+
 	//// ------------------------ Window ------------------------ //
 	ImGui::Begin("PC control");
+	ImGui::SetWindowFontScale(2.0); // use 1.0 if not using HDI
 	ImGui::SliderFloat("fov", &m_engine.get_render_ppc()->_fov, 5.0f, 120.0f);
 
 	if(ImGui::Button("reload shader")) {
