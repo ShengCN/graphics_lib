@@ -60,46 +60,57 @@ int scene::from_json(const std::string json_str) {
     clean_up();
     bool ret = true;
 
-    for (auto &member:document.GetObject()) {
-        //INFO("Find mesh {}", member.name.GetString());
-        mesh_id id = std::stoi(member.name.GetString()); 
-        if (mesh::id < id - 1) {
-            mesh::id = id - 1;
+    const std::string mesh_key = "meshes";
+    if (document.HasMember("meshes")) {
+        auto cur_node = document[mesh_key.c_str()].GetObject();
+        for (auto &member:cur_node) {
+            //INFO("Find mesh {}", member.name.GetString());
+            mesh_id id = std::stoi(member.name.GetString());
+            if (mesh::id < id - 1) {
+                mesh::id = id - 1;
+            }
+
+            auto mesh_obj = member.value.GetObject();
+
+            std::string mesh_path;
+            mat4 world_mat;
+            bool caster;
+
+            ret = ret & rapidjson_get_string(mesh_obj, "path", mesh_path);
+            ret = ret & rapidjson_get_mat4(mesh_obj, "World Matrix", world_mat);
+            ret = ret & rapidjson_get_bool(mesh_obj, "Caster", caster);
+
+            /* Initialize the mesh */
+            std::shared_ptr<mesh> mesh_ptr;
+            if (purdue::file_exists(mesh_path)) {
+                mesh_ptr = add_mesh(mesh_path, vec3(0.7f));
+            } else {
+                WARN("Cannot find the mesh file({}). Use plane instead", mesh_path);
+                mesh_ptr = get_plane_mesh(vec3(0.f), vec3(0.0f,1.0f,0.0f));
+                mesh_ptr->set_caster(false);
+                m_meshes[mesh_ptr->get_id()] = mesh_ptr;
+            }
+
+            mesh_ptr->set_world_mat(world_mat);
+            mesh_ptr->set_caster(caster);
+
+            /* Keep m_meshes key - id consistent */
+            if (mesh_ptr->get_id() != id) {
+                m_meshes.erase(mesh_ptr->get_id());
+                mesh_ptr->cur_id = id;
+                m_meshes[mesh_ptr->cur_id] = mesh_ptr;
+            }
+
+            for(auto m:m_meshes) {
+                DBG("Current meshes: {}, {}", m.first, m.second->get_id());
+            }
         }
 
-        auto mesh_obj = member.value.GetObject();
-
-        std::string mesh_path;
-        mat4 world_mat;
-        bool caster;
-
-        ret = ret & rapidjson_get_string(mesh_obj, "path", mesh_path);
-        ret = ret & rapidjson_get_mat4(mesh_obj, "World Matrix", world_mat);
-        ret = ret & rapidjson_get_bool(mesh_obj, "Caster", caster);
-
-        /* Initialize the mesh */
-        std::shared_ptr<mesh> mesh_ptr;
-        if (purdue::file_exists(mesh_path)) {
-            mesh_ptr = add_mesh(mesh_path, vec3(0.7f));
-        } else {
-            WARN("Cannot find the mesh file({}). Use plane instead", mesh_path);
-            mesh_ptr = get_plane_mesh(vec3(0.f), vec3(0.0f,1.0f,0.0f));
-            mesh_ptr->set_caster(false);
-            m_meshes[mesh_ptr->get_id()] = mesh_ptr;
-        }
-
-        mesh_ptr->set_world_mat(world_mat);
-        mesh_ptr->set_caster(caster);
-
-        /* Keep m_meshes key - id consistent */
-        if (mesh_ptr->get_id() != id) {
-            m_meshes.erase(mesh_ptr->get_id());
-            mesh_ptr->cur_id = id;
-            m_meshes[mesh_ptr->cur_id] = mesh_ptr;
-        }
-
-        for(auto m:m_meshes) {
-            DBG("Current meshes: {}, {}", m.first, m.second->get_id());
+        if (document.HasMember("lights")) {
+            auto light_array  = document["lights"].GetArray();
+            for (auto &l:light_array) {
+                m_lights.push_back(pd::string_vec3(l.GetString()));
+            }
         }
     }
 
@@ -110,6 +121,10 @@ std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {
     std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
 
     FAIL(new_mesh == nullptr || !load_model(mesh_file, new_mesh), "Mesh {} cannot be loaded.", mesh_file);
+
+    if (new_mesh->m_verts.size() != new_mesh->m_norms.size()) {
+        new_mesh->recompute_normal();
+    }
 
     new_mesh->set_color(color);
     int id = new_mesh->get_id();
