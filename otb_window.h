@@ -31,9 +31,8 @@ public:
 
 	// public functions
 public:
-	int create_window(int w, int h, const std::string title);
+	int create_window();
 	
-	void init_scene();
 	void show();		// one thread one window
 	void save_framebuffer(const std::string output_file);
 	int width();
@@ -50,8 +49,9 @@ private:
 	void render_shadow();
 	void render_mask();
 	void dbg();
+
 private:
-	static render_engine m_engine;
+	std::shared_ptr<render_engine> m_engine;
 	float m_distance = 2.0f;
 };
 

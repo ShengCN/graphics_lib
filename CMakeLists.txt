@@ -17,6 +17,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glm)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/glfw)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/fmt)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/rapidjson)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/yaml-cpp)
 
 file(GLOB render_src
     "${PROJECT_SOURCE_DIR}/Render/*.cpp"
@@ -42,6 +43,7 @@ ${PROJECT_SOURCE_DIR}/Dep/glad
 ${PROJECT_SOURCE_DIR}/Dep/fmt/include
 ${PROJECT_SOURCE_DIR}/Dep/glfw/include
 ${PROJECT_SOURCE_DIR}/Dep/rapidjson/include
+${PROJECT_SOURCE_DIR}/Dep/yaml-cpp/include
 ${PROJECT_SOURCE_DIR}/imgui
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
@@ -61,5 +63,5 @@ ${Boost_LIBRARIES}
 ${OPENGL_gl_LIBRARY}
 glfw
 OpenMP::OpenMP_CXX
+yaml-cpp
 )
-

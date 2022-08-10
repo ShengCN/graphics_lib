@@ -44,6 +44,8 @@ void main(){
     vec3 light = vec3(0.0, 100.0, 80.0);
     float ka = 0.3;
     float kd = clamp(dot(normalize(light - vs_pos),vs_norm), 0.0f, 1.0f);
+    frag_color = vec4(0.5, 0.5, 0.5, 1.0);
+
     float shadow_eff = shadow(vs_light_space_pos);
     if (draw_shadow == 0) {
         shadow_eff = 1.0;

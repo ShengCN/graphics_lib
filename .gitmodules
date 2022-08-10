@@ -24,3 +24,6 @@
 [submodule "Dep/Catch2"]
 	path = Dep/Catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "Dep/yaml-cpp"]
+	path = Dep/yaml-cpp
+	url = git@github.com:jbeder/yaml-cpp.git

@@ -14,13 +14,13 @@
 using namespace purdue;
 
 otb_window::otb_window() {
+	std::string default_config = "Configs/default.yaml";
+	m_engine = std::make_shared<render_engine>(default_config);
 }
 
 otb_window::~otb_window() {
 
 }
-
-render_engine otb_window::m_engine;;
 
 void otb_window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	char m;
@@ -53,11 +53,11 @@ void otb_window::key_callback(GLFWwindow* window, int key, int scancode, int act
 		shift = true;	
 	}
 
-	m_engine.camera_keyboard(m,shift);
+	// m_engine.camera_keyboard(m,shift);
 }
 
 void otb_window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {	
-	m_engine.camera_scroll(yoffset);
+	// m_engine.camera_scroll(yoffset);
 }
 
 void otb_window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
@@ -66,7 +66,7 @@ void otb_window::mouse_button_callback(GLFWwindow* window, int button, int actio
 		glfwGetCursorPos(window, &xpos, &ypos);
 
 		INFO("Right button clicked, " + std::to_string(xpos) + " " + std::to_string(ypos));
-		m_engine.camera_press((int)xpos, (int)ypos);
+		// m_engine.camera_press((int)xpos, (int)ypos);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
@@ -74,15 +74,15 @@ void otb_window::mouse_button_callback(GLFWwindow* window, int button, int actio
 		glfwGetCursorPos(window, &xpos, &ypos);
 
 		INFO("Right button released, " + std::to_string(xpos) + " " + std::to_string(ypos));
-		m_engine.camera_release((int)xpos, (int)ypos);
+		// m_engine.camera_release((int)xpos, (int)ypos);
 	}
 }
 
 void otb_window::cursor_position_callback(GLFWwindow* window,  double xpos, double ypos) {
-	m_engine.camera_move(xpos, ypos);
+	// m_engine.camera_move(xpos, ypos);
 }
 
-int otb_window::create_window(int w, int h, const std::string title) {
+int otb_window::create_window() {
 	/* Initialize the library */
 	if (!glfwInit())
 		return -1;
@@ -97,12 +97,11 @@ int otb_window::create_window(int w, int h, const std::string title) {
 	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	_window = glfwCreateWindow(w, h, title.c_str(), NULL, NULL);
+	_window = glfwCreateWindow(m_engine->width(), m_engine->height(), m_engine->title().c_str(), NULL, NULL);
 	if (!_window) {
 		glfwTerminate();
 		return -1;
 	}
-
 
 	// callbacks
 	glfwSetErrorCallback(error_callback);
@@ -114,7 +113,7 @@ int otb_window::create_window(int w, int h, const std::string title) {
 	// set up environment
 	glfwMakeContextCurrent(_window);
 	glfwSwapInterval(1);
-	glfwSetWindowPos(_window, 0,0);
+	glfwSetWindowPos(_window, 100, 500);
 
 	if (gladLoadGL() == 0) {
 		std::cout << "Failed to initialize OpenGL context" << std::endl;
@@ -127,18 +126,12 @@ int otb_window::create_window(int w, int h, const std::string title) {
 		return -1;
 	}
 
-	m_engine.init();
-	init_gui();
-	init_scene();
+	m_engine->init_ogl_states();
 
+	init_gui();
 	return 1;
 }
 
-void otb_window::init_scene() {
-	int h, w;
-	glfwGetWindowSize(_window, &w, &h);
-	m_engine.test_scene(w,h);
-}
 
 void otb_window::show() {
 	glfwMakeContextCurrent(_window);
@@ -213,7 +206,7 @@ void otb_window::init_gui() {
 }
 
 void otb_window::reload_all_shaders() {
-	m_engine.reload_shaders();
+	// m_engine.reload_shaders();
 }
 
 void otb_window::draw_gui() {
@@ -225,7 +218,7 @@ void otb_window::draw_gui() {
 	//// ------------------------ Window ------------------------ //
 	ImGui::Begin("PC control");
 	ImGui::SetWindowFontScale(2.0); // use 1.0 if not using HDI
-	ImGui::SliderFloat("fov", &m_engine.get_render_ppc()->_fov, 5.0f, 120.0f);
+	// ImGui::SliderFloat("fov", &m_engine.get_render_ppc()->_fov, 5.0f, 120.0f);
 
 	if(ImGui::Button("reload shader")) {
 		reload_all_shaders();
@@ -246,7 +239,6 @@ void otb_window::draw_gui() {
 
 void otb_window::render(int iter) {
 	// m_engine.render(iter);
-	render_mask();
 }
 
 void otb_window::render_shadow() {
@@ -256,7 +248,7 @@ void otb_window::render_shadow() {
 void otb_window::render_mask() { 
 	glClearColor(0.0f,0.0f,0.0f,1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	m_engine.render(0);
+	// m_engine.render(0);
 }
 
 void otb_window::dbg() {
