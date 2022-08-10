@@ -1,0 +1,21 @@
+{
+    "camera": {
+        "Orientation": "0.0677545,0.0545288,-0.996211",
+        "Position": "-0.172587,0.679576,2.60238",
+        "VFov": 80.0,
+        "Height": 720,
+        "Width": 720,
+        "near": 0.1,
+        "far": 100.0
+    },
+    "render_scene": {
+        "1": {
+            "Caster": true,
+            "World Matrix": "4.0,0,0,0,0,4.0,0,0,0.0,0,4.0,0,0,0,0,1",
+            "path": "Meshes/bunny.obj"
+        }
+    },
+    "lights": [
+        "3,3,3"
+    ]
+}

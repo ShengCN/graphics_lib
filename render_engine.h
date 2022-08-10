@@ -9,24 +9,37 @@
 #include "Utilities/voxelization.h"
 #include "asset_manager.h"
 
-class render_engine{
+class render_engine {
 private: /* Private Variables */
     int m_h, m_w; /* current render frame size */
     std::string m_title;
-    size_t m_cur_scene;
+    size_t m_cur_scene_ind;
+    std::shared_ptr<ppc> m_cur_ppc;
+
+    std::shared_ptr<renderer> m_renderer;
     std::vector<std::shared_ptr<scene>> m_scenes;
 
 public: /* API */
     //------- Initialize --------//
     render_engine(std::string config_file);
+    bool init_variables();
     bool init_ogl_states();
 
     int width()  { return m_w; };
     int height() { return m_h; };
     std::string title() {return m_title;}
 
+    void render(int iter);
+
+
+    /* IO */
+    std::shared_ptr<scene> get_cur_scene();
+    mesh_id add_mesh(const std::string mesh_file, glm::vec3 color= default_mesh_color);
+
+
+    bool to_json(std::string);
+    bool from_json(const std::string json_str);
 
 private: /* Private functions */
-    bool init_variables(std::string config_file);
     bool init_shaders();
 };

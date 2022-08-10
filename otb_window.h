@@ -45,9 +45,6 @@ private:
 private:
 	void reload_all_shaders();
 	void render(int iter);
-
-	void render_shadow();
-	void render_mask();
 	void dbg();
 
 private:

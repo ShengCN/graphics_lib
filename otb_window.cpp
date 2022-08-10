@@ -14,7 +14,7 @@
 using namespace purdue;
 
 otb_window::otb_window() {
-	std::string default_config = "Configs/default.yaml";
+	std::string default_config = "Configs/default.json";
 	m_engine = std::make_shared<render_engine>(default_config);
 }
 
@@ -238,18 +238,9 @@ void otb_window::draw_gui() {
 }
 
 void otb_window::render(int iter) {
-	// m_engine.render(iter);
+	 m_engine->render(iter);
 }
 
-void otb_window::render_shadow() {
-
-}
-
-void otb_window::render_mask() { 
-	glClearColor(0.0f,0.0f,0.0f,1.0f);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	// m_engine.render(0);
-}
 
 void otb_window::dbg() {
 	INFO("Begin DBG");

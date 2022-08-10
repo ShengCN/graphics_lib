@@ -201,12 +201,14 @@ bool scene::remove_mesh(mesh_id id) {
     return true;
 }
 
-void scene::add_mesh(std::shared_ptr<mesh> m)  {
+mesh_id scene::add_mesh(std::shared_ptr<mesh> m)  {
     if (m == nullptr) {
         throw std::invalid_argument(fmt::format("Try to insert a nullptr to scene"));
-        return;
+        return -1;
     }
+
     m_meshes[m->get_id()] = m;
+    return m->get_id();
 }
 
 // compute default ppc position

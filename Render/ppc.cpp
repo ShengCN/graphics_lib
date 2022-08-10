@@ -244,6 +244,8 @@ int ppc::from_json(const std::string json_str) {
     ret = ret & rapidjson_get_vec3(document, "Position", _position);
     ret = ret & rapidjson_get_vec3(document, "Orientation", _front); 
     ret = ret & rapidjson_get_double(document, "VFov", _fov);
+    ret = ret & rapidjson_get_double(document, "near", _near);
+    ret = ret & rapidjson_get_double(document, "far", _far);
 
     return (int)ret;
 }

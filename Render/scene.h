@@ -18,7 +18,7 @@ public:
 	std::shared_ptr<mesh> add_mesh(const std::string mesh_file, vec3 color=vec3(0.7f));
 	static std::shared_ptr<mesh> get_plane_mesh(vec3 p=vec3(0.0f), vec3 n=vec3(0.0f,1.0f,0.0f));
 	bool remove_mesh(int mesh_id);
-	void add_mesh(std::shared_ptr<mesh> m);
+	mesh_id add_mesh(std::shared_ptr<mesh> m);
 	bool load_scene(std::string scene_file);
 	bool save_scene(std::string scene_file);
 	void clean_up();
@@ -34,5 +34,5 @@ public:
 
 protected:
 	std::unordered_map<mesh_id, std::shared_ptr<mesh>> m_meshes;
+	std::vector<glm::vec3> m_lights;
 };
-

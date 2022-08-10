@@ -48,7 +48,6 @@ public:
 	shader(const char* vertexShaderFile, const char* geometryShader, const char* fragmentShaderFile);
 	
 	bool reload_shader();
-	//virtual void draw_mesh(std::shared_ptr<mesh> m, rendering_params& params);
 	virtual void draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& params);
 
 	GLuint get_program() { return m_program; }
