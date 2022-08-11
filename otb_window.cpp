@@ -13,9 +13,11 @@
 
 using namespace purdue;
 
+std::string default_config = "Configs/default.json";
+std::shared_ptr<render_engine> otb_window::m_engine = std::make_shared<render_engine>(default_config);
+float otb_window::m_dpi_scale = 1.0;
+
 otb_window::otb_window() {
-	std::string default_config = "Configs/default.json";
-	m_engine = std::make_shared<render_engine>(default_config);
 }
 
 otb_window::~otb_window() {
@@ -23,63 +25,65 @@ otb_window::~otb_window() {
 }
 
 void otb_window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	char m;
+	if (action != GLFW_PRESS) {
+		return;
+	}
+
+	char m = '0';
 	bool shift = false;
-	if(key == GLFW_KEY_W && action == GLFW_PRESS) {
-		m = 'w';
-	}
 
-	if(key == GLFW_KEY_A && action == GLFW_PRESS) {
-		m = 'a';
-	}
+	std::unordered_map<int, char> key_maps = {{GLFW_KEY_W, 'w'},
+											  {GLFW_KEY_A, 'a'},
+											  {GLFW_KEY_S, 's'},
+											  {GLFW_KEY_D, 'd'},
+											  {GLFW_KEY_Q, 'q'},
+											  {GLFW_KEY_E, 'e'}};
 
-	if(key == GLFW_KEY_S && action == GLFW_PRESS) {
-		m = 's';
-	}
 
-	if(key == GLFW_KEY_D && action == GLFW_PRESS) {
-		m = 'd';
-	}
+	m = key_maps[key];
 
-	if(key == GLFW_KEY_Q && action == GLFW_PRESS) {
-		m = 'q';
-	}
-
-	if(key == GLFW_KEY_E && action == GLFW_PRESS) {
-		m = 'e';
-	}
-
-	if(key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) {
+	if(key == GLFW_KEY_LEFT_SHIFT) {
 		shift = true;	
 	}
 
-	// m_engine.camera_keyboard(m,shift);
+	INFO("Key {}", m);
+	m_engine->camera_keyboard(m,shift);
 }
 
 void otb_window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {	
-	// m_engine.camera_scroll(yoffset);
+	m_engine->camera_scroll(yoffset);
+}
+
+
+void otb_window::get_mouse_pos(GLFWwindow* window, double *xpos, double *ypos) {
+	glfwGetCursorPos(window, xpos, ypos);
+
+	*xpos = *xpos / m_dpi_scale;
+	*ypos = *ypos / m_dpi_scale;
 }
 
 void otb_window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
 		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-
+		get_mouse_pos(window, &xpos, &ypos);
 		INFO("Right button clicked, " + std::to_string(xpos) + " " + std::to_string(ypos));
-		// m_engine.camera_press((int)xpos, (int)ypos);
+		m_engine->camera_press((int)xpos, (int)ypos);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
+		get_mouse_pos(window, &xpos, &ypos);
 
 		INFO("Right button released, " + std::to_string(xpos) + " " + std::to_string(ypos));
-		// m_engine.camera_release((int)xpos, (int)ypos);
+		m_engine->camera_release((int)xpos, (int)ypos);
 	}
 }
 
+
+
 void otb_window::cursor_position_callback(GLFWwindow* window,  double xpos, double ypos) {
-	// m_engine.camera_move(xpos, ypos);
+	get_mouse_pos(window, &xpos, &ypos);
+	m_engine->camera_move(xpos, ypos);
 }
 
 int otb_window::create_window() {
@@ -114,6 +118,10 @@ int otb_window::create_window() {
 	glfwMakeContextCurrent(_window);
 	glfwSwapInterval(1);
 	glfwSetWindowPos(_window, 100, 500);
+
+	// DPI scale
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	glfwGetMonitorContentScale(monitor, &m_dpi_scale, &m_dpi_scale);
 
 	if (gladLoadGL() == 0) {
 		std::cout << "Failed to initialize OpenGL context" << std::endl;
@@ -218,7 +226,6 @@ void otb_window::draw_gui() {
 	//// ------------------------ Window ------------------------ //
 	ImGui::Begin("PC control");
 	ImGui::SetWindowFontScale(2.0); // use 1.0 if not using HDI
-	// ImGui::SliderFloat("fov", &m_engine.get_render_ppc()->_fov, 5.0f, 120.0f);
 
 	if(ImGui::Button("reload shader")) {
 		reload_all_shaders();

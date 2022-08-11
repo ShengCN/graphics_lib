@@ -6,7 +6,6 @@
 render_engine::render_engine(std::string config_file) {
     /*   Init variables  */
     FAIL(!init_variables(), "Init variables");
-
     FAIL(!from_json(config_file),"Read from config failed");
 }
 
@@ -95,7 +94,8 @@ bool render_engine::from_json(const std::string json_fname) {
 
         m_h = m_cur_ppc->height();
         m_w = m_cur_ppc->width();
-
+        m_cur_ppc->set_event_listen(true);
+        m_cur_ppc->set_trackball(false);
     } else {
         ERROR("Cannot find {} or {} type is wrong", cur_key, cur_key);
         ret = ret & false;
@@ -113,4 +113,52 @@ bool render_engine::from_json(const std::string json_fname) {
     }
 
     return (int)ret;
+}
+
+
+void render_engine::camera_press(int x, int y) {
+    m_cur_ppc->mouse_press(x, y);
+}
+
+void render_engine::camera_release(int x, int y) {
+    m_cur_ppc->mouse_release(x, y);
+}
+
+void render_engine::camera_move(int x, int y) {
+    m_cur_ppc->mouse_move(x, y);
+}
+
+void render_engine::camera_scroll(int offset) {
+    m_cur_ppc->scroll((double)offset);
+}
+
+void render_engine::camera_keyboard(char m, bool shift) {
+    float speed = 1.0f * 0.1f;
+
+    if(shift)
+        speed *= 10.0f;
+
+    switch (m)
+    {
+        case 'w':
+            m_cur_ppc->Keyboard(CameraMovement::forward, speed);
+            break;
+        case 'a':
+            m_cur_ppc->Keyboard(CameraMovement::left, speed);
+            break;
+        case 's':
+            m_cur_ppc->Keyboard(CameraMovement::backward, speed);
+            break;
+        case 'd':
+            m_cur_ppc->Keyboard(CameraMovement::right, speed);
+            break;
+        case 'q':
+            m_cur_ppc->Keyboard(CameraMovement::up, speed);
+            break;
+        case 'e':
+            m_cur_ppc->Keyboard(CameraMovement::down, speed);
+            break;
+        default:
+            break;
+    }
 }

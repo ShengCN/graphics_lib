@@ -36,6 +36,13 @@ public: /* API */
     std::shared_ptr<scene> get_cur_scene();
     mesh_id add_mesh(const std::string mesh_file, glm::vec3 color= default_mesh_color);
 
+    /* Camera */
+    void camera_press(int x, int y);
+    void camera_release(int x, int y);
+    void camera_move(int x, int y);
+    void camera_scroll(int offset);
+    void camera_keyboard(char m, bool shift);
+
 
     bool to_json(std::string);
     bool from_json(const std::string json_str);

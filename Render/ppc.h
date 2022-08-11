@@ -181,6 +181,9 @@ public:
     virtual int from_json(const std::string json_str)override;
 
 private:
+    glm::vec3 arcball_vector(int x, int y, int w, int h);
+
+private:
     int m_last_x, m_last_y;
     vec3 m_last_orientation, m_last_position;
     bool m_pressed, m_trackball, m_listen;

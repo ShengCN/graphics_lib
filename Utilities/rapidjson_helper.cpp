@@ -7,7 +7,7 @@ bool rapidjson_get_int(
     bool ret=true;
     if (document.HasMember(key.c_str()) && document[key.c_str()].IsInt()) {
         v = document[key.c_str()].GetInt();
-    } else {
+    }else {
         ERROR("Cannot find {} or {} type is wrong", key, key);
         ret = ret & false;
     }
