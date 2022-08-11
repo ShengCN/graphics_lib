@@ -39,16 +39,20 @@ public:
 	int width();
 	int height();
 
-private:
-	void init_gui();
-	void draw_gui();
 
 private:
+	/* GUI */
+	void init_gui();
+	void draw_gui();
+	void guizmo();
+
+	/* Others */
 	void reload_all_shaders();
 	void render(int iter);
 	void dbg();
 
 private:
+	mesh_id m_cur_mesh=1;
 	static std::shared_ptr<render_engine> m_engine;
 	float m_distance = 2.0f;
 	static float m_dpi_scale;

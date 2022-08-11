@@ -27,3 +27,6 @@
 [submodule "Dep/yaml-cpp"]
 	path = Dep/yaml-cpp
 	url = git@github.com:jbeder/yaml-cpp.git
+[submodule "Dep/ImGuizmo"]
+	path = Dep/ImGuizmo
+	url = git@github.com:CedricGuillemet/ImGuizmo.git

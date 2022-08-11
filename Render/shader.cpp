@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 #include "shader.h"
-#include "asset_manager.h"
 
 using std::ifstream;
 using std::ios;

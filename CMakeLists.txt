@@ -21,9 +21,11 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Dep/yaml-cpp)
 
 file(GLOB render_src
     "${PROJECT_SOURCE_DIR}/Render/*.cpp"
+    "${PROJECT_SOURCE_DIR}/UI/*.cpp"
     "${PROJECT_SOURCE_DIR}/Utilities/*.cpp"
     "${PROJECT_SOURCE_DIR}/Dep/tinyobjloader/*.cc"
     "${PROJECT_SOURCE_DIR}/Dep/tinyxml2/*.cpp"
+    "${PROJECT_SOURCE_DIR}/Dep/ImGuizmo/*.cpp"
     "${PROJECT_SOURCE_DIR}/asset_manager.cpp"
     "${PROJECT_SOURCE_DIR}/render_engine.cpp"
     "${PROJECT_SOURCE_DIR}/otb_window.cpp"
@@ -44,16 +46,15 @@ ${PROJECT_SOURCE_DIR}/Dep/fmt/include
 ${PROJECT_SOURCE_DIR}/Dep/glfw/include
 ${PROJECT_SOURCE_DIR}/Dep/rapidjson/include
 ${PROJECT_SOURCE_DIR}/Dep/yaml-cpp/include
+${PROJECT_SOURCE_DIR}/Dep/ImGuizmo
+${PROJECT_SOURCE_DIR}/Dep/glm
 ${PROJECT_SOURCE_DIR}/imgui
+${PROJECT_SOURCE_DIR}/UI
 ${PROJECT_SOURCE_DIR}
 ${Boost_INCLUDE_DIR})
 
 
-target_include_directories(graphics_lib SYSTEM PUBLIC 
-${PROJECT_SOURCE_DIR}/Dep/glm
-)
-
-set_target_properties(graphics_lib 
+set_target_properties(graphics_lib
 PROPERTIES 
     POSITION_INDEPENDENT_CODE ON
 )

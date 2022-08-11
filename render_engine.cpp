@@ -162,3 +162,24 @@ void render_engine::camera_keyboard(char m, bool shift) {
             break;
     }
 }
+
+
+glm::mat4 render_engine::get_camera_view() {
+    return m_cur_ppc->GetV();
+}
+
+
+glm::mat4 render_engine::get_camera_perspective() {
+    return m_cur_ppc->GetP();
+}
+
+glm::mat4 render_engine::get_obj_toworld(mesh_id id) {
+    auto mesh = get_cur_scene()->get_mesh(id);
+    return mesh->get_world_mat();
+}
+
+
+void render_engine::set_obj_toworld(mesh_id id, glm::mat4 toworld) {
+    auto mesh = get_cur_scene()->get_mesh(id);
+    return mesh->set_world_mat(toworld);
+}

@@ -7,7 +7,6 @@
 #include "Render/scene.h"
 #include "Render/ppc.h"
 #include "Utilities/voxelization.h"
-#include "asset_manager.h"
 
 class render_engine {
 private: /* Private Variables */
@@ -35,6 +34,8 @@ public: /* API */
     /* IO */
     std::shared_ptr<scene> get_cur_scene();
     mesh_id add_mesh(const std::string mesh_file, glm::vec3 color= default_mesh_color);
+    glm::mat4 get_obj_toworld(mesh_id id);
+    void set_obj_toworld(mesh_id id, glm::mat4 toworld);
 
     /* Camera */
     void camera_press(int x, int y);
@@ -43,6 +44,8 @@ public: /* API */
     void camera_scroll(int offset);
     void camera_keyboard(char m, bool shift);
 
+    glm::mat4 get_camera_view();
+    glm::mat4 get_camera_perspective();
 
     bool to_json(std::string);
     bool from_json(const std::string json_str);

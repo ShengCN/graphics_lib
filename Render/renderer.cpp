@@ -51,4 +51,3 @@ std::shared_ptr<shader> renderer::init_shaders(const std::string vs, const std::
 
     return std::make_shared<T>(vs.c_str(), fs.c_str());
 }
-
