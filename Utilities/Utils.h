@@ -222,10 +222,10 @@ namespace purdue {
 
         void tic() {
             _is_ticed = true;
-            _tic = Clock::now();
+            // _tic = Clock::now();
         }
         void toc() {
-            _toc = Clock::now();
+            // _toc = Clock::now();
         }
 
         long long get_elapse() {

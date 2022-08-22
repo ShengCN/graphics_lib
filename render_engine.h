@@ -23,13 +23,13 @@ public: /* API */
     render_engine(std::string config_file);
     bool init_variables();
     bool init_ogl_states();
+    void clear_scene();
 
     int width()  { return m_w; };
     int height() { return m_h; };
     std::string title() {return m_title;}
 
     void render(int iter);
-
 
     /* IO */
     std::shared_ptr<scene> get_cur_scene();
@@ -43,6 +43,7 @@ public: /* API */
     void camera_move(int x, int y);
     void camera_scroll(int offset);
     void camera_keyboard(char m, bool shift);
+    void camera_focus(mesh_id id);
 
     glm::mat4 get_camera_view();
     glm::mat4 get_camera_perspective();

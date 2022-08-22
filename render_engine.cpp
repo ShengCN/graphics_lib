@@ -1,5 +1,6 @@
 #include <common.h>
 #include <memory>
+#include "Render/mesh.h"
 #include "render_engine.h"
 #include "Utilities/Utils.h"
 
@@ -34,6 +35,12 @@ bool render_engine::init_ogl_states() {
     return ret;
 }
 
+void render_engine::clear_scene() {
+    auto cur_scene = get_cur_scene();
+    cur_scene->clean_up();
+}
+
+
 void render_engine::render(int iter) {
     auto cur_scene = m_scenes[m_cur_scene_ind];
 
@@ -57,7 +64,9 @@ mesh_id render_engine::add_mesh(const std::string mesh_file, glm::vec3 color) {
         return -1;
     }
 
-    return get_cur_scene()->add_mesh(new_mesh);
+    mesh_id cur_id = get_cur_scene()->add_mesh(new_mesh);
+    new_mesh->set_color(color);
+    return cur_id;
 }
 
 bool render_engine::to_json(std::string) {
@@ -161,6 +170,12 @@ void render_engine::camera_keyboard(char m, bool shift) {
         default:
             break;
     }
+}
+
+void render_engine::camera_focus(mesh_id id) {
+    auto cur_scene = get_cur_scene();
+    auto cur_mesh = cur_scene->get_mesh(id);
+    cur_scene->focus_at(m_cur_ppc, cur_mesh, vec3(0.0, 0.0, 1.0));
 }
 
 

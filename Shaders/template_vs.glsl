@@ -1,4 +1,4 @@
-#version 430
+#version 330
 
 layout(location=0) in vec3 pos_attr;
 layout(location=1) in vec3 norm_attr;

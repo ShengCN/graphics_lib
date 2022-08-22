@@ -14,6 +14,7 @@ public:
     virtual std::string to_json() override;  
     virtual int from_json(const std::string jsonstr) override;  
 
+
 	//------- Shared Functions --------//
 	std::shared_ptr<mesh> add_mesh(const std::string mesh_file, vec3 color=vec3(0.7f));
 	static std::shared_ptr<mesh> get_plane_mesh(vec3 p=vec3(0.0f), vec3 n=vec3(0.0f,1.0f,0.0f));

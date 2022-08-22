@@ -94,10 +94,7 @@ public:
     void Rotate_Axis(glm::vec3 O, glm::vec3 axis, float angled);    // only rotate ppc position
     void Zoom(float delta);
     void Keyboard(CameraMovement cm, float speed); // keyboard reactions
-    void scroll(double delta) {
-        _fov += float(delta);
-    }
-
+    void scroll(double delta);
     vec3 get_pos() { return _position; }
     void pan(double deg);
     void tilt(double deg);

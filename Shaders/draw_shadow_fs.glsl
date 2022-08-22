@@ -1,4 +1,4 @@
-#version 430
+#version 330
 
 in vec4 vs_light_space_pos;
 out vec4 frag_color;
