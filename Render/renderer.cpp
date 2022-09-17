@@ -34,11 +34,10 @@ void renderer::render(std::shared_ptr<scene> cur_scene, std::shared_ptr<ppc> cur
     rendering_params cur_render_params;
     cur_render_params.cur_camera = cur_ppc;
 
-    std::unordered_map<mesh_id, std::shared_ptr<mesh>> meshes = cur_scene->get_meshes();
-    for (auto m:meshes) {
-        Mesh_Descriptor cur_descriptor(m.second);
-
-        m_shaders[default_shader_name]->draw_mesh(cur_descriptor, cur_render_params);
+    auto rendered_meshes = cur_scene->get_mesh_descriptors();
+    for (auto mdesc:rendered_meshes) {
+        auto cur_desc = mdesc.second;
+        m_shaders[default_shader_name]->draw_mesh(*cur_desc, cur_render_params);
     }
 }
 

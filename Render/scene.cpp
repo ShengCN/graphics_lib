@@ -19,7 +19,7 @@ std::string scene::to_json() {
     for(auto &mpair:m_meshes) {
         int id = mpair.first;
         writer.Key(fmt::format("{}", id).c_str());
-        std::string scene_json = m_meshes.at(id)->to_json();
+        std::string scene_json = m_meshes.at(id)->m->to_json();
         writer.RawValue(scene_json.c_str(), scene_json.size(), rapidjson::Type::kStringType);
     }
     writer.EndObject();
@@ -88,7 +88,7 @@ int scene::from_json(const std::string json_str) {
                 WARN("Cannot find the mesh file({}). Use plane instead", mesh_path);
                 mesh_ptr = get_plane_mesh(vec3(0.f), vec3(0.0f,1.0f,0.0f));
                 mesh_ptr->set_caster(false);
-                m_meshes[mesh_ptr->get_id()] = mesh_ptr;
+                m_meshes[mesh_ptr->get_id()] = std::make_shared<Mesh_Descriptor>(mesh_ptr);
             }
 
             mesh_ptr->set_world_mat(world_mat);
@@ -98,11 +98,11 @@ int scene::from_json(const std::string json_str) {
             if (mesh_ptr->get_id() != id) {
                 m_meshes.erase(mesh_ptr->get_id());
                 mesh_ptr->cur_id = id;
-                m_meshes[mesh_ptr->cur_id] = mesh_ptr;
+                m_meshes[mesh_ptr->cur_id] = std::make_shared<Mesh_Descriptor>(mesh_ptr);
             }
 
             for(auto m:m_meshes) {
-                DBG("Current meshes: {}, {}", m.first, m.second->get_id());
+                DBG("Current meshes: {}, {}", m.first, m.second->m->get_id());
             }
         }
 
@@ -128,10 +128,10 @@ std::shared_ptr<mesh> scene::add_mesh(const std::string mesh_file, vec3 color) {
 
     new_mesh->set_color(color);
     int id = new_mesh->get_id();
-    m_meshes[id] = new_mesh;
+    m_meshes[id] = std::make_shared<Mesh_Descriptor>(new_mesh);
+
     return new_mesh;
 }
-
 
 bool scene::load_scene(std::string scene_file) {
     //#todo_parse_scene
@@ -163,7 +163,7 @@ vec3 scene::scene_center() {
     float weight = (float)m_meshes.size();
     for (auto&m : m_meshes) {
         if (m.second != nullptr) {
-            center += m.second->compute_world_center() * weight;
+            center += m.second->m->compute_world_center() * weight;
         } else {
             WARN("There is a nullptr in the scene meshes");
         }
@@ -175,7 +175,7 @@ vec3 scene::scene_center() {
 
 void scene::scale(glm::vec3 s) {
     for(auto m:m_meshes) {
-        m.second->add_scale(s);
+        m.second->m->add_scale(s);
     }
 }
 
@@ -183,22 +183,18 @@ void scene::scale(glm::vec3 s) {
 std::shared_ptr<mesh> scene::get_mesh(mesh_id id) {
     if (m_meshes.find(id) == m_meshes.end()) {
         for(auto mptr:m_meshes) {
-            ERROR("Current meshes: {}", mptr.second->get_id());
+            ERROR("Current meshes: {}", mptr.second->m->get_id());
         }
         FAIL(true, "Cannot find mesh(ID: {})", id);
     }
-    return m_meshes.at(id);
-}
-
-std::unordered_map<mesh_id, std::shared_ptr<mesh>> scene::get_meshes(){
-    return m_meshes;
+    return m_meshes.at(id)->m;
 }
 
 AABB scene::scene_aabb() {
     AABB scene_aabb(vec3(0.0f));
 
     for (auto m : m_meshes) {
-        AABB cur_aabb = m.second->compute_world_aabb();
+        AABB cur_aabb = m.second->m->compute_world_aabb();
         scene_aabb.add_point(cur_aabb.p0);
         scene_aabb.add_point(cur_aabb.p1);
     }
@@ -214,16 +210,6 @@ bool scene::remove_mesh(mesh_id id) {
 
     m_meshes.erase(id);
     return true;
-}
-
-mesh_id scene::add_mesh(std::shared_ptr<mesh> m)  {
-    if (m == nullptr) {
-        throw std::invalid_argument(fmt::format("Try to insert a nullptr to scene"));
-        return -1;
-    }
-
-    m_meshes[m->get_id()] = m;
-    return m->get_id();
 }
 
 // compute default ppc position
@@ -274,16 +260,17 @@ void scene::focus_at(std::shared_ptr<ppc> camera, std::shared_ptr<mesh> m, glm::
     camera->PositionAndOrient(new_pos, meshes_center, vec3(0.0f,1.0f,0.0f));
 }
 
-void scene::stand_on_plane(std::shared_ptr<mesh> m) {
-    if(m_meshes.size() < 1) {
-        WARN("There is no ground yet");
-        return;
+std::unordered_map<mesh_id, std::shared_ptr<Mesh_Descriptor>> scene::get_mesh_descriptors() {
+    return m_meshes;
+}
+
+bool scene::set_draw_type(mesh_id id, draw_type type) {
+    if (m_meshes.find(id) == m_meshes.end()) { /* Cannot find the mesh */
+        ERROR("Cannot find the mesh");
+        return false;
     }
 
-    vec3 lowest_point = m->compute_world_aabb().p0;
-
-    vec3 ground_height = m_meshes[0]->compute_world_center();
-    float offset = ground_height.y - lowest_point.y;
-    m->m_world = glm::translate(glm::mat4(1.0f),vec3(0.0, offset, 0.0)) * m->m_world;
+    m_meshes.at(id)->type = type;
 }
+
 

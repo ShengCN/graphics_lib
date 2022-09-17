@@ -207,15 +207,15 @@ void shader::draw_mesh(const Mesh_Descriptor &descriptor, rendering_params& para
     }
 
 	int ogl_draw_type = 0;
-	if (params.dtype == draw_type::triangle) {
+	if (descriptor.type == draw_type::triangle) {
 		ogl_draw_type = GL_TRIANGLES;
 	} 
 
-	if (params.dtype == draw_type::line_segments) {
+	if (descriptor.type == draw_type::line_segments) {
 		ogl_draw_type = GL_LINES;
 	}
 
-    if (params.dtype == draw_type::points) {
+    if (descriptor.type == draw_type::points) {
         ogl_draw_type = GL_POINTS;
     }
 

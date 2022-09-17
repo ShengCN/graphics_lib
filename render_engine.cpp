@@ -58,15 +58,9 @@ std::shared_ptr<scene> render_engine::get_cur_scene() {
 }
 
 mesh_id render_engine::add_mesh(const std::string mesh_file, glm::vec3 color) {
-    std::shared_ptr<mesh> new_mesh = std::make_shared<mesh>();
+    auto cur_mesh = get_cur_scene()->add_mesh(mesh_file, color);
 
-    if (!load_model(mesh_file, new_mesh)) {
-        return -1;
-    }
-
-    mesh_id cur_id = get_cur_scene()->add_mesh(new_mesh);
-    new_mesh->set_color(color);
-    return cur_id;
+    return cur_mesh->get_id();
 }
 
 bool render_engine::to_json(std::string) {
@@ -197,4 +191,12 @@ glm::mat4 render_engine::get_obj_toworld(mesh_id id) {
 void render_engine::set_obj_toworld(mesh_id id, glm::mat4 toworld) {
     auto mesh = get_cur_scene()->get_mesh(id);
     return mesh->set_world_mat(toworld);
+}
+
+bool render_engine::remove_mesh(mesh_id id) {
+    return get_cur_scene()->remove_mesh(id);
+}
+
+void render_engine::set_render_type(mesh_id id, draw_type type) {
+    get_cur_scene()->set_draw_type(id, type);
 }

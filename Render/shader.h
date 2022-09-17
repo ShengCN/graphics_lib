@@ -25,10 +25,9 @@ struct rendering_params {
 	std::shared_ptr<ppc> cur_camera;
 	std::shared_ptr<ppc> light_camera;
     std::vector<glm::vec3> lights;
-	draw_type dtype;
     GLuint sm_texture;
 
-	rendering_params():frame(0), dtype(draw_type::triangle) {
+	rendering_params():frame(0) {
 	}
 };
 
@@ -36,10 +35,17 @@ struct rendering_params {
 struct Mesh_Descriptor {
 	std::shared_ptr<mesh> m;
 	std::vector<std::shared_ptr<Image>> texs;
+    draw_type type = draw_type::triangle;
 
     Mesh_Descriptor(std::shared_ptr<mesh> m):m(m) {}
-    Mesh_Descriptor(std::shared_ptr<mesh> m, std::vector<std::shared_ptr<Image>> texs):m(m), texs(texs) {}
-}; 
+
+    Mesh_Descriptor(std::shared_ptr<mesh> m,
+                    std::vector<std::shared_ptr<Image>> texs):m(m), texs(texs) {}
+
+    Mesh_Descriptor(std::shared_ptr<mesh> m,
+                    std::vector<std::shared_ptr<Image>> texs,
+                    draw_type type):m(m), texs(texs), type(type) {}
+};
 
 class shader  {
 public:

@@ -34,8 +34,11 @@ public: /* API */
     /* IO */
     std::shared_ptr<scene> get_cur_scene();
     mesh_id add_mesh(const std::string mesh_file, glm::vec3 color= default_mesh_color);
+    bool remove_mesh(mesh_id id);
     glm::mat4 get_obj_toworld(mesh_id id);
     void set_obj_toworld(mesh_id id, glm::mat4 toworld);
+
+    void set_render_type(mesh_id id, draw_type type);
 
     /* Camera */
     void camera_press(int x, int y);
