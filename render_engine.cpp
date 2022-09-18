@@ -211,4 +211,8 @@ std::shared_ptr<mesh> render_engine::get_mesh(mesh_id id) {
     return get_cur_scene()->get_mesh(id);
 }
 
+void render_engine::set_OIT(bool trigger) {
+    m_renderer->set_OIT(trigger);
+}
+
 
