@@ -63,6 +63,12 @@ mesh_id render_engine::add_mesh(const std::string mesh_file, glm::vec3 color) {
     return cur_mesh->get_id();
 }
 
+mesh_id render_engine::add_mesh(std::shared_ptr<mesh> mesh_ptr, draw_type type) {
+    auto cur_mesh = get_cur_scene()->add_mesh(mesh_ptr, type);
+
+    return cur_mesh->get_id();
+}
+
 bool render_engine::to_json(std::string) {
     // TODO
     return true;
@@ -200,3 +206,9 @@ bool render_engine::remove_mesh(mesh_id id) {
 void render_engine::set_render_type(mesh_id id, draw_type type) {
     get_cur_scene()->set_draw_type(id, type);
 }
+
+std::shared_ptr<mesh> render_engine::get_mesh(mesh_id id) {
+    return get_cur_scene()->get_mesh(id);
+}
+
+

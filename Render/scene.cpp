@@ -273,4 +273,12 @@ bool scene::set_draw_type(mesh_id id, draw_type type) {
     m_meshes.at(id)->type = type;
 }
 
+std::shared_ptr<mesh> scene::add_mesh(std::shared_ptr<mesh> m, draw_type type) {
+    auto cur_desc = std::make_shared<Mesh_Descriptor>(m);
+    cur_desc->type = type;
+
+    m_meshes[m->get_id()] = cur_desc;
+    return m;
+}
+
 

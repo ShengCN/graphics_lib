@@ -25,6 +25,7 @@ public:
     void clean_up();
 
 	std::shared_ptr<mesh> add_mesh(const std::string mesh_file, vec3 color=vec3(0.7f));
+    std::shared_ptr<mesh> add_mesh(std::shared_ptr<mesh> m, draw_type type);
     bool remove_mesh(mesh_id id);
 
     bool set_draw_type(mesh_id id, draw_type type);
