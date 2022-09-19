@@ -1,14 +1,19 @@
-#version 330
+#version 410
 
 in vec2 tex_coord;
-uniform sampler2D img_tex;
-out vec4 frag_color;
+in vec3 normal;
+
+uniform float slider;
+uniform int cur_selected_id;
+uniform sampler2D accum_tex;
+uniform sampler2D weight_tex;
+
+layout(location = 0) out vec4 frag_color;
 
 void main(){
-    // vec2 uv = (vec2(vs_pos) + 1.0 ) * 0.5; 
-    
-    vec2 uv = tex_coord;
-    uv.y = 1.0-uv.y;
-    frag_color = texture(img_tex, uv);
-    // frag_color = vec4(1.0,0.0,0.0,1.0);
+    vec4 accum = texture(accum_tex, tex_coord);
+    float reveal = texture(weight_tex, tex_coord).r;
+
+    frag_color = vec4(accum.rgb/max(accum.a, 1e-5), reveal);
+    // frag_color = vec4(vec3(reveal), 0.5);
 }
